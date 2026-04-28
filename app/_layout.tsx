@@ -1,3 +1,4 @@
+import { CreateCompanyModal } from '@/components/common/CreateCompanyModal';
 import { AuthProvider } from '@/components/providers/AuthProvider';
 import { themeColors } from '@/constants/colors';
 import { useAuth } from '@/hooks/useAuth';
@@ -7,7 +8,7 @@ import { ActivityIndicator, View } from 'react-native';
 import './global.css';
 
 function RootLayoutNav() {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, showCreateCompanyModal, createCompany, closeCreateCompanyModal } = useAuth();
   const segments = useSegments();
   const router = useRouter();
 
@@ -15,20 +16,32 @@ function RootLayoutNav() {
     if (isLoading) return;
 
     // Check if we're in the login group
-    const inAuthGroup = segments[0] === '(auth)';
+    const inAuthGroup = segments[0] === 'login';
 
     if (!user) {
       // User is not signed in, navigate to login
       if (!inAuthGroup) {
         router.replace('/login');
       }
-    } else {
-      // User is signed in, navigate to app
-      if (inAuthGroup || segments[0] === 'login') {
-        router.replace('/(app)');
+    } else if (!user.profile?.company && !showCreateCompanyModal) {
+      // User is signed in but doesn't have a company and modal is not showing
+      // This will be handled by the auth provider showing the modal
+    } else if (user.profile?.company) {
+      // User has a company, navigate to app
+      if (segments[0] === 'login') {
+        router.replace('/home');
       }
     }
-  }, [user, segments, isLoading, router]);
+  }, [user, segments, isLoading, showCreateCompanyModal, router]);
+
+  const handleCompanyCreated = async (companyId: string, companyName: string) => {
+    try {
+      await createCompany(companyName);
+      router.replace('/home');
+    } catch (error) {
+      console.error('Failed to set company:', error);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -39,14 +52,22 @@ function RootLayoutNav() {
   }
 
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-      }}
-    >
-      <Stack.Screen name="login" />
-      <Stack.Screen name="(app)" />
-    </Stack>
+    <>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+        }}
+      >
+        <Stack.Screen name="login" />
+        <Stack.Screen name="home" />
+      </Stack>
+
+      <CreateCompanyModal
+        visible={showCreateCompanyModal}
+        onClose={closeCreateCompanyModal}
+        onCompanyCreated={handleCompanyCreated}
+      />
+    </>
   );
 }
 

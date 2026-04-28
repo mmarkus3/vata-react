@@ -1,0 +1,71 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+  	// Check that user exists
+    function isUser() {
+    	return signedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+    // Check that user is signed in
+    function signedIn() {
+      return request.auth.uid != null;
+    }
+
+    function isMyCompany() {
+      return resource.id ==
+			  get(/databases/$(database)/documents/users/$(request.auth.uid)).data.company
+    }
+
+    function isMyCompanys() {
+      return resource.data.company ==
+			  get(/databases/$(database)/documents/users/$(request.auth.uid)).data.company
+    }
+
+    match /clients/{document} {
+      allow read: if isMyCompanys();
+      allow create: if isUser();
+      allow update: if isMyCompanys();
+      allow delete: if isMyCompanys();
+    }
+
+    match /companies/{document} {
+      allow read: if isMyCompany();
+      allow create: if signedIn();
+    }
+
+    match /fullfilments/{document} {
+      allow read: if isMyCompanys();
+      allow create: if isUser();
+      allow update: if isMyCompanys();
+      allow delete: if isMyCompanys();
+    }
+
+    match /invites/{document} {
+      allow read: if signedIn();
+      allow create: if isUser();
+    }
+
+    match /lots/{document} {
+      allow read: if isMyCompanys();
+      allow create: if isUser();
+      allow update: if isMyCompanys();
+      allow delete: if isMyCompanys();
+    }
+
+    match /mail/{document} {
+      allow create: if isUser();
+    }
+
+    match /products/{document} {
+      allow read: if isMyCompanys();
+      allow create: if isUser();
+      allow update: if isMyCompanys();
+      allow delete: if isMyCompanys();
+    }
+
+    match /users/{document} {
+      allow read: if signedIn() && request.auth.uid == resource.id;
+      allow create: if signedIn();
+    }
+  }
+}

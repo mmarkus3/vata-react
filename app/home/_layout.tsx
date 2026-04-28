@@ -1,7 +1,6 @@
-import { View } from 'react-native';
-import { Tabs } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 import { themeColors } from '@/constants/colors';
+import { Ionicons } from '@expo/vector-icons';
+import { Tabs } from 'expo-router';
 
 export default function AppLayout() {
   return (
@@ -29,23 +28,45 @@ export default function AppLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Storage',
-          tabBarLabel: 'Storage',
+          title: 'Varasto',
+          tabBarLabel: 'Varasto',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="cloud-outline" size={size} color={color} />
+            <Ionicons name="storefront-outline" size={size} color={color} />
           ),
-          headerTitle: 'My Storage',
+          headerTitle: 'Varasto',
+        }}
+      />
+      <Tabs.Screen
+        name="clients"
+        options={{
+          title: 'Asiakkaat',
+          tabBarLabel: 'Asiakkaat',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="business-outline" size={size} color={color} />
+          ),
+          headerTitle: 'Asiakkaat',
+        }}
+      />
+      <Tabs.Screen
+        name="reports"
+        options={{
+          title: 'Raportti',
+          tabBarLabel: 'Raportti',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="document-text-outline" size={size} color={color} />
+          ),
+          headerTitle: 'Raportti',
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
-          title: 'Settings',
-          tabBarLabel: 'Settings',
+          title: 'Profiili',
+          tabBarLabel: 'Profiili',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="settings-outline" size={size} color={color} />
           ),
-          headerTitle: 'Settings',
+          headerTitle: 'Profiili',
         }}
       />
     </Tabs>
