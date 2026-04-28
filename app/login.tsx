@@ -18,17 +18,17 @@ const LoginScreen: FC = () => {
 
     // Validation
     if (!email || !password) {
-      setLocalError('Email and password are required');
+      setLocalError('Anna sähköposti ja salasana');
       return;
     }
 
     if (!email.includes('@')) {
-      setLocalError('Please enter a valid email');
+      setLocalError('Tarkista sähköposti');
       return;
     }
 
     if (password.length < 6) {
-      setLocalError('Password must be at least 6 characters');
+      setLocalError('Salasanan tulee olla yli 6 merkkiä');
       return;
     }
 
@@ -71,7 +71,7 @@ const LoginScreen: FC = () => {
 
       {/* Email Input */}
       <View className="mb-4">
-        <Text className="text-sm font-semibold text-gray-700 mb-2">Email</Text>
+        <Text className="text-sm font-semibold text-gray-700 mb-2">Sähköposti</Text>
         <TextInput
           className="border border-gray-300 rounded-lg px-4 py-3 text-base text-gray-900 bg-white"
           placeholder="you@example.com"
