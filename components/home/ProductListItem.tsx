@@ -1,6 +1,6 @@
 import type { Product } from '@/types/product';
 import { FC } from 'react';
-import { Text, View } from 'react-native';
+import { Image, Text, View } from 'react-native';
 
 interface ProductListItemProps {
   product: Product;
@@ -19,7 +19,17 @@ const ProductListItem: FC<ProductListItemProps> = ({ product }) => {
             <Text className="text-sm text-gray-500">Varastosaldo</Text>
             <Text className="text-base font-medium text-gray-900">{product.amount}</Text>
           </View>
+          <View>
+            <Text className="text-sm text-gray-500">EAN</Text>
+            <Text className="text-base font-medium text-gray-900">{product.ean || '-'}</Text>
+          </View>
         </View>
+        {product.barcode && (
+          <View className="mt-2">
+            <Text className="text-sm text-gray-500 mb-1">Viivakoodikuva</Text>
+            <Image source={{ uri: product.barcode }} className="w-full h-20 rounded-lg" resizeMode="contain" />
+          </View>
+        )}
       </View>
     </View>
   );

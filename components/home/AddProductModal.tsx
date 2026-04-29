@@ -1,8 +1,9 @@
 import { useAuth } from '@/hooks/useAuth';
 import { createProduct } from '@/services/product';
+import * as ImagePicker from 'expo-image-picker';
 import type { FC } from 'react';
 import { useState } from 'react';
-import { ActivityIndicator, Modal, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, Modal, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 interface AddProductModalProps {
   visible: boolean;
@@ -17,8 +18,28 @@ const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProduct
   const [price, setPrice] = useState('0');
   const [barcode, setBarcode] = useState('');
   const [ean, setEan] = useState('');
+  const [selectedImageUri, setSelectedImageUri] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      setError('Tarvitset luvan käyttää kuvakirjastoa');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setSelectedImageUri(result.assets[0].uri);
+    }
+  };
 
   const handleCreate = async () => {
     setError(null);
@@ -55,12 +76,13 @@ const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProduct
         barcode: barcode.trim(),
         ean: ean.trim(),
         company: user.profile.company,
-      });
+      }, selectedImageUri || undefined);
       setName('');
       setAmount('0');
       setPrice('0');
       setBarcode('');
       setEan('');
+      setSelectedImageUri(null);
       onProductCreated();
       onClose();
     } catch (err) {
@@ -103,19 +125,27 @@ const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProduct
               placeholderTextColor="#9ca3af"
             />
             <TextInput
-              value={barcode}
-              onChangeText={setBarcode}
-              placeholder="Viivakoodi"
-              className="rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
-              placeholderTextColor="#9ca3af"
-            />
-            <TextInput
               value={ean}
               onChangeText={setEan}
               placeholder="EAN"
               className="rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
               placeholderTextColor="#9ca3af"
             />
+          </View>
+
+          <View className="mt-4">
+            <Text className="text-sm font-medium text-gray-700 mb-2">Viivakoodikuva (valinnainen)</Text>
+            <TouchableOpacity
+              onPress={pickImage}
+              className="rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 px-4 py-6 items-center"
+            >
+              <Text className="text-sm text-gray-600">Valitse kuva</Text>
+            </TouchableOpacity>
+            {selectedImageUri && (
+              <View className="mt-3">
+                <Image source={{ uri: selectedImageUri }} className="w-full h-32 rounded-lg" resizeMode="contain" />
+              </View>
+            )}
           </View>
 
           {error ? <Text className="text-sm text-secondary-600 mt-3">{error}</Text> : null}

@@ -8,7 +8,7 @@ The storage page SHALL render a scrollable list of products using the existing `
 
 #### Scenario: Storage page shows product items
 - **WHEN** the storage page loads with product data available
-- **THEN** the page displays each product as a list row containing name, amount, price, and barcode/EAN
+- **THEN** the page displays each product as a list row containing name, amount, price
 
 #### Scenario: Storage page renders empty state when no products exist
 - **WHEN** the storage page loads and the product list is empty
