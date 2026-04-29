@@ -13,10 +13,12 @@ const ProductListItem: FC<ProductListItemProps> = ({ product }) => {
         <Text className="text-base font-semibold text-gray-900">{product.name}</Text>
         <Text className="text-sm font-bold text-primary-600">€{product.price.toFixed(2) ?? '-'}</Text>
       </View>
-      <View className="mt-2 flex-row items-center justify-between">
-        <View>
-          <Text className="text-sm text-gray-500">Varastosaldo</Text>
-          <Text className="text-base font-medium text-gray-900">{product.amount}</Text>
+      <View className="mt-3 space-y-2">
+        <View className="flex-row items-center justify-between">
+          <View>
+            <Text className="text-sm text-gray-500">Varastosaldo</Text>
+            <Text className="text-base font-medium text-gray-900">{product.amount}</Text>
+          </View>
         </View>
       </View>
     </View>

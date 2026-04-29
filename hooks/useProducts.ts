@@ -10,26 +10,25 @@ export const useProducts = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      if (!user?.profile?.company) {
-        setIsLoading(false);
-        return;
-      }
+    if (!user?.profile?.company) {
+      setProducts([]);
+      setIsLoading(false);
+      return;
+    }
 
-      try {
-        setIsLoading(true);
-        setError(null);
-        getProductsByCompany(user.profile.company, (fetchedProducts) => setProducts(fetchedProducts));
-      } catch (err) {
-        const message = err instanceof Error ? err.message : 'Failed to fetch products';
-        setError(message);
-        console.error('Failed to fetch products:', err);
-      } finally {
-        setIsLoading(false);
+    setIsLoading(true);
+    setError(null);
+
+    const unsubscribe = getProductsByCompany(user.profile.company, (fetchedProducts) => {
+      setProducts(fetchedProducts);
+      setIsLoading(false);
+    });
+
+    return () => {
+      if (typeof unsubscribe === 'function') {
+        unsubscribe();
       }
     };
-
-    fetchProducts();
   }, [user?.profile?.company]);
 
   return { products, isLoading, error };

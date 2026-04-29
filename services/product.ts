@@ -1,6 +1,6 @@
 import type { Product } from '@/types/product';
 import { DocumentData, QueryDocumentSnapshot, SnapshotOptions, where } from 'firebase/firestore';
-import { getSnapshotItems } from './firestore';
+import { getSnapshotItems, saveItem } from './firestore';
 
 const converter = {
   toFirestore: (item: Product) => item,
@@ -16,9 +16,18 @@ const converter = {
 
 export function getProductsByCompany(companyId: string, cb: (results: Product[]) => void) {
   try {
-    getSnapshotItems<Product>('products', cb, [where('company', '==', companyId)], converter);
+    return getSnapshotItems<Product>('products', cb, [where('company', '==', companyId)], converter);
   } catch (error) {
     console.error('Failed to fetch products:', error);
+    throw error;
+  }
+}
+
+export async function createProduct(product: Omit<Product, 'id'>) {
+  try {
+    return await saveItem('products', product);
+  } catch (error) {
+    console.error('Failed to create product:', error);
     throw error;
   }
 }
