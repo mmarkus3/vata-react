@@ -14,8 +14,8 @@ interface AddProductModalProps {
 const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProductCreated }) => {
   const { user } = useAuth();
   const [name, setName] = useState('');
-  const [amount, setAmount] = useState('0');
-  const [price, setPrice] = useState('0');
+  const [amount, setAmount] = useState('');
+  const [price, setPrice] = useState('');
   const [barcode, setBarcode] = useState('');
   const [ean, setEan] = useState('');
   const [selectedImageUri, setSelectedImageUri] = useState<string | null>(null);
@@ -53,7 +53,7 @@ const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProduct
     const priceValue = Number(price);
 
     if (Number.isNaN(amountValue) || amountValue < 0) {
-      setError('Anna kelvollinen määrä');
+      setError('Anna kelvollinen varastosaldo');
       return;
     }
 
@@ -78,8 +78,8 @@ const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProduct
         company: user.profile.company,
       }, selectedImageUri || undefined);
       setName('');
-      setAmount('0');
-      setPrice('0');
+      setAmount('');
+      setPrice('');
       setBarcode('');
       setEan('');
       setSelectedImageUri(null);
@@ -111,7 +111,7 @@ const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProduct
             <TextInput
               value={amount}
               onChangeText={setAmount}
-              placeholder="Määrä"
+              placeholder="Varastosaldo"
               keyboardType="numeric"
               className="rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
               placeholderTextColor="#9ca3af"
