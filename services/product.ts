@@ -1,7 +1,7 @@
 import type { Product } from '@/types/product';
 import { DocumentData, QueryDocumentSnapshot, SnapshotOptions, where } from 'firebase/firestore';
 import { deleteItem, getItem, getSnapshotItems, saveItem, updateItem } from './firestore';
-import { uploadBarcodeImage } from './storage';
+import { deleteBarcodeImage, uploadBarcodeImage } from './storage';
 
 const converter = {
   toFirestore: (item: Product) => item,
@@ -55,8 +55,42 @@ export async function getProductById(productId: string) {
   }
 }
 
-export async function updateProduct(productId: string, data: Partial<Omit<Product, 'id' | 'company'>>) {
+export async function updateProduct(
+  productId: string,
+  data: Partial<Omit<Product, 'id' | 'company'>>,
+  companyId?: string,
+  oldBarcodeImageUrl?: string,
+  newBarcodeImageUri?: string,
+  onUploadProgress?: (progress: number) => void
+) {
   try {
+    if (newBarcodeImageUri) {
+      if (!companyId) {
+        throw new Error('Company ID is required to upload a new barcode image.');
+      }
+
+      const timestamp = Date.now();
+      const fileName = `barcode-${timestamp}.jpg`;
+      const barcodeImageUrl = await uploadBarcodeImage(
+        companyId,
+        productId,
+        newBarcodeImageUri,
+        fileName,
+        onUploadProgress
+      );
+
+      data = {
+        ...data,
+        barcode: barcodeImageUrl,
+      };
+
+      if (oldBarcodeImageUrl) {
+        await deleteBarcodeImage(oldBarcodeImageUrl);
+      }
+    } else if (!data.barcode && oldBarcodeImageUrl) {
+      await deleteBarcodeImage(oldBarcodeImageUrl);
+    }
+
     await updateItem('products', productId, data);
   } catch (error) {
     console.error('Failed to update product:', error);

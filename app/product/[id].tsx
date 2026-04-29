@@ -1,6 +1,7 @@
 import { themeColors } from '@/constants/colors';
 import { deleteProduct, getProductById, updateProduct } from '@/services/product';
 import type { Product } from '@/types/product';
+import * as ImagePicker from 'expo-image-picker';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Image, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
@@ -16,12 +17,16 @@ export default function ProductDetailPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [name, setName] = useState('');
-  const [price, setPrice] = useState('0');
-  const [amount, setAmount] = useState('0');
+  const [price, setPrice] = useState('');
+  const [amount, setAmount] = useState('');
   const [barcode, setBarcode] = useState('');
+  const [barcodeImageUrl, setBarcodeImageUrl] = useState<string | null>(null);
+  const [newBarcodeImageUri, setNewBarcodeImageUri] = useState<string | null>(null);
+  const [originalBarcodeImageUrl, setOriginalBarcodeImageUrl] = useState<string | null>(null);
+  const [barcodeUploadProgress, setBarcodeUploadProgress] = useState<number | null>(null);
   const [ean, setEan] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const isBarcodeUrl = product?.barcode ? /^https?:\/\//i.test(product.barcode) : false;
+  const previewBarcodeImageUri = newBarcodeImageUri ?? barcodeImageUrl;
 
   useEffect(() => {
     const load = async () => {
@@ -43,8 +48,17 @@ export default function ProductDetailPage() {
           setName(result.name);
           setPrice(String(result.price));
           setAmount(String(result.amount));
-          setBarcode(result.barcode);
           setEan(result.ean);
+
+          if (/^https?:\/\//i.test(result.barcode)) {
+            setBarcodeImageUrl(result.barcode);
+            setOriginalBarcodeImageUrl(result.barcode);
+            setBarcode('');
+          } else {
+            setBarcode(result.barcode);
+            setBarcodeImageUrl(null);
+            setOriginalBarcodeImageUrl(null);
+          }
         }
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Tuotteen lataus epäonnistui.';
@@ -56,6 +70,43 @@ export default function ProductDetailPage() {
 
     load();
   }, [productId]);
+
+  const handleSelectBarcodeImage = async () => {
+    try {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        setError('Käyttöoikeutta mediakirjastoon ei myönnetty.');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 0.8,
+      });
+
+      if (result.canceled) {
+        return;
+      }
+
+      const selectedUri = result.assets?.[0]?.uri;
+      if (!selectedUri) {
+        return;
+      }
+
+      setNewBarcodeImageUri(selectedUri);
+      setBarcodeImageUrl(null);
+      setError(null);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Kuvan valinta epäonnistui.';
+      setError(message);
+    }
+  };
+
+  const handleRemoveBarcodeImage = () => {
+    setNewBarcodeImageUri(null);
+    setBarcodeImageUrl(null);
+    setError(null);
+  };
 
   const handleSave = async () => {
     if (!productId) return;
@@ -78,19 +129,49 @@ export default function ProductDetailPage() {
     }
 
     setIsSaving(true);
+    setBarcodeUploadProgress(null);
     setError(null);
 
     try {
-      await updateProduct(productId, {
+      const data: Partial<Omit<Product, 'id' | 'company'>> = {
         name: name.trim(),
         price: priceValue,
         amount: amountValue,
-        barcode: barcode.trim(),
         ean: ean.trim(),
-      });
+      };
+
+      if (newBarcodeImageUri) {
+        // Save the new image URL and replace the existing barcode image.
+      } else if (previewBarcodeImageUri) {
+        data.barcode = previewBarcodeImageUri;
+      } else {
+        data.barcode = barcode.trim();
+      }
+
+      await updateProduct(
+        productId,
+        data,
+        product?.company,
+        originalBarcodeImageUrl ?? undefined,
+        newBarcodeImageUri ?? undefined,
+        (progress) => setBarcodeUploadProgress(progress)
+      );
 
       const updated = await getProductById(productId);
-      setProduct(updated);
+      if (updated) {
+        setProduct(updated);
+        if (/^https?:\/\//i.test(updated.barcode)) {
+          setBarcodeImageUrl(updated.barcode);
+          setOriginalBarcodeImageUrl(updated.barcode);
+          setBarcode('');
+        } else {
+          setBarcode(updated.barcode);
+          setBarcodeImageUrl(null);
+          setOriginalBarcodeImageUrl(null);
+        }
+      }
+
+      setNewBarcodeImageUri(null);
       setEditMode(false);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Tallennus epäonnistui.';
@@ -164,14 +245,61 @@ export default function ProductDetailPage() {
           <Text className="text-2xl font-bold text-gray-900">Tuotteen tiedot</Text>
           <Text className="text-sm text-gray-500 mt-1">ID: {product?.id}</Text>
 
-          {isBarcodeUrl ? (
-            <View className="mt-5">
-              <Text className="text-sm text-gray-500 mb-2">Viivakoodikuva</Text>
-              <Image source={{ uri: product?.barcode }} className="h-48 w-full rounded-2xl bg-gray-100" resizeMode="contain" />
-            </View>
-          ) : null}
-
           <View className="mt-5 space-y-4">
+            <View>
+              <Text className="text-sm text-gray-500">Viivakoodi</Text>
+              {previewBarcodeImageUri ? (
+                <View className="mt-3 space-y-3">
+                  <Image
+                    source={{ uri: previewBarcodeImageUri }}
+                    className="h-48 w-full rounded-2xl bg-gray-100"
+                    resizeMode="contain"
+                  />
+                  {editMode ? (
+                    <View className="flex-row flex-wrap gap-3">
+                      <TouchableOpacity
+                        onPress={handleRemoveBarcodeImage}
+                        className="rounded-2xl bg-secondary-600 px-4 py-3"
+                      >
+                        <Text className="text-center text-sm font-semibold text-white">Poista kuva</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={handleSelectBarcodeImage}
+                        className="rounded-2xl bg-primary-600 px-4 py-3"
+                      >
+                        <Text className="text-center text-sm font-semibold text-white">Valitse uusi kuva</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ) : null}
+                  {newBarcodeImageUri ? (
+                    <Text className="text-sm text-gray-500">Uusi kuva on valittu ja tallennetaan.</Text>
+                  ) : (
+                    <Text className="text-sm text-gray-500">Tallennettu viivakoodikuva.</Text>
+                  )}
+                </View>
+              ) : editMode ? (
+                <View className="space-y-3">
+                  <TextInput
+                    value={barcode}
+                    onChangeText={setBarcode}
+                    placeholder="Syötä viivakoodi tai lisää kuva"
+                    className="mt-1 rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
+                  />
+                  <TouchableOpacity
+                    onPress={handleSelectBarcodeImage}
+                    className="rounded-2xl bg-primary-600 px-4 py-3"
+                  >
+                    <Text className="text-center text-sm font-semibold text-white">Lisää viivakoodikuva</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <Text className="mt-1 text-base font-medium text-gray-900">{product?.barcode || '-'}</Text>
+              )}
+              {barcodeUploadProgress !== null ? (
+                <Text className="mt-2 text-sm text-gray-500">Ladataan kuvaa {barcodeUploadProgress}%</Text>
+              ) : null}
+            </View>
+
             <View>
               <Text className="text-sm text-gray-500">Nimi</Text>
               {editMode ? (
@@ -226,18 +354,6 @@ export default function ProductDetailPage() {
               )}
             </View>
 
-            <View>
-              <Text className="text-sm text-gray-500">Viivakoodi</Text>
-              {editMode ? (
-                <TextInput
-                  value={barcode}
-                  onChangeText={setBarcode}
-                  className="mt-1 rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
-                />
-              ) : (
-                <Text className="mt-1 text-base font-medium text-gray-900">{isBarcodeUrl ? '-' : product?.barcode || '-'}</Text>
-              )}
-            </View>
           </View>
 
           {error ? <Text className="mt-4 text-sm text-secondary-600">{error}</Text> : null}
