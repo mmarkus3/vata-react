@@ -65,6 +65,7 @@ service cloud.firestore {
 
     match /users/{document} {
       allow read: if signedIn() && request.auth.uid == resource.id;
+      allow update: if request.auth.uid == resource.id;
       allow create: if signedIn();
     }
   }

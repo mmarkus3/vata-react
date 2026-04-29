@@ -1,6 +1,6 @@
 import { createCompany as createCompanyService } from '@/services/company';
 import { auth } from '@/services/firebase';
-import { getItem, saveAsItem } from '@/services/firestore';
+import { getItem, saveAsItem, updateItem } from '@/services/firestore';
 import { acceptInvite, getInviteByEmail } from '@/services/invite';
 import type { AuthContextType, AuthUser } from '@/types/auth';
 import { User } from '@/types/user';
@@ -39,7 +39,7 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
 
   const fetchUserProfile = async (uid: string): Promise<User | null> => {
     try {
-      return getItem('users', uid);
+      return await getItem<User>('users', uid);
     } catch (err) {
       console.error('Failed to fetch user profile:', err);
       return null;
@@ -48,7 +48,7 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
 
   const checkInviteAndCompany = async (userEmail: string, uid: string): Promise<User> => {
     const profile = await fetchUserProfile(uid);
-
+    console.log(profile);
     // If user already has a company, return the profile
     if (profile?.company) {
       return profile;
@@ -72,7 +72,7 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
     setShowCreateCompanyModal(true);
 
     // Return profile without company (modal will handle creation)
-    return profile || { email: userEmail, company: '' };
+    return profile || { email: userEmail };
   };
 
   // Subscribe to auth state changes
@@ -123,14 +123,12 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
 
       await createUserDocument(createdUser.uid, createdUser.email, createdUser.displayName);
 
+      // Don't set profile here - it will be fetched from Firestore in the auth state listener
       setUser({
         uid: createdUser.uid,
         email: createdUser.email,
         displayName: createdUser.displayName,
-        profile: {
-          email: createdUser.email!,
-          company: '',
-        },
+        profile: null, // Will be set by the auth state listener
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Sign up failed';
@@ -145,15 +143,8 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
     try {
       setError(null);
       setIsLoading(true);
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const profile = await checkInviteAndCompany(email, userCredential.user.uid);
-
-      setUser({
-        uid: userCredential.user.uid,
-        email: userCredential.user.email,
-        displayName: userCredential.user.displayName,
-        profile,
-      });
+      await signInWithEmailAndPassword(auth, email, password);
+      // Profile will be set by the auth state listener
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Sign in failed';
       setError(message);
@@ -194,7 +185,7 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
         company: companyId,
       };
 
-      await saveAsItem('users', user.uid, updatedProfile);
+      await updateItem('users', user.uid, updatedProfile);
 
       setUser({
         ...user,

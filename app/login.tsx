@@ -38,7 +38,7 @@ const LoginScreen: FC = () => {
       } else {
         await signUp(email, password);
       }
-      router.replace('/home');
+      // Navigation will be handled by the layout based on auth state
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Kirjautuminen ei onnistunut';
       setLocalError(message);

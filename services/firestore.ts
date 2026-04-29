@@ -22,7 +22,7 @@ export async function getItem<T>(collectionKey: string, id: string) {
   if (docRef.exists()) {
     return {
       id: docRef.id,
-      ...docRef.data,
+      ...docRef.data(),
     } as T;
   } else {
     return null;
