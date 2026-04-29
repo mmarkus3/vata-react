@@ -1,5 +1,5 @@
 import { firestore } from '@/services/firebase';
-import { addDoc, collection, doc, DocumentData, FirestoreDataConverter, getDoc, getDocs, onSnapshot, query, QueryFieldFilterConstraint, setDoc, updateDoc } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, DocumentData, FirestoreDataConverter, getDoc, getDocs, onSnapshot, query, QueryFieldFilterConstraint, setDoc, updateDoc } from 'firebase/firestore';
 
 export async function saveItem(collectionKey: string, item: object) {
   const docRef = await addDoc(collection(firestore, collectionKey), item);
@@ -15,6 +15,11 @@ export async function updateItem(collectionKey: string, id: string, data: object
   await updateDoc(docRef, {
     ...data,
   });
+}
+
+export async function deleteItem(collectionKey: string, id: string) {
+  const docRef = doc(firestore, collectionKey, id);
+  await deleteDoc(docRef);
 }
 
 export async function getItem<T>(collectionKey: string, id: string) {
