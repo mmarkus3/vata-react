@@ -1,5 +1,5 @@
 import { firestore } from '@/services/firebase';
-import { addDoc, collection, doc, getDoc, getDocs, query, QueryFieldFilterConstraint, setDoc, updateDoc } from 'firebase/firestore';
+import { addDoc, collection, doc, DocumentData, FirestoreDataConverter, getDoc, getDocs, onSnapshot, query, QueryFieldFilterConstraint, setDoc, updateDoc } from 'firebase/firestore';
 
 export async function saveItem(collectionKey: string, item: object) {
   const docRef = await addDoc(collection(firestore, collectionKey), item);
@@ -38,5 +38,25 @@ export async function getItems<T>(collectionKey: string, queryConstraints: Query
       id: doc.id,
       ...doc.data(),
     } as T;
+  });
+}
+
+export function getSnapshotItems<T>(
+  collectionKey: string, cb: (results: T[]) => void, queryConstraints: QueryFieldFilterConstraint[] = [], converter: FirestoreDataConverter<DocumentData, DocumentData> | null = null) {
+  if (typeof cb !== 'function') {
+    console.log('Error: The callback parameter is not a function');
+    return;
+  }
+
+  const q = converter ? query(collection(firestore, collectionKey).withConverter(converter), ...queryConstraints) : query(collection(firestore, collectionKey), ...queryConstraints);
+
+  return onSnapshot(q, (querySnapshot) => {
+    const results = querySnapshot.docs.map((doc) => {
+      return {
+        id: doc.id,
+        ...doc.data(),
+      } as T;
+    });
+    cb(results);
   });
 }

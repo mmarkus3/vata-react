@@ -48,7 +48,7 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
 
   const checkInviteAndCompany = async (userEmail: string, uid: string): Promise<User> => {
     const profile = await fetchUserProfile(uid);
-    console.log(profile);
+
     // If user already has a company, return the profile
     if (profile?.company) {
       return profile;
