@@ -1,10 +1,17 @@
+import AddClientModal from '@/components/clients/AddClientModal';
 import ClientListItem from '@/components/clients/ClientListItem';
 import { themeColors } from '@/constants/colors';
 import { useClients } from '@/hooks/useClients';
+import { useState } from 'react';
 import { ActivityIndicator, FlatList, Text, TouchableOpacity, View } from 'react-native';
 
 export default function ClientsScreen() {
   const { clients, isLoading, error } = useClients();
+  const [showAddClientModal, setShowAddClientModal] = useState(false);
+
+  const handleClientCreated = () => {
+    setShowAddClientModal(false);
+  };
 
   if (isLoading) {
     return (
@@ -36,12 +43,25 @@ export default function ClientsScreen() {
 
   return (
     <View className="flex-1 bg-slate-50">
+      <AddClientModal
+        visible={showAddClientModal}
+        onClose={() => setShowAddClientModal(false)}
+        onClientCreated={handleClientCreated}
+      />
       <View className="px-6 pt-8 pb-4 bg-white border-b border-gray-200">
-        <View>
-          <Text className="text-2xl font-bold text-gray-900">Asiakkaat</Text>
-          <Text className="text-gray-600 mt-1">
-            {clients.length} asiakasta
-          </Text>
+        <View className="flex-row items-center justify-between">
+          <View>
+            <Text className="text-2xl font-bold text-gray-900">Asiakkaat</Text>
+            <Text className="text-gray-600 mt-1">
+              {clients.length} asiakasta
+            </Text>
+          </View>
+          <TouchableOpacity
+            onPress={() => setShowAddClientModal(true)}
+            className="rounded-2xl bg-primary-600 px-4 py-2"
+          >
+            <Text className="text-sm font-semibold text-white">Lisää asiakas</Text>
+          </TouchableOpacity>
         </View>
       </View>
       {clients.length === 0 ? (
