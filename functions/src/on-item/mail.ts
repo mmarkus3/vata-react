@@ -3,6 +3,21 @@ import { onDocumentCreated } from 'firebase-functions/v2/firestore';
 import { getGeneralTemplate } from '../email/general.template';
 import { sendEmail } from '../email/send-email';
 
+export interface SubItem {
+  guid: string;
+  name: string;
+};
+
+export interface FullfilmentItem extends SubItem {
+  price: number;
+  ean: string;
+}
+
+export interface FullfilmentProduct {
+  amount: number;
+  product: FullfilmentItem;
+}
+
 export const onMail = onDocumentCreated({ document: '/mail/{documentId}', region: 'europe-north1' }, async (event) => {
   const document = event.data?.data();
 
@@ -11,7 +26,7 @@ export const onMail = onDocumentCreated({ document: '/mail/{documentId}', region
       const fullfilmentRef = firestore().doc(`fullfilments/${document.fullfilment}`);
       const fullfilmentDoc = await fullfilmentRef.get();
       const fullfilment = fullfilmentDoc.data();
-      const products = fullfilment?.products;
+      const products = fullfilment?.products as FullfilmentProduct[];
       const tableContent = products?.map((p) => {
         return `
         <tr>
