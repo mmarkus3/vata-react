@@ -2,26 +2,40 @@
 # https://github.com/firebase/firebase-tools
 
 name: Deploy to Firebase Hosting
+
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-permissions:
-  checks: write
-  contents: read
-  pull-requests: write
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
 jobs:
-  build_and_preview:
-    if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+  build_and_deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
         with:
           node-version: 24
-      - run: npm ci && npm run predeploy
-      - uses: FirebaseExtended/action-hosting-deploy@v0
+      - name: Cache node modules
+        uses: actions/cache@v5
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: ~/.npm # npm cache files are stored in `~/.npm` on Linux/macOS
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{
+            hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+      - name: Build
+        run: npm ci && npm run predeploy
+      - name: Deploy
+        uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_VATA_APP_B0114 }}
