@@ -34,8 +34,8 @@ export async function getItem<T>(collectionKey: string, id: string) {
   }
 }
 
-export async function getItems<T>(collectionKey: string, queryConstraints: QueryFieldFilterConstraint[] = []) {
-  const q = query(collection(firestore, collectionKey), ...queryConstraints);
+export async function getItems<T>(collectionKey: string, queryConstraints: QueryFieldFilterConstraint[] = [], converter: FirestoreDataConverter<DocumentData, DocumentData> | null = null) {
+  const q = converter ? query(collection(firestore, collectionKey).withConverter(converter), ...queryConstraints) : query(collection(firestore, collectionKey), ...queryConstraints);
 
   const results = await getDocs(q);
   return results.docs.map((doc) => {

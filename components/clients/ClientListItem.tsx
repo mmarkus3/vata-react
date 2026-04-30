@@ -1,4 +1,5 @@
 import type { Client } from '@/types/client';
+import { useRouter } from 'expo-router';
 import { FC } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
@@ -7,10 +8,17 @@ interface ClientListItemProps {
 }
 
 const ClientListItem: FC<ClientListItemProps> = ({ client }) => {
+  const router = useRouter();
+
+  const handlePress = () => {
+    router.push(`/client/${client.id}`);
+  };
+
   return (
     <TouchableOpacity
       className="bg-white rounded-2xl border border-gray-200 px-4 py-4 mb-3 shadow-sm"
       activeOpacity={0.8}
+      onPress={handlePress}
     >
       <View className="flex-row items-center justify-between">
         <Text className="text-base font-semibold text-gray-900">{client.name}</Text>
