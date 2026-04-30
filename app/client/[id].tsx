@@ -1,3 +1,4 @@
+import SegmentControl from '@/components/common/SegmentControl';
 import { themeColors } from '@/constants/colors';
 import { getClientById } from '@/services/client';
 import { getClientFullfilments } from '@/services/fullfliment';
@@ -21,6 +22,7 @@ export default function ClientDetailPage() {
   const [isLoadingFullfilments, setIsLoadingFullfilments] = useState(true);
   const [clientError, setClientError] = useState<string | null>(null);
   const [fullfilmentsError, setFullfilmentsError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState(0); // 0 for monthly, 1 for product
 
   useEffect(() => {
     const loadClient = async () => {
@@ -158,78 +160,87 @@ export default function ClientDetailPage() {
           )}
         </View>
 
-        {/* Fullfilments by Month Section */}
+        {/* Fullfilments Section with Segment Control */}
         <View className="rounded-3xl bg-white p-6 mt-6 shadow-sm">
-          <Text className="text-xl font-bold text-gray-900 mb-4">Täytöt kuukausittain</Text>
+          <Text className="text-xl font-bold text-gray-900 mb-4">Täytöt</Text>
 
-          {isLoadingFullfilments ? (
-            <View className="items-center py-8">
-              <ActivityIndicator size="small" color={themeColors.primary[600]} />
-              <Text className="mt-2 text-gray-600">Ladataan täyttöjä...</Text>
-            </View>
-          ) : fullfilmentsError ? (
-            <View className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <Text className="text-red-700">{fullfilmentsError}</Text>
-            </View>
-          ) : fullfilmentsByMonth.length === 0 ? (
-            <Text className="text-gray-500 italic">Ei täyttöjä</Text>
-          ) : (
-            fullfilmentsByMonth.map((monthGroup) => (
-              <View key={monthGroup.month} className="mb-4">
-                <View className="flex-row justify-between items-center mb-2">
-                  <Text className="text-lg font-semibold text-gray-900">{monthGroup.month}</Text>
-                  <Text className="text-sm text-gray-600">Yhteensä: {monthGroup.totalAmount}</Text>
+          <SegmentControl
+            options={['Kuukausittain', 'Tuotteittain']}
+            selectedIndex={activeTab}
+            onSelectionChange={setActiveTab}
+          />
+
+          {activeTab === 0 ? (
+            /* Fullfilments by Month Section */
+            <>
+              {isLoadingFullfilments ? (
+                <View className="items-center py-8">
+                  <ActivityIndicator size="small" color={themeColors.primary[600]} />
+                  <Text className="mt-2 text-gray-600">Ladataan täyttöjä...</Text>
                 </View>
-                {monthGroup.fullfilments.map((fullfilment) => (
-                  <View key={fullfilment.id} className="ml-4 mb-2 p-3 bg-gray-50 rounded-lg">
-                    <View className="flex-row justify-between">
-                      <Text className="text-gray-900 flex-1">
-                        {new Date(fullfilment.date).toLocaleDateString('fi-FI')}
-                      </Text>
-                      <Text className="text-gray-600">{fullfilment.amount || 0} kpl</Text>
-                    </View>
-                    <Text className="text-sm text-gray-600 mt-1">
-                      {fullfilment.products.map(p => p.product.name).join(', ')}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            ))
-          )}
-        </View>
-
-        {/* Fullfilments by Product Section */}
-        <View className="rounded-3xl bg-white p-6 mt-6 shadow-sm">
-          <Text className="text-xl font-bold text-gray-900 mb-4">Täytöt tuotteittain</Text>
-
-          {isLoadingFullfilments ? (
-            <View className="items-center py-8">
-              <ActivityIndicator size="small" color={themeColors.primary[600]} />
-              <Text className="mt-2 text-gray-600">Ladataan täyttöjä...</Text>
-            </View>
-          ) : fullfilmentsError ? (
-            <View className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <Text className="text-red-700">{fullfilmentsError}</Text>
-            </View>
-          ) : fullfilmentsByProduct.length === 0 ? (
-            <Text className="text-gray-500 italic">Ei täyttöjä</Text>
-          ) : (
-            fullfilmentsByProduct.map((productGroup) => (
-              <View key={productGroup.productName} className="mb-4">
-                <View className="flex-row justify-between items-center mb-2">
-                  <Text className="text-lg font-semibold text-gray-900">{productGroup.productName}</Text>
-                  <Text className="text-sm text-gray-600">Yhteensä: {productGroup.totalAmount}</Text>
+              ) : fullfilmentsError ? (
+                <View className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <Text className="text-red-700">{fullfilmentsError}</Text>
                 </View>
-                {productGroup.months.map((month) => (
-                  <View key={month.month} className="ml-4 mb-2 p-3 bg-gray-50 rounded-lg">
-                    <View className="flex-row justify-between">
-                      <Text className="text-gray-900">{month.month}</Text>
-                      <Text className="text-gray-600">{month.totalAmount} kpl</Text>
+              ) : fullfilmentsByMonth.length === 0 ? (
+                <Text className="text-gray-500 italic">Ei täyttöjä</Text>
+              ) : (
+                fullfilmentsByMonth.map((monthGroup) => (
+                  <View key={monthGroup.month} className="mb-4">
+                    <View className="flex-row justify-between items-center mb-2">
+                      <Text className="text-lg font-semibold text-gray-900">{monthGroup.month}</Text>
+                      <Text className="text-sm text-gray-600">Yhteensä: {monthGroup.totalAmount}</Text>
                     </View>
+                    {monthGroup.fullfilments.map((fullfilment) => (
+                      <View key={fullfilment.id} className="ml-4 mb-2 p-3 bg-gray-50 rounded-lg">
+                        <View className="flex-row justify-between">
+                          <Text className="text-gray-900 flex-1">
+                            {new Date(fullfilment.date).toLocaleDateString('fi-FI')}
+                          </Text>
+                          <Text className="text-gray-600">{fullfilment.amount || 0} kpl</Text>
+                        </View>
+                        <Text className="text-sm text-gray-600 mt-1">
+                          {fullfilment.products.map(p => p.product.name).join(', ')}
+                        </Text>
+                      </View>
+                    ))}
                   </View>
-                ))}
-              </View>
-            ))
+                ))
+              )}
+            </>
+          ) : (
+            /* Fullfilments by Product Section */
+            <>
+              {isLoadingFullfilments ? (
+                <View className="items-center py-8">
+                  <ActivityIndicator size="small" color={themeColors.primary[600]} />
+                  <Text className="mt-2 text-gray-600">Ladataan täyttöjä...</Text>
+                </View>
+              ) : fullfilmentsError ? (
+                <View className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <Text className="text-red-700">{fullfilmentsError}</Text>
+                </View>
+              ) : fullfilmentsByProduct.length === 0 ? (
+                <Text className="text-gray-500 italic">Ei täyttöjä</Text>
+              ) : (
+                fullfilmentsByProduct.map((productGroup) => (
+                  <View key={productGroup.productName} className="mb-4">
+                    <View className="flex-row justify-between items-center mb-2">
+                      <Text className="text-lg font-semibold text-gray-900">{productGroup.productName}</Text>
+                      <Text className="text-sm text-gray-600">Yhteensä: {productGroup.totalAmount}</Text>
+                    </View>
+                    {productGroup.months.map((month) => (
+                      <View key={month.month} className="ml-4 mb-2 p-3 bg-gray-50 rounded-lg">
+                        <View className="flex-row justify-between">
+                          <Text className="text-gray-900">{month.month}</Text>
+                          <Text className="text-gray-600">{month.totalAmount} kpl</Text>
+                        </View>
+                      </View>
+                    ))}
+                  </View>
+                ))
+              )}
+            </>
           )}
         </View>
       </ScrollView>
