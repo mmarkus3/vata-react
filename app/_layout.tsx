@@ -17,7 +17,6 @@ function RootLayoutNav() {
 
     // Check if we're in the login group
     const inAuthGroup = segments[0] === 'login';
-
     if (!user) {
       // User is not signed in, navigate to login
       if (!inAuthGroup) {
@@ -28,7 +27,7 @@ function RootLayoutNav() {
       // This will be handled by the auth provider showing the modal
     } else if (user.profile?.company) {
       // User has a company, navigate to app
-      if (segments[0] === 'login') {
+      if (segments[0] === 'login' || segments[0] == null) {
         router.replace('/home');
       }
     }
