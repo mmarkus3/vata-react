@@ -15,7 +15,7 @@ export default function ClientDetailPage() {
   const clientId = typeof id === 'string' ? id : undefined;
 
   const [client, setClient] = useState<Client | null>(null);
-  const [fullfilments, setFullfilments] = useState<Fullfilment[]>([]);
+  const [_fullfilments, setFullfilments] = useState<Fullfilment[]>([]);
   const [fullfilmentsByMonth, setFullfilmentsByMonth] = useState<FullfilmentByMonth[]>([]);
   const [fullfilmentsByProduct, setFullfilmentsByProduct] = useState<FullfilmentByProduct[]>([]);
   const [isLoadingClient, setIsLoadingClient] = useState(true);
