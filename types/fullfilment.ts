@@ -1,5 +1,4 @@
 import { Timestamp } from 'firebase/firestore';
-import { Lot } from './lot';
 import { SubItem } from './sub-item';
 
 export interface Fullfilment {
@@ -9,7 +8,6 @@ export interface Fullfilment {
   date: string;
   company: string;
   amount?: number;
-  lots?: Lot[];
   products: FullfilmentProduct[];
   created?: Date;
   deleted?: boolean;
