@@ -32,6 +32,10 @@ jobs:
             ${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ runner.os }}-build-
             ${{ runner.os }}-
+      - name: Make envfile
+        uses: SpicyPizza/create-envfile@v2.0
+        with:
+          EXPO_PUBLIC_FIREBASE_API_KEY: ${{secrets.EXPO_PUBLIC_FIREBASE_API_KEY}}
       - name: Build
         run: npm ci && npm run predeploy
       - name: Deploy
