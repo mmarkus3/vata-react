@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
+import '../i18n/config';
 import './global.css';
 
 function RootLayoutNav() {
