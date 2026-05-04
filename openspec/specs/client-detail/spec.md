@@ -89,3 +89,108 @@ The system SHALL ensure the client detail page is usable on mobile devices with 
 - **AND** sections are clearly separated with visual hierarchy
 - **AND** text is readable at standard mobile font sizes
 
+## MODIFIED Requirements
+
+### Requirement: Client Detail Page Navigation
+The system SHALL provide a client detail page accessible via the route `/client/[id]` where `[id]` is the client's unique identifier. The page SHALL include a button to create new fullfilments for the client.
+
+#### Scenario: Navigate to client detail from client list
+- **WHEN** user taps on a client item in the clients list
+- **THEN** system navigates to the client detail page for that client
+- **AND** the page URL reflects the client ID (`/client/{clientId}`)
+
+#### Scenario: Display add fullfilment button
+- **WHEN** user views the client detail page
+- **THEN** system displays a "Lisää täyttö" button prominently in the fullfilments section
+- **AND** the button is styled consistently with other action buttons in the app
+
+### Requirement: Fullfilment Creation Modal
+The system SHALL provide a modal form for creating new fullfilments with date selection, product selection, and amount inputs.
+
+#### Scenario: Open fullfilment creation modal
+- **WHEN** user taps the "Lisää täyttö" button
+- **THEN** system opens a modal overlay with fullfilment creation form
+- **AND** modal has a title "Lisää täyttö"
+- **AND** modal can be dismissed by tapping outside or using a close button
+
+#### Scenario: Fullfilment form fields
+- **WHEN** fullfilment creation modal is open
+- **THEN** system displays a date picker field labeled "Päivämäärä"
+- **AND** displays a product selection dropdown labeled "Tuote"
+- **AND** displays an amount input field labeled "Määrä"
+- **AND** displays "Lisää tuote" and "Tallenna" buttons
+
+#### Scenario: Add multiple products
+- **WHEN** user selects a product and enters an amount
+- **AND** taps "Lisää tuote"
+- **THEN** system adds the product with amount to a list in the modal
+- **AND** clears the product and amount fields for next entry
+- **AND** displays the added products with remove options
+
+#### Scenario: Remove product from list
+- **WHEN** user taps remove button next to a product in the list
+- **THEN** system removes that product from the fullfilment
+- **AND** updates the product list display
+
+### Requirement: Fullfilment Creation Validation
+The system SHALL validate fullfilment creation inputs and provide appropriate error messages.
+
+#### Scenario: Validate required fields
+- **WHEN** user attempts to save fullfilment without date
+- **THEN** system displays error message "Valitse päivämäärä"
+
+#### Scenario: Validate product selection
+- **WHEN** user attempts to add product without selecting one
+- **THEN** system displays error message "Valitse tuote"
+
+#### Scenario: Validate amount input
+- **WHEN** user enters invalid amount (negative, zero, or non-numeric)
+- **THEN** system displays error message "Anna kelvollinen määrä"
+
+#### Scenario: Validate at least one product
+- **WHEN** user attempts to save fullfilment with no products added
+- **THEN** system displays error message "Lisää vähintään yksi tuote"
+
+### Requirement: Fullfilment Creation Submission
+The system SHALL create the fullfilment in the database and refresh the client detail page.
+
+#### Scenario: Successful fullfilment creation
+- **WHEN** user fills valid fullfilment data and taps "Tallenna"
+- **THEN** system creates the fullfilment in Firestore with client reference
+- **AND** closes the modal
+- **AND** refreshes the fullfilment list on the client detail page
+- **AND** shows success message "Täyttö lisätty onnistuneesti"
+
+#### Scenario: Handle creation errors
+- **WHEN** fullfilment creation fails due to network or database errors
+- **THEN** system displays error message "Täytön tallennus epäonnistui"
+- **AND** keeps the modal open with form data intact
+- **AND** allows user to retry submission
+
+### Requirement: Product Data Loading
+The system SHALL load available products for the company to populate the product selection dropdown.
+
+#### Scenario: Load products on modal open
+- **WHEN** fullfilment creation modal opens
+- **THEN** system fetches products for the current company
+- **AND** displays products in dropdown with format "Name (EAN)"
+
+#### Scenario: Handle product loading errors
+- **WHEN** product data cannot be loaded
+- **THEN** system displays error message in modal "Tuotteiden lataus epäonnistui"
+- **AND** disables product selection until retry
+
+### Requirement: Loading States During Creation
+The system SHALL show appropriate loading states during fullfilment creation and product loading.
+
+#### Scenario: Show loading during product fetch
+- **WHEN** modal opens and products are being fetched
+- **THEN** system shows loading indicator in product dropdown
+- **AND** disables form interaction until products are loaded
+
+#### Scenario: Show loading during save
+- **WHEN** user taps "Tallenna" and creation is in progress
+- **THEN** system shows loading indicator on save button
+- **AND** disables all form inputs and buttons
+- **AND** prevents modal dismissal during save
+

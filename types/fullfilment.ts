@@ -3,7 +3,6 @@ import { SubItem } from './sub-item';
 
 export interface Fullfilment {
   id?: string;
-  product: SubItem & { price: number };
   client: SubItem;
   date: string;
   company: string;
