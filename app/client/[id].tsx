@@ -3,7 +3,6 @@ import { themeColors } from '@/constants/colors';
 import { getClientById } from '@/services/client';
 import { getClientFullfilments } from '@/services/fullfliment';
 import type { Client } from '@/types/client';
-import type { Fullfilment } from '@/types/fullfilment';
 import { groupFullfilmentsByMonth, groupFullfilmentsByProduct, type FullfilmentByMonth, type FullfilmentByProduct } from '@/utils/fullfilmentGrouping';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -15,7 +14,6 @@ export default function ClientDetailPage() {
   const clientId = typeof id === 'string' ? id : undefined;
 
   const [client, setClient] = useState<Client | null>(null);
-  const [_fullfilments, setFullfilments] = useState<Fullfilment[]>([]);
   const [fullfilmentsByMonth, setFullfilmentsByMonth] = useState<FullfilmentByMonth[]>([]);
   const [fullfilmentsByProduct, setFullfilmentsByProduct] = useState<FullfilmentByProduct[]>([]);
   const [isLoadingClient, setIsLoadingClient] = useState(true);
@@ -67,7 +65,6 @@ export default function ClientDetailPage() {
 
       try {
         const result = await getClientFullfilments(clientId, client.company);
-        setFullfilments(result);
         setFullfilmentsByMonth(groupFullfilmentsByMonth(result));
         setFullfilmentsByProduct(groupFullfilmentsByProduct(result));
       } catch (err) {

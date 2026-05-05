@@ -16,6 +16,10 @@ export interface FullfilmentByProduct {
   totalAmount: number;
 }
 
+export function sortByDate(a: Fullfilment, b: Fullfilment) {
+  return new Date(b.date).getTime() - new Date(a.date).getTime();
+};
+
 /**
  * Groups fullfilments by month in chronological order (newest first)
  */
@@ -35,7 +39,7 @@ export function groupFullfilmentsByMonth(fullfilments: Fullfilment[]): Fullfilme
   return Array.from(monthMap.entries())
     .map(([month, fullfilments]) => ({
       month,
-      fullfilments: fullfilments.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
+      fullfilments: fullfilments.sort(sortByDate),
       totalAmount: fullfilments.reduce((sum, f) => sum + (f.amount || 0), 0),
     }))
     .sort((a, b) => {
@@ -84,7 +88,7 @@ export function groupFullfilmentsByProduct(fullfilments: Fullfilment[]): Fullfil
             const productEntry = f.products.find(p => p.product.name === productName);
             return sum + (productEntry?.amount || 0);
           }, 0),
-          fullfilments: monthFullfilments.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
+          fullfilments: monthFullfilments.sort(sortByDate),
         }))
         .sort((a, b) => {
           const dateA = new Date(a.fullfilments[0]?.date || 0);
