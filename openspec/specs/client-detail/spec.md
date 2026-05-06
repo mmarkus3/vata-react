@@ -4,17 +4,17 @@
 TBD - created by archiving change create-client-page. Update Purpose after archive.
 ## Requirements
 ### Requirement: Client Detail Page Navigation
-The system SHALL provide a client detail page accessible via the route `/client/[id]` where `[id]` is the client's unique identifier. The page SHALL include a button to create new fullfilments for the client.
+The system SHALL provide a client detail page accessible via the route `/client/[id]` where `[id]` is the client's unique identifier. The page SHALL include actions to create, edit, and delete the client.
 
 #### Scenario: Navigate to client detail from client list
 - **WHEN** user taps on a client item in the clients list
 - **THEN** system navigates to the client detail page for that client
 - **AND** the page URL reflects the client ID (`/client/{clientId}`)
 
-#### Scenario: Display add fullfilment button
+#### Scenario: Display client management actions
 - **WHEN** user views the client detail page
-- **THEN** system displays a "Lisää täyttö" button prominently in the fullfilments section
-- **AND** the button is styled consistently with other action buttons in the app
+- **THEN** system displays actions to edit and delete the client
+- **AND** destructive delete action is visually distinct from non-destructive actions
 
 ### Requirement: Client Information Display
 The system SHALL display comprehensive client information including name, company, contact details, and address in a clear, readable format.
@@ -68,7 +68,7 @@ The system SHALL display fullfilments grouped first by product, then by month wi
 - **AND** maintains the selection state
 
 ### Requirement: Loading and Error States
-The system SHALL handle loading states and errors appropriately during data fetching.
+The system SHALL handle loading states and errors appropriately during data fetching and client lifecycle operations.
 
 #### Scenario: Loading client data
 - **WHEN** user navigates to client detail page
@@ -85,6 +85,16 @@ The system SHALL handle loading states and errors appropriately during data fetc
 - **THEN** system displays an error message for the fullfilment sections
 - **AND** still displays client information if available
 
+#### Scenario: Handle client update errors
+- **WHEN** updating client data fails
+- **THEN** system displays an error message
+- **AND** keeps edit form open with entered values
+
+#### Scenario: Handle client delete errors
+- **WHEN** deleting client fails
+- **THEN** system displays an error message
+- **AND** keeps user on client detail page
+
 ### Requirement: Responsive Design
 The system SHALL ensure the client detail page is usable on mobile devices with appropriate spacing and typography.
 
@@ -95,17 +105,17 @@ The system SHALL ensure the client detail page is usable on mobile devices with 
 - **AND** text is readable at standard mobile font sizes
 
 ### Requirement: Client Detail Page Navigation
-The system SHALL provide a client detail page accessible via the route `/client/[id]` where `[id]` is the client's unique identifier. The page SHALL include a button to create new fullfilments for the client.
+The system SHALL provide a client detail page accessible via the route `/client/[id]` where `[id]` is the client's unique identifier. The page SHALL include actions to create, edit, and delete the client.
 
 #### Scenario: Navigate to client detail from client list
 - **WHEN** user taps on a client item in the clients list
 - **THEN** system navigates to the client detail page for that client
 - **AND** the page URL reflects the client ID (`/client/{clientId}`)
 
-#### Scenario: Display add fullfilment button
+#### Scenario: Display client management actions
 - **WHEN** user views the client detail page
-- **THEN** system displays a "Lisää täyttö" button prominently in the fullfilments section
-- **AND** the button is styled consistently with other action buttons in the app
+- **THEN** system displays actions to edit and delete the client
+- **AND** destructive delete action is visually distinct from non-destructive actions
 
 ### Requirement: Fullfilment Creation Modal
 The system SHALL provide a modal form for creating new fullfilments with date selection, product selection, and amount inputs.
