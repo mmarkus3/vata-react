@@ -3,7 +3,7 @@ schema: spec-driven
 context: |
   Tech stack: TypeScript, React-Native, Expo, Node.js
   We use conventional commits
-  Domain: storage management platform
+  Domain: storage management and fullfilment to clients platform
   Style: Keep features modular and accessibility-friendly
   Testing: Jest
 
