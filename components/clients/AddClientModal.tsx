@@ -55,13 +55,7 @@ const AddClientModal: FC<AddClientModalProps> = ({ visible, onClose, onClientCre
       errors.name = 'Anna asiakkaan nimi';
     }
 
-    if (!company.trim()) {
-      errors.company = 'Anna yritys';
-    }
-
-    if (!email.trim()) {
-      errors.email = 'Anna sähköposti';
-    } else if (!emailRegex.test(email.trim())) {
+    if (email.trim() && !emailRegex.test(email.trim())) {
       errors.email = 'Virheellinen sähköpostiosoite';
     }
 
@@ -162,7 +156,7 @@ const AddClientModal: FC<AddClientModalProps> = ({ visible, onClose, onClientCre
               />
             </View>
 
-            <View className="flex-row gap-3">
+            <View className="md:flex-row gap-3 flex-col">
               <TextInput
                 value={postalCode}
                 onChangeText={setPostalCode}

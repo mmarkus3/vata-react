@@ -144,7 +144,7 @@ const EditClientModal: FC<EditClientModalProps> = ({ visible, client, onClose, o
               placeholderTextColor="#9ca3af"
             />
 
-            <View className="flex-row gap-3">
+            <View className="md:flex-row gap-3 flex-col">
               <TextInput
                 value={postalCode}
                 onChangeText={setPostalCode}
