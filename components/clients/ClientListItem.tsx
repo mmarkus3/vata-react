@@ -34,12 +34,14 @@ const ClientListItem: FC<ClientListItemProps> = ({ client }) => {
             <Text className="text-base font-medium text-gray-900">{client.email}</Text>
           </View>
         </View>
-        <View className="mt-2">
-          <Text className="text-sm text-gray-500">Osoite</Text>
-          <Text className="text-base font-medium text-gray-900">
-            {client.address.street}, {client.address.postalCode} {client.address.city}
-          </Text>
-        </View>
+        {client.address && (
+          <View className="mt-2">
+            <Text className="text-sm text-gray-500">Osoite</Text>
+            <Text className="text-base font-medium text-gray-900">
+              {client.address.street}, {client.address.postalCode} {client.address.city}
+            </Text>
+          </View>
+        )}
       </View>
     </TouchableOpacity>
   );

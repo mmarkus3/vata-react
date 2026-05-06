@@ -215,19 +215,19 @@ const EditFullfilmentModal: FC<EditFullfilmentModalProps> = ({ visible, client, 
           </ScrollView>
 
           <View className="mt-4 flex-row justify-between space-x-3">
-            {client.email &&
+            {client.email && (
               <TouchableOpacity onPress={handleSendEmail} disabled={isSending} className="rounded-2xl bg-primary-600 px-5 py-3">{isSending ? <ActivityIndicator size="small" color="#fff" /> : <Text className="text-sm font-semibold text-white">Lähetä <Ionicons name="mail-outline" size={16}></Ionicons></Text>}</TouchableOpacity>
-            }
+            )}
             <div className="flex space-x-3">
               <TouchableOpacity onPress={onClose} disabled={isSaving} className="rounded-2xl bg-gray-100 px-5 py-3"><Text className="text-sm font-semibold text-gray-700">Peruuta</Text></TouchableOpacity>
               <TouchableOpacity onPress={handleSave} disabled={isSaving} className="rounded-2xl bg-primary-600 px-5 py-3">{isSaving ? <ActivityIndicator size="small" color="#fff" /> : <Text className="text-sm font-semibold text-white">Tallenna</Text>}</TouchableOpacity>
             </div>
           </View>
-          {emailSent &&
+          {emailSent && (
             <View className="mt-2">
               <Text className="text-xs text-gray-500">Sähköposti lähetetty {emailSent.sent.toDate().toLocaleDateString('fi')}</Text>
             </View>
-          }
+          )}
         </View>
       </View>
     </Modal>

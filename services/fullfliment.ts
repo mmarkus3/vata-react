@@ -16,13 +16,6 @@ const converter = {
   },
 };
 
-class InsufficientStockError extends Error {
-  constructor(productName: string, available: number, requested: number) {
-    super(`Varastosaldo ei riitä tuotteelle "${productName}". Saatavilla ${available}, pyydetty ${requested}.`);
-    this.name = 'InsufficientStockError';
-  }
-}
-
 function aggregateProducts(products: Fullfilment['products']) {
   const map = new Map<string, { name: string; amount: number }>();
   for (const item of products) {
@@ -71,11 +64,6 @@ export async function createFullfilment(fullfilment: Omit<Fullfilment, 'id' | 'a
         if (!productSnap.exists()) {
           throw new Error(`Tuotetta ei löytynyt: ${item.product.name}`);
         }
-
-        const availableAmount = Number(productSnap.data().amount ?? 0);
-        if (!Number.isFinite(availableAmount) || availableAmount < item.amount) {
-          throw new InsufficientStockError(item.product.name, availableAmount, item.amount);
-        }
       }
 
       for (const { item, productRef, productSnap } of productSnapshots) {
@@ -92,10 +80,6 @@ export async function createFullfilment(fullfilment: Omit<Fullfilment, 'id' | 'a
     });
   } catch (error) {
     console.error('Failed to create fullfilment:', error);
-
-    if (error instanceof InsufficientStockError) {
-      throw error;
-    }
 
     throw new Error(error instanceof Error ? error.message : 'Täytön luonti epäonnistui');
   }
@@ -134,18 +118,6 @@ export async function updateFullfilmentWithProducts(
           const name = newMap.get(productId)?.name ?? oldMap.get(productId)?.name ?? productId;
           throw new Error(`Tuotetta ei löytynyt: ${name}`);
         }
-
-        const oldAmount = oldMap.get(productId)?.amount ?? 0;
-        const newAmount = newMap.get(productId)?.amount ?? 0;
-        const delta = newAmount - oldAmount;
-
-        if (delta > 0) {
-          const available = Number(snap.data().amount ?? 0);
-          const name = newMap.get(productId)?.name ?? oldMap.get(productId)?.name ?? productId;
-          if (!Number.isFinite(available) || available < delta) {
-            throw new InsufficientStockError(name, available, delta);
-          }
-        }
       }
 
       for (const { productId, ref, snap } of productSnapshots) {
@@ -164,7 +136,6 @@ export async function updateFullfilmentWithProducts(
     });
   } catch (error) {
     console.error('Failed to update fullfilment:', error);
-    if (error instanceof InsufficientStockError) throw error;
     throw new Error(error instanceof Error ? error.message : 'Täytön päivitys epäonnistui');
   }
 }
