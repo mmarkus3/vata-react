@@ -13,13 +13,13 @@ const SegmentControl: FC<SegmentControlProps> = ({ options, selectedIndex, onSel
       {options.map((option, index) => (
         <TouchableOpacity
           key={option}
-          className={`flex-1 py-2 px-4 rounded-md ${selectedIndex === index ? 'bg-white shadow-sm' : 'bg-transparent'
+          className={`flex-1 py-2 px-4 rounded-md ${selectedIndex === index ? 'bg-primary-600 shadow-sm' : 'bg-transparent'
             }`}
           onPress={() => onSelectionChange(index)}
           activeOpacity={0.7}
         >
           <Text
-            className={`text-center font-medium ${selectedIndex === index ? 'text-gray-900' : 'text-gray-600'
+            className={`text-center font-medium ${selectedIndex === index ? 'text-white' : 'text-gray-700'
               }`}
           >
             {option}

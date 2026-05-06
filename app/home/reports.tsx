@@ -7,7 +7,7 @@ import { Fullfilment } from '@/types/fullfilment';
 import { FullfilmentByProduct, groupFullfilmentsByProduct, sortByDate } from '@/utils/fullfilmentGrouping';
 import { endOfMonth, parse, startOfMonth } from 'date-fns';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Text, View } from 'react-native';
+import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
 
 export default function ReportsScreen() {
   const { user } = useAuth();
@@ -74,32 +74,8 @@ export default function ReportsScreen() {
       <div className="flex justify-center">
         <SelectMonth date={new Date()} onChange={handleMonthChange} />
       </div>
-      {activeTab === 0 ? (
-        <>
-          {fullfilmentsError ? (
-            <View className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <Text className="text-red-700">{fullfilmentsError}</Text>
-            </View>
-          ) : fullfilmentsByProduct.length === 0 ? (
-            <Text className="text-gray-500 italic">Ei täyttöjä</Text>
-          ) : (
-            fullfilmentsByProduct.map((productGroup) => (
-              <View key={productGroup.productName} className="mb-2">
-                <View className="ml-4 p-3 bg-gray-50 rounded-lg">
-                  <Text className="text-lg font-semibold text-gray-900">{productGroup.productName}</Text>
-                  <Text className="text-sm text-gray-600">Yhteensä: {productGroup.totalAmount}</Text>
-                </View>
-              </View>
-            ))
-          )}
-          {fullfilmentsByProduct.length > 0 &&
-            <View className="p-3">
-              <Text className="text-gray-600 flex justify-end">Yhteensä: {fullfilmentsByProduct.reduce((prev, curr) => prev + curr.totalAmount, 0)}</Text>
-            </View>
-          }
-        </>
-      )
-        : (
+      <ScrollView className="mt-5" contentContainerStyle={{ paddingBottom: 8 }}>
+        {activeTab === 0 ? (
           <>
             {fullfilmentsError ? (
               <View className="bg-red-50 border border-red-200 rounded-lg p-4">
@@ -108,31 +84,57 @@ export default function ReportsScreen() {
             ) : fullfilmentsByProduct.length === 0 ? (
               <Text className="text-gray-500 italic">Ei täyttöjä</Text>
             ) : (
-              fullfilments.map((fullfilment) => (
-                <View key={fullfilment.id} className="ml-4 mb-2 p-3 bg-gray-50 rounded-lg">
-                  <View className="flex-row justify-between">
-                    <Text className="text-gray-900 flex-1">
-                      {new Date(fullfilment.date).toLocaleDateString('fi-FI')} - {fullfilment.client.name}
-                    </Text>
-                    <Text className="text-gray-600">{fullfilment.amount || 0} kpl</Text>
+              fullfilmentsByProduct.map((productGroup) => (
+                <View key={productGroup.productName} className="mb-2">
+                  <View className="ml-4 p-3 bg-gray-50 rounded-lg">
+                    <Text className="text-lg font-semibold text-gray-900">{productGroup.productName}</Text>
+                    <Text className="text-sm text-gray-600">Yhteensä: {productGroup.totalAmount}</Text>
                   </View>
-                  {fullfilment.products.map((p) => (
-                    <View key={p.product.guid}>
-                      <Text className="text-lg font-semibold text-gray-900">{p.product.name}</Text>
-                      <Text className="text-sm text-gray-600">Määrä: {p.amount}</Text>
-                    </View>
-                  ))}
                 </View>
               ))
             )}
-            {fullfilments.length > 0 &&
+            {fullfilmentsByProduct.length > 0 &&
               <View className="p-3">
-                <Text className="text-gray-600 flex justify-end">Yhteensä: {fullfilments.reduce((prev, curr) => prev + (curr.amount ?? 0), 0)}</Text>
+                <Text className="text-gray-600 flex justify-end">Yhteensä: {fullfilmentsByProduct.reduce((prev, curr) => prev + curr.totalAmount, 0)}</Text>
               </View>
             }
           </>
         )
-      }
+          : (
+            <>
+              {fullfilmentsError ? (
+                <View className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <Text className="text-red-700">{fullfilmentsError}</Text>
+                </View>
+              ) : fullfilmentsByProduct.length === 0 ? (
+                <Text className="text-gray-500 italic">Ei täyttöjä</Text>
+              ) : (
+                fullfilments.map((fullfilment) => (
+                  <View key={fullfilment.id} className="ml-4 mb-2 p-3 bg-gray-50 rounded-lg">
+                    <View className="flex-row justify-between">
+                      <Text className="text-gray-900 flex-1">
+                        {new Date(fullfilment.date).toLocaleDateString('fi-FI')} - {fullfilment.client.name}
+                      </Text>
+                      <Text className="text-gray-600">{fullfilment.amount || 0} kpl</Text>
+                    </View>
+                    {fullfilment.products.map((p) => (
+                      <View key={p.product.guid}>
+                        <Text className="text-lg font-semibold text-gray-900">{p.product.name}</Text>
+                        <Text className="text-sm text-gray-600">Määrä: {p.amount}</Text>
+                      </View>
+                    ))}
+                  </View>
+                ))
+              )}
+              {fullfilments.length > 0 &&
+                <View className="p-3">
+                  <Text className="text-gray-600 flex justify-end">Yhteensä: {fullfilments.reduce((prev, curr) => prev + (curr.amount ?? 0), 0)}</Text>
+                </View>
+              }
+            </>
+          )
+        }
+      </ScrollView>
     </View>
   )
 }

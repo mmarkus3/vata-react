@@ -12,6 +12,7 @@ import { Timestamp } from 'firebase/firestore';
 import type { FC } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Modal, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import SelectProduct from './SelectProduct';
 
 interface EditFullfilmentModalProps {
   visible: boolean;
@@ -62,6 +63,7 @@ const EditFullfilmentModal: FC<EditFullfilmentModalProps> = ({ visible, client, 
 
     setIsLoadingProducts(true);
     setGeneralError(null);
+
     const unsub = getProductsByCompany(client.company, (res) => {
       setProducts(res);
       setIsLoadingProducts(false);
@@ -70,7 +72,7 @@ const EditFullfilmentModal: FC<EditFullfilmentModalProps> = ({ visible, client, 
     return () => {
       if (unsub) unsub();
     };
-  }, [client.company, fullfilment, visible]);
+  }, [client.company, client.id, fullfilment, visible]);
 
   useEffect(() => {
     if (selectedProduct) setSelectedPrice(String(selectedProduct.price ?? 0));
@@ -181,17 +183,10 @@ const EditFullfilmentModal: FC<EditFullfilmentModalProps> = ({ visible, client, 
             {fieldErrors.date ? <Text className="mt-1 text-sm text-secondary-600">{fieldErrors.date}</Text> : null}
 
             <View className="mt-4 rounded-2xl border border-gray-200 bg-gray-50 p-3">
-              {isLoadingProducts ? (
-                <View className="flex-row items-center py-2"><ActivityIndicator size="small" color="#1d4ed8" /><Text className="ml-2 text-sm text-gray-600">Ladataan tuotteita...</Text></View>
-              ) : (
+              <SelectProduct visible={visible} selected={selectedProductId} client={client} products={products} isLoading={isLoadingProducts} onSelect={setSelectedProductId} onError={setGeneralError} />
+
+              {!isLoadingProducts && (
                 <>
-                  <View className="rounded-xl border border-gray-300 bg-white">
-                    {products.map((item) => (
-                      <TouchableOpacity key={item.id} onPress={() => setSelectedProductId(item.id ?? '')} className={`px-4 py-3 ${selectedProductId === item.id ? 'bg-primary-50' : ''}`}>
-                        <Text className={`${selectedProductId === item.id ? 'text-primary-700' : 'text-gray-900'}`}>{item.name} ({item.ean})</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
                   <TextInput value={selectedAmount} onChangeText={setSelectedAmount} placeholder="Määrä" keyboardType="number-pad" className="mt-3 rounded-2xl border border-gray-300 bg-white px-4 py-3 text-base text-gray-900" />
                   <TextInput value={selectedPrice} onChangeText={setSelectedPrice} placeholder="Hinta" keyboardType="decimal-pad" className="mt-3 rounded-2xl border border-gray-300 bg-white px-4 py-3 text-base text-gray-900" />
                   {fieldErrors.amount ? <Text className="mt-1 text-sm text-secondary-600">{fieldErrors.amount}</Text> : null}

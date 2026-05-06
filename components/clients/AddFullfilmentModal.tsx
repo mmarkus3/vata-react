@@ -1,12 +1,12 @@
-import { createFullfilment, getClientFullfilments } from '@/services/fullfliment';
+import { createFullfilment } from '@/services/fullfliment';
 import { getProductsByCompany } from '@/services/product';
 import type { Client } from '@/types/client';
 import type { Product } from '@/types/product';
 import { mapSelectedLinesToFullfilmentProducts, parseLinePrice } from '@/utils/fullfilmentLinePrice';
-import { filterProductsBySource, type ProductSource } from '@/utils/productSourceFilter';
 import type { FC } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Modal, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import SelectProduct from './SelectProduct';
 
 interface AddFullfilmentModalProps {
   visible: boolean;
@@ -24,20 +24,16 @@ interface SelectedProduct {
 const AddFullfilmentModal: FC<AddFullfilmentModalProps> = ({ visible, client, onClose, onCreated }) => {
   const [date, setDate] = useState(new Date().toLocaleDateString('fi-FI'));
   const [products, setProducts] = useState<Product[]>([]);
-  const [source, setSource] = useState<ProductSource>('clientFullfilments');
   const [selectedProductId, setSelectedProductId] = useState('');
   const [selectedAmount, setSelectedAmount] = useState('');
   const [selectedPrice, setSelectedPrice] = useState('');
   const [selectedProducts, setSelectedProducts] = useState<SelectedProduct[]>([]);
   const [isLoadingProducts, setIsLoadingProducts] = useState(false);
-  const [isLoadingClientProducts, setIsLoadingClientProducts] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [generalError, setGeneralError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const [clientUsedProductIds, setClientUsedProductIds] = useState<Set<string>>(new Set());
 
-  const filteredProducts = useMemo(() => filterProductsBySource(products, clientUsedProductIds, source), [products, clientUsedProductIds, source]);
-  const selectedProduct = useMemo(() => filteredProducts.find((item) => item.id === selectedProductId), [filteredProducts, selectedProductId]);
+  const selectedProduct = useMemo(() => products.find((item) => item.id === selectedProductId), [products, selectedProductId]);
 
   useEffect(() => {
     if (!visible) {
@@ -45,40 +41,12 @@ const AddFullfilmentModal: FC<AddFullfilmentModalProps> = ({ visible, client, on
     }
 
     setIsLoadingProducts(true);
-    setIsLoadingClientProducts(true);
     setGeneralError(null);
-    setSource('clientFullfilments');
 
     const unsubscribe = getProductsByCompany(client.company, (result) => {
       setProducts(result);
       setIsLoadingProducts(false);
     });
-
-    if (!client.id) {
-      setClientUsedProductIds(new Set());
-      setIsLoadingClientProducts(false);
-    } else {
-      getClientFullfilments(client.id, client.company)
-        .then((fullfilments) => {
-          const usedIds = new Set<string>();
-          fullfilments.forEach((fullfilment) => {
-            fullfilment.products.forEach((item) => {
-              if (item.product.guid) {
-                usedIds.add(item.product.guid);
-              }
-            });
-          });
-          setClientUsedProductIds(usedIds);
-        })
-        .catch((error) => {
-          const message = error instanceof Error ? error.message : 'Tuotteiden lataus epäonnistui';
-          setGeneralError(message);
-          setClientUsedProductIds(new Set());
-        })
-        .finally(() => {
-          setIsLoadingClientProducts(false);
-        });
-    }
 
     return () => {
       if (unsubscribe) {
@@ -92,23 +60,22 @@ const AddFullfilmentModal: FC<AddFullfilmentModalProps> = ({ visible, client, on
       return;
     }
 
-    const existsInCurrentSource = filteredProducts.some((item) => item.id === selectedProductId);
+    const existsInCurrentSource = products.some((item) => item.id === selectedProductId);
     if (!existsInCurrentSource) {
       setSelectedProductId('');
       setSelectedPrice('');
     }
-  }, [filteredProducts, selectedProductId]);
+  }, [products, selectedProductId]);
 
   useEffect(() => {
-    const selected = filteredProducts.find((item) => item.id === selectedProductId);
+    const selected = products.find((item) => item.id === selectedProductId);
     if (selected) {
       setSelectedPrice(String(selected.price ?? 0));
     }
-  }, [filteredProducts, selectedProductId]);
+  }, [products, selectedProductId]);
 
   const resetForm = () => {
     setDate(new Date().toLocaleDateString('fi-FI'));
-    setSource('clientFullfilments');
     setSelectedProductId('');
     setSelectedAmount('');
     setSelectedPrice('');
@@ -216,8 +183,6 @@ const AddFullfilmentModal: FC<AddFullfilmentModalProps> = ({ visible, client, on
     }
   };
 
-  const isLoading = isLoadingProducts || isLoadingClientProducts;
-
   return (
     <Modal animationType="slide" transparent visible={visible} onRequestClose={handleClose}>
       <View className="flex-1 justify-end bg-black/40 px-4 py-6">
@@ -239,56 +204,10 @@ const AddFullfilmentModal: FC<AddFullfilmentModalProps> = ({ visible, client, on
             </View>
 
             <View className="mt-4 rounded-2xl border border-gray-200 bg-gray-50 p-3">
-              <Text className="mb-2 text-sm font-semibold text-gray-700">Tuotteen valinta</Text>
+              <SelectProduct visible={visible} selected={selectedProductId} client={client} products={products} isLoading={isLoadingProducts} onSelect={setSelectedProductId} onError={setGeneralError} />
 
-              <View className="mb-3 flex-row rounded-xl border border-gray-300 bg-white p-1">
-                <TouchableOpacity
-                  onPress={() => setSource('clientFullfilments')}
-                  className={`flex-1 rounded-lg px-3 py-2 ${source === 'clientFullfilments' ? 'bg-primary-600' : ''}`}
-                >
-                  <Text className={`text-center text-sm font-semibold ${source === 'clientFullfilments' ? 'text-white' : 'text-gray-700'}`}>
-                    Kaupan tuotteet
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => setSource('allProducts')}
-                  className={`flex-1 rounded-lg px-3 py-2 ${source === 'allProducts' ? 'bg-primary-600' : ''}`}
-                >
-                  <Text className={`text-center text-sm font-semibold ${source === 'allProducts' ? 'text-white' : 'text-gray-700'}`}>
-                    Kaikki tuotteet
-                  </Text>
-                </TouchableOpacity>
-              </View>
-
-              {isLoading ? (
-                <View className="flex-row items-center py-2">
-                  <ActivityIndicator size="small" color="#1d4ed8" />
-                  <Text className="ml-2 text-sm text-gray-600">Ladataan tuotteita...</Text>
-                </View>
-              ) : (
+              {!isLoadingProducts && (
                 <>
-                  <View className="rounded-xl border border-gray-300 bg-white">
-                    {filteredProducts.length === 0 ? (
-                      <Text className="px-4 py-3 text-gray-500">
-                        {source === 'clientFullfilments'
-                          ? 'Ei tuotteita asiakkaan aiemmissa täytöissä. Vaihda kohtaan "Kaikki tuotteet".'
-                          : 'Ei tuotteita'}
-                      </Text>
-                    ) : (
-                      filteredProducts.map((item) => (
-                        <TouchableOpacity
-                          key={item.id}
-                          onPress={() => setSelectedProductId(item.id ?? '')}
-                          className={`px-4 py-3 ${selectedProductId === item.id ? 'bg-primary-50' : ''}`}
-                        >
-                          <Text className={`${selectedProductId === item.id ? 'text-primary-700' : 'text-gray-900'}`}>
-                            {item.name} ({item.ean}) ({item.amount})
-                          </Text>
-                        </TouchableOpacity>
-                      ))
-                    )}
-                  </View>
-
                   {fieldErrors.product ? <Text className="mt-1 text-sm text-secondary-600">{fieldErrors.product}</Text> : null}
 
                   <TextInput
@@ -311,7 +230,7 @@ const AddFullfilmentModal: FC<AddFullfilmentModalProps> = ({ visible, client, on
                   />
                   {fieldErrors.price ? <Text className="mt-1 text-sm text-secondary-600">{fieldErrors.price}</Text> : null}
 
-                  <TouchableOpacity onPress={addProductToList} disabled={isLoading} className="mt-3 rounded-2xl bg-primary-600 px-4 py-3">
+                  <TouchableOpacity onPress={addProductToList} disabled={isLoadingProducts} className="mt-3 rounded-2xl bg-primary-600 px-4 py-3">
                     <Text className="text-center text-sm font-semibold text-white">Lisää tuote</Text>
                   </TouchableOpacity>
                 </>
