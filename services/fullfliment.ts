@@ -23,6 +23,19 @@ class InsufficientStockError extends Error {
   }
 }
 
+function aggregateProducts(products: Fullfilment['products']) {
+  const map = new Map<string, { name: string; amount: number }>();
+  for (const item of products) {
+    const key = item.product.guid;
+    const prev = map.get(key);
+    map.set(key, {
+      name: item.product.name,
+      amount: (prev?.amount ?? 0) + item.amount,
+    });
+  }
+  return map;
+}
+
 export async function getClientFullfilments(clientId: string, companyId: string): Promise<Fullfilment[]> {
   try {
     return await getItems<Fullfilment>('fullfilments', [whereEqual('client.guid', clientId), whereEqual('company', companyId)], converter);
@@ -85,5 +98,64 @@ export async function createFullfilment(fullfilment: Omit<Fullfilment, 'id' | 'a
     }
 
     throw new Error(error instanceof Error ? error.message : 'Täytön luonti epäonnistui');
+  }
+}
+
+export async function updateFullfilment(
+  fullfilmentId: string,
+  original: Omit<Fullfilment, 'amount' | 'created'>,
+  updated: Omit<Fullfilment, 'id' | 'amount' | 'created'>
+) {
+  try {
+    return await runInTransaction(async (transaction) => {
+      const oldMap = aggregateProducts(original.products);
+      const newMap = aggregateProducts(updated.products);
+      const allProductIds = new Set<string>([...oldMap.keys(), ...newMap.keys()]);
+
+      const productSnapshots = await Promise.all(
+        [...allProductIds].map(async (productId) => {
+          const ref = getDocumentRef('products', productId);
+          const snap = await transaction.get(ref);
+          return { productId, ref, snap };
+        })
+      );
+
+      for (const { productId, snap } of productSnapshots) {
+        if (!snap.exists()) {
+          const name = newMap.get(productId)?.name ?? oldMap.get(productId)?.name ?? productId;
+          throw new Error(`Tuotetta ei löytynyt: ${name}`);
+        }
+
+        const oldAmount = oldMap.get(productId)?.amount ?? 0;
+        const newAmount = newMap.get(productId)?.amount ?? 0;
+        const delta = newAmount - oldAmount;
+
+        if (delta > 0) {
+          const available = Number(snap.data().amount ?? 0);
+          const name = newMap.get(productId)?.name ?? oldMap.get(productId)?.name ?? productId;
+          if (!Number.isFinite(available) || available < delta) {
+            throw new InsufficientStockError(name, available, delta);
+          }
+        }
+      }
+
+      for (const { productId, ref, snap } of productSnapshots) {
+        const oldAmount = oldMap.get(productId)?.amount ?? 0;
+        const newAmount = newMap.get(productId)?.amount ?? 0;
+        const delta = newAmount - oldAmount;
+        if (delta === 0) continue;
+
+        const current = Number(snap.data().amount ?? 0);
+        transaction.update(ref, { amount: current - delta });
+      }
+
+      const fullfilmentRef = getDocumentRef('fullfilments', fullfilmentId);
+      transaction.update(fullfilmentRef, updated);
+      return fullfilmentId;
+    });
+  } catch (error) {
+    console.error('Failed to update fullfilment:', error);
+    if (error instanceof InsufficientStockError) throw error;
+    throw new Error(error instanceof Error ? error.message : 'Täytön päivitys epäonnistui');
   }
 }

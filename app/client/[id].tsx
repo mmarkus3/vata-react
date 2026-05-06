@@ -1,10 +1,12 @@
 import AddFullfilmentModal from '@/components/clients/AddFullfilmentModal';
 import EditClientModal from '@/components/clients/EditClientModal';
+import EditFullfilmentModal from '@/components/clients/EditFullfilmentModal';
 import SegmentControl from '@/components/common/SegmentControl';
 import { themeColors } from '@/constants/colors';
 import { deleteClient, getClientById } from '@/services/client';
 import { getClientFullfilments } from '@/services/fullfliment';
 import type { Client } from '@/types/client';
+import type { Fullfilment } from '@/types/fullfilment';
 import { groupFullfilmentsByMonth, groupFullfilmentsByProduct, type FullfilmentByMonth, type FullfilmentByProduct } from '@/utils/fullfilmentGrouping';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
@@ -28,6 +30,8 @@ export default function ClientDetailPage() {
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [isEditFullfilmentVisible, setIsEditFullfilmentVisible] = useState(false);
+  const [selectedFullfilment, setSelectedFullfilment] = useState<Fullfilment | null>(null);
 
   const loadFullfilments = useCallback(async () => {
     if (!clientId || !client?.company) {
@@ -92,6 +96,17 @@ export default function ClientDetailPage() {
   const handleFullfilmentCreated = async () => {
     await loadFullfilments();
     setIsAddModalVisible(false);
+  };
+
+  const handleOpenEditFullfilment = (fullfilment: Fullfilment) => {
+    setSelectedFullfilment(fullfilment);
+    setIsEditFullfilmentVisible(true);
+  };
+
+  const handleFullfilmentUpdated = async () => {
+    await loadFullfilments();
+    setIsEditFullfilmentVisible(false);
+    setSelectedFullfilment(null);
   };
 
   const handleClientUpdated = (updatedClient: Client) => {
@@ -227,13 +242,17 @@ export default function ClientDetailPage() {
                       <Text className="text-sm text-gray-600">Yhteensä: {monthGroup.totalAmount}</Text>
                     </View>
                     {monthGroup.fullfilments.map((fullfilment) => (
-                      <View key={fullfilment.id} className="mb-2 ml-4 rounded-lg bg-gray-50 p-3">
+                      <TouchableOpacity
+                        key={fullfilment.id}
+                        onPress={() => handleOpenEditFullfilment(fullfilment)}
+                        className="mb-2 ml-4 rounded-lg bg-gray-50 p-3"
+                      >
                         <View className="flex-row justify-between">
                           <Text className="flex-1 text-gray-900">{new Date(fullfilment.date).toLocaleDateString('fi-FI')}</Text>
                           <Text className="text-gray-600">{fullfilment.amount || 0} kpl</Text>
                         </View>
                         <Text className="mt-1 text-sm text-gray-600">{fullfilment.products.map((p) => p.product.name).join(', ')}</Text>
-                      </View>
+                      </TouchableOpacity>
                     ))}
                   </View>
                 ))
@@ -276,6 +295,16 @@ export default function ClientDetailPage() {
       </ScrollView>
 
       <AddFullfilmentModal visible={isAddModalVisible} client={client} onClose={() => setIsAddModalVisible(false)} onCreated={handleFullfilmentCreated} />
+      <EditFullfilmentModal
+        visible={isEditFullfilmentVisible}
+        client={client}
+        fullfilment={selectedFullfilment}
+        onClose={() => {
+          setIsEditFullfilmentVisible(false);
+          setSelectedFullfilment(null);
+        }}
+        onSaved={handleFullfilmentUpdated}
+      />
 
       <EditClientModal
         visible={isEditModalVisible}
