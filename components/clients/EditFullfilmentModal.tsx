@@ -1,9 +1,14 @@
-import { updateFullfilment } from '@/services/fullfliment';
+import { useAuth } from '@/hooks/useAuth';
+import { updateFullfilment, updateFullfilmentWithProducts } from '@/services/fullfliment';
+import { createMail } from '@/services/mail';
 import { getProductsByCompany } from '@/services/product';
 import type { Client } from '@/types/client';
 import type { Fullfilment } from '@/types/fullfilment';
+import { Mail } from '@/types/mail';
 import type { Product } from '@/types/product';
 import { mapSelectedLinesToFullfilmentProducts, parseLinePrice, type SelectedFullfilmentLine } from '@/utils/fullfilmentLinePrice';
+import { Ionicons } from '@expo/vector-icons';
+import { Timestamp } from 'firebase/firestore';
 import type { FC } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Modal, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
@@ -25,8 +30,11 @@ const EditFullfilmentModal: FC<EditFullfilmentModalProps> = ({ visible, client, 
   const [lines, setLines] = useState<SelectedFullfilmentLine[]>([]);
   const [isLoadingProducts, setIsLoadingProducts] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [emailSent, setEmailSent] = useState(fullfilment?.mail);
   const [generalError, setGeneralError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const { user, company } = useAuth();
 
   const selectedProduct = useMemo(() => products.find((p) => p.id === selectedProductId), [products, selectedProductId]);
 
@@ -35,6 +43,7 @@ const EditFullfilmentModal: FC<EditFullfilmentModalProps> = ({ visible, client, 
 
     const d = new Date(fullfilment.date);
     setDate(d.toLocaleDateString('fi-FI'));
+    setEmailSent(fullfilment.mail);
     setLines(
       fullfilment.products.map((item) => ({
         amount: String(item.amount),
@@ -96,7 +105,7 @@ const EditFullfilmentModal: FC<EditFullfilmentModalProps> = ({ visible, client, 
     setLines((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const save = async () => {
+  const handleSave = async () => {
     if (!fullfilment?.id) return;
 
     const errors: Record<string, string> = {};
@@ -117,7 +126,7 @@ const EditFullfilmentModal: FC<EditFullfilmentModalProps> = ({ visible, client, 
     setGeneralError(null);
 
     try {
-      await updateFullfilment(
+      await updateFullfilmentWithProducts(
         fullfilment.id,
         fullfilment,
         {
@@ -133,6 +142,32 @@ const EditFullfilmentModal: FC<EditFullfilmentModalProps> = ({ visible, client, 
       setGeneralError(error instanceof Error ? error.message : 'Täytön päivitys epäonnistui');
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleSendEmail = async () => {
+    if (!fullfilment?.id) return;
+    if (!client.email) return;
+
+    setIsSending(true);
+    setGeneralError(null);
+
+    const mail: Mail = {
+      email: client.email,
+      fullfilment: fullfilment?.id!,
+      created: Timestamp.now(),
+      from: { email: user?.email!, name: company?.name! },
+    }
+
+    try {
+      const emailId = await createMail(mail);
+      const fullfilmentEmailSent = { guid: emailId, sent: mail.created };
+      await updateFullfilment(fullfilment.id, { mail: fullfilmentEmailSent });
+      setEmailSent(fullfilmentEmailSent);
+    } catch (error) {
+      setGeneralError(error instanceof Error ? error.message : 'Sähköpostin lähetys epäonnistui');
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -179,10 +214,20 @@ const EditFullfilmentModal: FC<EditFullfilmentModalProps> = ({ visible, client, 
             {generalError ? <Text className="mt-3 text-sm text-secondary-600">{generalError}</Text> : null}
           </ScrollView>
 
-          <View className="mt-4 flex-row justify-end space-x-3">
-            <TouchableOpacity onPress={onClose} disabled={isSaving} className="rounded-2xl bg-gray-100 px-5 py-3"><Text className="text-sm font-semibold text-gray-700">Peruuta</Text></TouchableOpacity>
-            <TouchableOpacity onPress={save} disabled={isSaving} className="rounded-2xl bg-primary-600 px-5 py-3">{isSaving ? <ActivityIndicator size="small" color="#fff" /> : <Text className="text-sm font-semibold text-white">Tallenna</Text>}</TouchableOpacity>
+          <View className="mt-4 flex-row justify-between space-x-3">
+            {client.email &&
+              <TouchableOpacity onPress={handleSendEmail} disabled={isSending} className="rounded-2xl bg-primary-600 px-5 py-3">{isSending ? <ActivityIndicator size="small" color="#fff" /> : <Text className="text-sm font-semibold text-white">Lähetä <Ionicons name="mail-outline" size={16}></Ionicons></Text>}</TouchableOpacity>
+            }
+            <div className="flex space-x-3">
+              <TouchableOpacity onPress={onClose} disabled={isSaving} className="rounded-2xl bg-gray-100 px-5 py-3"><Text className="text-sm font-semibold text-gray-700">Peruuta</Text></TouchableOpacity>
+              <TouchableOpacity onPress={handleSave} disabled={isSaving} className="rounded-2xl bg-primary-600 px-5 py-3">{isSaving ? <ActivityIndicator size="small" color="#fff" /> : <Text className="text-sm font-semibold text-white">Tallenna</Text>}</TouchableOpacity>
+            </div>
           </View>
+          {emailSent &&
+            <View className="mt-2">
+              <Text className="text-xs text-gray-500">Sähköposti lähetetty {emailSent.sent.toDate().toLocaleDateString('fi')}</Text>
+            </View>
+          }
         </View>
       </View>
     </Modal>

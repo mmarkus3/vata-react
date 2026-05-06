@@ -1,3 +1,4 @@
+import { Company } from './company';
 import { User } from './user';
 
 export interface AuthUser {
@@ -9,6 +10,7 @@ export interface AuthUser {
 
 export interface AuthContextType {
   user: AuthUser | null;
+  company: Company | null;
   isLoading: boolean;
   error: string | null;
   showCreateCompanyModal: boolean;

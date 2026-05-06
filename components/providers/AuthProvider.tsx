@@ -1,8 +1,9 @@
-import { createCompany as createCompanyService } from '@/services/company';
+import { createCompany as createCompanyService, getCompanyById } from '@/services/company';
 import { auth } from '@/services/firebase';
 import { getItem, saveAsItem, updateItem } from '@/services/firestore';
 import { acceptInvite, getInviteByEmail } from '@/services/invite';
 import type { AuthContextType, AuthUser } from '@/types/auth';
+import { Company } from '@/types/company';
 import { User } from '@/types/user';
 import {
   createUserWithEmailAndPassword,
@@ -21,6 +22,7 @@ interface AuthProviderProps {
 
 export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [company, setCompany] = useState<Company | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreateCompanyModal, setShowCreateCompanyModal] = useState(false);
@@ -98,8 +100,11 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
           displayName: currentUser.displayName,
           profile,
         });
+        const company = profile?.company ? await getCompanyById(profile.company) : null;
+        setCompany(company);
       } else {
         setUser(null);
+        setCompany(null);
         setShowCreateCompanyModal(false);
       }
 
@@ -160,6 +165,7 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
       setIsLoading(true);
       await firebaseSignOut(auth);
       setUser(null);
+      setCompany(null);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Sign out failed';
       setError(message);
@@ -191,6 +197,8 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
         ...user,
         profile: updatedProfile,
       });
+      const company = companyId ? await getCompanyById(companyId) : null;
+      setCompany(company);
 
       setShowCreateCompanyModal(false);
     } catch (err) {
@@ -208,6 +216,7 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
 
   const value: AuthContextType = {
     user,
+    company,
     isLoading,
     error,
     showCreateCompanyModal,
@@ -218,5 +227,5 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
     closeCreateCompanyModal,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return <AuthContext value={value}>{children}</AuthContext>;
 };

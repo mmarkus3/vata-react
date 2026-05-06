@@ -1,5 +1,5 @@
+import { createDocumentRef, getDocumentRef, getItems, runInTransaction, updateItem, whereEqual } from '@/services/firestore';
 import { Fullfilment } from '@/types/fullfilment';
-import { createDocumentRef, getDocumentRef, getItems, runInTransaction, whereEqual } from '@/services/firestore';
 
 const converter = {
   toFirestore: (item: Fullfilment) => item,
@@ -101,7 +101,16 @@ export async function createFullfilment(fullfilment: Omit<Fullfilment, 'id' | 'a
   }
 }
 
-export async function updateFullfilment(
+export async function updateFullfilment(fullfilmentId: string, updated: Partial<Fullfilment>) {
+  try {
+    return await updateItem('fullfilments', fullfilmentId, updated);
+  } catch (error) {
+    console.error('Failed to update fullfilment:', error);
+    throw error;
+  }
+}
+
+export async function updateFullfilmentWithProducts(
   fullfilmentId: string,
   original: Omit<Fullfilment, 'amount' | 'created'>,
   updated: Omit<Fullfilment, 'id' | 'amount' | 'created'>

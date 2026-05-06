@@ -1,31 +1,10 @@
 import { useAuth } from '@/hooks/useAuth';
-import { getCompanyById } from '@/services/company';
-import { Company } from '@/types/company';
 import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 export default function SettingsScreen() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, company } = useAuth();
   const router = useRouter();
-
-  const [company, setCompany] = useState<Company | null>(null);
-  const [companyError, setCompanyError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const loadCompany = async () => {
-      if (user == null || user.profile == null || !user.profile.company) {
-        setCompanyError('Ei yritystä');
-      }
-
-      if (user?.profile?.company) {
-        const company = await getCompanyById(user.profile.company);
-        setCompany(company);
-      }
-    }
-
-    loadCompany();
-  }, [user])
 
   const handleSignOut = async () => {
     try {
@@ -48,7 +27,7 @@ export default function SettingsScreen() {
       <View className="bg-gray-50 rounded-lg p-4 mb-6">
         <Text className="text-sm text-gray-600 mb-1">Yritys</Text>
         <Text className="text-lg font-semibold text-gray-900">
-          {companyError ? companyError : company?.name}
+          {company?.name}
         </Text>
       </View>
 
