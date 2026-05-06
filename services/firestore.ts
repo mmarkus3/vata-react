@@ -1,5 +1,5 @@
 import { firestore } from '@/services/firebase';
-import { addDoc, collection, deleteDoc, doc, DocumentData, FirestoreDataConverter, getDoc, getDocs, onSnapshot, query, QueryFieldFilterConstraint, setDoc, updateDoc } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, DocumentData, FirestoreDataConverter, getDoc, getDocs, onSnapshot, query, QueryFieldFilterConstraint, runTransaction, setDoc, updateDoc, where } from 'firebase/firestore';
 
 export async function saveItem(collectionKey: string, item: object) {
   const docRef = await addDoc(collection(firestore, collectionKey), item);
@@ -64,4 +64,20 @@ export function getSnapshotItems<T>(
     });
     cb(results);
   });
+}
+
+export async function runInTransaction<T>(handler: (transaction: any) => Promise<T>) {
+  return runTransaction(firestore, handler);
+}
+
+export function getDocumentRef(collectionKey: string, id: string) {
+  return doc(firestore, collectionKey, id);
+}
+
+export function createDocumentRef(collectionKey: string) {
+  return doc(collection(firestore, collectionKey));
+}
+
+export function whereEqual(fieldPath: string, value: unknown) {
+  return where(fieldPath, '==', value);
 }

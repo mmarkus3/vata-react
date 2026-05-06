@@ -4,12 +4,17 @@
 TBD - created by archiving change create-client-page. Update Purpose after archive.
 ## Requirements
 ### Requirement: Client Detail Page Navigation
-The system SHALL provide a client detail page accessible via the route `/client/[id]` where `[id]` is the client's unique identifier.
+The system SHALL provide a client detail page accessible via the route `/client/[id]` where `[id]` is the client's unique identifier. The page SHALL include a button to create new fullfilments for the client.
 
 #### Scenario: Navigate to client detail from client list
 - **WHEN** user taps on a client item in the clients list
 - **THEN** system navigates to the client detail page for that client
 - **AND** the page URL reflects the client ID (`/client/{clientId}`)
+
+#### Scenario: Display add fullfilment button
+- **WHEN** user views the client detail page
+- **THEN** system displays a "Lisää täyttö" button prominently in the fullfilments section
+- **AND** the button is styled consistently with other action buttons in the app
 
 ### Requirement: Client Information Display
 The system SHALL display comprehensive client information including name, company, contact details, and address in a clear, readable format.
@@ -89,8 +94,6 @@ The system SHALL ensure the client detail page is usable on mobile devices with 
 - **AND** sections are clearly separated with visual hierarchy
 - **AND** text is readable at standard mobile font sizes
 
-## MODIFIED Requirements
-
 ### Requirement: Client Detail Page Navigation
 The system SHALL provide a client detail page accessible via the route `/client/[id]` where `[id]` is the client's unique identifier. The page SHALL include a button to create new fullfilments for the client.
 
@@ -152,20 +155,26 @@ The system SHALL validate fullfilment creation inputs and provide appropriate er
 - **THEN** system displays error message "Lisää vähintään yksi tuote"
 
 ### Requirement: Fullfilment Creation Submission
-The system SHALL create the fullfilment in the database and refresh the client detail page.
+The system SHALL create the fullfilment in the database, decrement product inventory for included products, and refresh the client detail page.
 
 #### Scenario: Successful fullfilment creation
 - **WHEN** user fills valid fullfilment data and taps "Tallenna"
 - **THEN** system creates the fullfilment in Firestore with client reference
+- **AND** decrements each selected product amount in storage
 - **AND** closes the modal
 - **AND** refreshes the fullfilment list on the client detail page
-- **AND** shows success message "Täyttö lisätty onnistuneesti"
 
 #### Scenario: Handle creation errors
 - **WHEN** fullfilment creation fails due to network or database errors
-- **THEN** system displays error message "Täytön tallennus epäonnistui"
+- **THEN** system displays an error message
 - **AND** keeps the modal open with form data intact
 - **AND** allows user to retry submission
+
+#### Scenario: Handle insufficient inventory
+- **WHEN** fullfilment creation fails because one or more selected products have insufficient stock
+- **THEN** system displays an error message indicating insufficient stock
+- **AND** keeps the modal open with form data intact
+- **AND** does not create the fullfilment
 
 ### Requirement: Product Data Loading
 The system SHALL load available products for the company to populate the product selection dropdown.
