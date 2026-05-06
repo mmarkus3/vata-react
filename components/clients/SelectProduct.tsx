@@ -2,8 +2,8 @@ import { getClientFullfilments } from '@/services/fullfliment';
 import { Client } from '@/types/client';
 import { Product } from '@/types/product';
 import { filterProductsBySource } from '@/utils/productSourceFilter';
-import { FC, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
+import { FC, useCallback, useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import SegmentControl from '../common/SegmentControl';
 
 interface SelectProductProps {
@@ -21,11 +21,23 @@ const SelectProduct: FC<SelectProductProps> = ({ visible, products, isLoading, c
   const [selectedProductId, setSelectedProductId] = useState('');
   const [clientUsedProductIds, setClientUsedProductIds] = useState<Set<string>>(new Set());
   const [isLoadingClientProducts, setIsLoadingClientProducts] = useState(false);
+  const [query, setQuery] = useState('');
 
   const filteredProducts = useMemo(() => filterProductsBySource(products, clientUsedProductIds, source), [products, clientUsedProductIds, source]);
 
+  const searchedProducts = useCallback(() => {
+    if (query.length < 2) {
+      return filteredProducts;
+    }
+
+    return filteredProducts.filter((client) => client.name.toLowerCase().includes(query.toLowerCase()));
+  }, [query, filteredProducts]);
+
   useEffect(() => {
-    if (!selected) setSelectedProductId('');
+    if (!selected) {
+      setSelectedProductId('');
+      setQuery('');
+    }
   }, [selected]);
 
   useEffect(() => {
@@ -72,6 +84,13 @@ const SelectProduct: FC<SelectProductProps> = ({ visible, products, isLoading, c
     <>
       <Text className="mb-2 text-sm font-semibold text-gray-700">Tuotteen valinta</Text>
       <SegmentControl options={['Kaupan tuotteet', 'Kaikki tuotteet']} selectedIndex={source} onSelectionChange={setSource} />
+      <View className="flex-1 w-100 py-4">
+        <TextInput className="border border-gray-300 rounded-lg px-4 py-3 text-base text-gray-900 bg-white"
+          onChangeText={(val) => setQuery(val)}
+          placeholder="Suodata"
+          value={query}
+        />
+      </View>
       {isLoading || isLoadingClientProducts ? (
         <View className="flex-row items-center py-2">
           <ActivityIndicator size="small" color="#1d4ed8" />
@@ -86,8 +105,12 @@ const SelectProduct: FC<SelectProductProps> = ({ visible, products, isLoading, c
                   ? 'Ei tuotteita asiakkaan aiemmissa täytöissä. Vaihda kohtaan "Kaikki tuotteet".'
                   : 'Ei tuotteita'}
               </Text>
+            ) : searchedProducts().length === 0 ? (
+              <View className="flex-1 items-center justify-center px-6 py-10">
+                <Text className="text-lg font-semibold text-gray-900">Ei hakutuloksia</Text>
+              </View>
             ) : (
-              filteredProducts.map((item) => (
+              searchedProducts().map((item) => (
                 <TouchableOpacity
                   key={item.id}
                   onPress={() => handleSelectProduct(item.id ?? '')}
