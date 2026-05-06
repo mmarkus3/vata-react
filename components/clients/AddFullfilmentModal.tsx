@@ -2,6 +2,7 @@ import { createFullfilment, getClientFullfilments } from '@/services/fullfliment
 import { getProductsByCompany } from '@/services/product';
 import type { Client } from '@/types/client';
 import type { Product } from '@/types/product';
+import { mapSelectedLinesToFullfilmentProducts, parseLinePrice } from '@/utils/fullfilmentLinePrice';
 import { filterProductsBySource, type ProductSource } from '@/utils/productSourceFilter';
 import type { FC } from 'react';
 import { useEffect, useMemo, useState } from 'react';
@@ -17,6 +18,7 @@ interface AddFullfilmentModalProps {
 interface SelectedProduct {
   product: Product;
   amount: string;
+  price: string;
 }
 
 const AddFullfilmentModal: FC<AddFullfilmentModalProps> = ({ visible, client, onClose, onCreated }) => {
@@ -25,6 +27,7 @@ const AddFullfilmentModal: FC<AddFullfilmentModalProps> = ({ visible, client, on
   const [source, setSource] = useState<ProductSource>('clientFullfilments');
   const [selectedProductId, setSelectedProductId] = useState('');
   const [selectedAmount, setSelectedAmount] = useState('');
+  const [selectedPrice, setSelectedPrice] = useState('');
   const [selectedProducts, setSelectedProducts] = useState<SelectedProduct[]>([]);
   const [isLoadingProducts, setIsLoadingProducts] = useState(false);
   const [isLoadingClientProducts, setIsLoadingClientProducts] = useState(false);
@@ -92,6 +95,14 @@ const AddFullfilmentModal: FC<AddFullfilmentModalProps> = ({ visible, client, on
     const existsInCurrentSource = filteredProducts.some((item) => item.id === selectedProductId);
     if (!existsInCurrentSource) {
       setSelectedProductId('');
+      setSelectedPrice('');
+    }
+  }, [filteredProducts, selectedProductId]);
+
+  useEffect(() => {
+    const selected = filteredProducts.find((item) => item.id === selectedProductId);
+    if (selected) {
+      setSelectedPrice(String(selected.price ?? 0));
     }
   }, [filteredProducts, selectedProductId]);
 
@@ -100,6 +111,7 @@ const AddFullfilmentModal: FC<AddFullfilmentModalProps> = ({ visible, client, on
     setSource('clientFullfilments');
     setSelectedProductId('');
     setSelectedAmount('');
+    setSelectedPrice('');
     setSelectedProducts([]);
     setGeneralError(null);
     setFieldErrors({});
@@ -122,6 +134,9 @@ const AddFullfilmentModal: FC<AddFullfilmentModalProps> = ({ visible, client, on
     if (!selectedAmount.trim() || Number.isNaN(parsedAmount) || parsedAmount <= 0 || !Number.isInteger(parsedAmount)) {
       errors.amount = 'Anna kelvollinen määrä (kokonaisluku > 0)';
     }
+    if (parseLinePrice(selectedPrice) == null) {
+      errors.price = 'Anna kelvollinen hinta (>= 0)';
+    }
 
     if (selectedProduct && selectedProducts.some((item) => item.product.id === selectedProduct.id)) {
       errors.product = 'Tuote on jo lisätty';
@@ -132,10 +147,11 @@ const AddFullfilmentModal: FC<AddFullfilmentModalProps> = ({ visible, client, on
       return;
     }
 
-    setSelectedProducts((prev) => [...prev, { product: selectedProduct!, amount: selectedAmount.trim() }]);
+    setSelectedProducts((prev) => [...prev, { product: selectedProduct!, amount: selectedAmount.trim(), price: selectedPrice.trim() }]);
     setSelectedProductId('');
     setSelectedAmount('');
-    setFieldErrors((prev) => ({ ...prev, product: '', amount: '' }));
+    setSelectedPrice('');
+    setFieldErrors((prev) => ({ ...prev, product: '', amount: '', price: '' }));
   };
 
   const removeProductFromList = (productId: string) => {
@@ -187,15 +203,7 @@ const AddFullfilmentModal: FC<AddFullfilmentModalProps> = ({ visible, client, on
         client: { guid: client.id!, name: client.name },
         company: client.company,
         date: isoDate,
-        products: selectedProducts.map((item) => ({
-          amount: Number(item.amount),
-          product: {
-            guid: item.product.id!,
-            name: item.product.name,
-            ean: item.product.ean,
-            price: item.product.price,
-          },
-        })),
+        products: mapSelectedLinesToFullfilmentProducts(selectedProducts),
       });
 
       resetForm();
@@ -293,6 +301,16 @@ const AddFullfilmentModal: FC<AddFullfilmentModalProps> = ({ visible, client, on
                   />
                   {fieldErrors.amount ? <Text className="mt-1 text-sm text-secondary-600">{fieldErrors.amount}</Text> : null}
 
+                  <TextInput
+                    value={selectedPrice}
+                    onChangeText={setSelectedPrice}
+                    placeholder="Hinta"
+                    keyboardType="decimal-pad"
+                    className="mt-3 rounded-2xl border border-gray-300 bg-white px-4 py-3 text-base text-gray-900"
+                    placeholderTextColor="#9ca3af"
+                  />
+                  {fieldErrors.price ? <Text className="mt-1 text-sm text-secondary-600">{fieldErrors.price}</Text> : null}
+
                   <TouchableOpacity onPress={addProductToList} disabled={isLoading} className="mt-3 rounded-2xl bg-primary-600 px-4 py-3">
                     <Text className="text-center text-sm font-semibold text-white">Lisää tuote</Text>
                   </TouchableOpacity>
@@ -307,7 +325,7 @@ const AddFullfilmentModal: FC<AddFullfilmentModalProps> = ({ visible, client, on
               ) : (
                 selectedProducts.map((item) => (
                   <View key={item.product.id} className="mb-2 flex-row items-center justify-between rounded-xl bg-gray-100 px-3 py-2">
-                    <Text className="flex-1 text-gray-900">{item.product.name} ({item.product.ean}) - {item.amount} kpl</Text>
+                    <Text className="flex-1 text-gray-900">{item.product.name} ({item.product.ean}) - {item.amount} kpl - {item.price} EUR</Text>
                     <TouchableOpacity onPress={() => removeProductFromList(item.product.id!)} className="ml-2 rounded-lg bg-red-100 px-3 py-1">
                       <Text className="text-red-700">Poista</Text>
                     </TouchableOpacity>

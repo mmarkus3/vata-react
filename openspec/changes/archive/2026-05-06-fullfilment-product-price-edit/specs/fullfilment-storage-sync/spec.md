@@ -1,8 +1,5 @@
-# fullfilment-storage-sync Specification
+## MODIFIED Requirements
 
-## Purpose
-TBD - created by archiving change decrease-storage-on-fullfilment-create. Update Purpose after archive.
-## Requirements
 ### Requirement: Fullfilment creation SHALL decrement storage inventory
 The system SHALL decrement storage product amounts for all products included in a fullfilment when the fullfilment is created.
 
@@ -27,4 +24,3 @@ The system MUST persist fullfilment creation and inventory decrements as a singl
 #### Scenario: Atomic write guarantees no partial updates
 - **WHEN** an error occurs during fullfilment creation or inventory decrement
 - **THEN** system commits neither the fullfilment document nor any inventory decrements
-

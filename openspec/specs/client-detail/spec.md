@@ -118,7 +118,7 @@ The system SHALL provide a client detail page accessible via the route `/client/
 - **AND** destructive delete action is visually distinct from non-destructive actions
 
 ### Requirement: Fullfilment Creation Modal
-The system SHALL provide a modal form for creating new fullfilments with date selection, product selection, and amount inputs.
+The system SHALL provide a modal form for creating new fullfilments with date selection, product selection, amount inputs, and editable line-item price.
 
 #### Scenario: Open fullfilment creation modal
 - **WHEN** user taps the "Lisää täyttö" button
@@ -128,16 +128,16 @@ The system SHALL provide a modal form for creating new fullfilments with date se
 
 #### Scenario: Fullfilment form fields
 - **WHEN** fullfilment creation modal is open
-- **THEN** system displays a date picker field labeled "Päivämäärä"
-- **AND** displays a product selection dropdown labeled "Tuote"
-- **AND** displays an amount input field labeled "Määrä"
+- **THEN** system displays a date picker field
+- **AND** displays a product selection dropdown
+- **AND** displays an amount input field
+- **AND** displays a price input field prefilled from selected product price
 - **AND** displays "Lisää tuote" and "Tallenna" buttons
 
 #### Scenario: Add multiple products
-- **WHEN** user selects a product and enters an amount
-- **AND** taps "Lisää tuote"
-- **THEN** system adds the product with amount to a list in the modal
-- **AND** clears the product and amount fields for next entry
+- **WHEN** user selects a product, enters amount, optionally edits price, and taps "Lisää tuote"
+- **THEN** system adds the product with amount and chosen price to a list in the modal
+- **AND** clears transient entry fields for next line
 - **AND** displays the added products with remove options
 
 #### Scenario: Remove product from list
@@ -150,19 +150,23 @@ The system SHALL validate fullfilment creation inputs and provide appropriate er
 
 #### Scenario: Validate required fields
 - **WHEN** user attempts to save fullfilment without date
-- **THEN** system displays error message "Valitse päivämäärä"
+- **THEN** system displays an error message
 
 #### Scenario: Validate product selection
 - **WHEN** user attempts to add product without selecting one
-- **THEN** system displays error message "Valitse tuote"
+- **THEN** system displays an error message
 
 #### Scenario: Validate amount input
 - **WHEN** user enters invalid amount (negative, zero, or non-numeric)
-- **THEN** system displays error message "Anna kelvollinen määrä"
+- **THEN** system displays an error message
+
+#### Scenario: Validate price input
+- **WHEN** user enters invalid price (negative, empty, or non-numeric)
+- **THEN** system displays an error message
 
 #### Scenario: Validate at least one product
 - **WHEN** user attempts to save fullfilment with no products added
-- **THEN** system displays error message "Lisää vähintään yksi tuote"
+- **THEN** system displays an error message
 
 ### Requirement: Fullfilment Creation Submission
 The system SHALL create the fullfilment in the database, decrement product inventory for included products, and refresh the client detail page.
