@@ -1,5 +1,6 @@
 import { getClientsByCompany } from '@/services/client';
 import type { Client } from '@/types/client';
+import { fieldSorter } from '@/utils/sort';
 import { useEffect, useState } from 'react';
 import { useAuth } from './useAuth';
 
@@ -20,7 +21,7 @@ export const useClients = () => {
     setError(null);
 
     const unsubscribe = getClientsByCompany(user.profile.company, (fetchedClients) => {
-      setClients(fetchedClients);
+      setClients(fetchedClients.sort(fieldSorter(['name'])));
       setIsLoading(false);
     });
 

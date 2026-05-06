@@ -1,12 +1,25 @@
 import { createDocumentRef, getDocumentRef, getItems, runInTransaction, updateItem, whereEqual } from '@/services/firestore';
-import { Fullfilment } from '@/types/fullfilment';
+import { Fullfilment, FullfilmentProduct } from '@/types/fullfilment';
+import { SubItem } from '@/types/sub-item';
+
+interface Lot {
+  name: string;
+  company: string;
+  product: string;
+  amount: number;
+  remaining: number;
+}
 
 const converter = {
   toFirestore: (item: Fullfilment) => item,
   fromFirestore: (snapshot: any, options?: any) => {
-    const fullfilment = snapshot.data(options) as Fullfilment;
-    const products = fullfilment.products ? [...fullfilment.products] : [];
-    const amount = fullfilment.products?.reduce((prev, curr) => prev + curr.amount, 0);
+    const fullfilment = snapshot.data(options) as Fullfilment & { lots?: Lot[]; product: SubItem };
+    let products = fullfilment.products ? [...fullfilment.products] : [];
+    if (fullfilment.lots && fullfilment.product) {
+      const lotProducts = fullfilment.lots.map((it) => lotProductToFullfilmentProduct(it, fullfilment.product, fullfilment.amount ?? it.amount))
+      products = [...products, ...lotProducts];
+    }
+    const amount = products.reduce((prev, curr) => prev + curr.amount, 0);
     return {
       ...fullfilment,
       products,
@@ -15,6 +28,13 @@ const converter = {
     };
   },
 };
+
+function lotProductToFullfilmentProduct(lot: Lot, product: SubItem, amount: number) {
+  return {
+    amount,
+    product: { guid: lot.product, name: product.name, price: 0, ean: '' },
+  } as FullfilmentProduct;
+}
 
 function aggregateProducts(products: Fullfilment['products']) {
   const map = new Map<string, { name: string; amount: number }>();

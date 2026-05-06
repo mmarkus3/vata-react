@@ -2,12 +2,21 @@ import AddProductModal from '@/components/home/AddProductModal';
 import ProductList from '@/components/home/ProductList';
 import { themeColors } from '@/constants/colors';
 import { useProducts } from '@/hooks/useProducts';
-import { useState } from 'react';
-import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
+import { useCallback, useState } from 'react';
+import { ActivityIndicator, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function StorageScreen() {
   const [showAddModal, setShowAddModal] = useState(false);
   const { products, isLoading, error } = useProducts();
+  const [query, setQuery] = useState('');
+
+  const filteredProducts = useCallback(() => {
+    if (query.length < 2) {
+      return products;
+    }
+
+    return products.filter((p) => p.name.toLowerCase().includes(query.toLowerCase()));
+  }, [query, products]);
 
   if (isLoading) {
     return (
@@ -48,8 +57,21 @@ export default function StorageScreen() {
             <Text className="text-sm font-semibold text-white">Lisää tuote</Text>
           </TouchableOpacity>
         </View>
+        <View className="flex-1 w-100 py-4">
+          <TextInput className="border border-gray-300 rounded-lg px-4 py-3 text-base text-gray-900 bg-white"
+            onChangeText={(val) => setQuery(val)}
+            placeholder="Suodata"
+            value={query}
+          />
+        </View>
       </View>
-      <ProductList products={products} />
+      {filteredProducts().length === 0 ? (
+        <View className="flex-1 items-center justify-center px-6 py-10">
+          <Text className="text-lg font-semibold text-gray-900">Ei hakutuloksia</Text>
+        </View>
+      ) : (
+        <ProductList products={filteredProducts()} />
+      )}
       <AddProductModal
         visible={showAddModal}
         onClose={() => setShowAddModal(false)}

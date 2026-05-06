@@ -2,16 +2,25 @@ import AddClientModal from '@/components/clients/AddClientModal';
 import ClientListItem from '@/components/clients/ClientListItem';
 import { themeColors } from '@/constants/colors';
 import { useClients } from '@/hooks/useClients';
-import { useState } from 'react';
-import { ActivityIndicator, FlatList, Text, TouchableOpacity, View } from 'react-native';
+import { useCallback, useState } from 'react';
+import { ActivityIndicator, FlatList, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function ClientsScreen() {
   const { clients, isLoading, error } = useClients();
   const [showAddClientModal, setShowAddClientModal] = useState(false);
+  const [query, setQuery] = useState('');
 
   const handleClientCreated = () => {
     setShowAddClientModal(false);
   };
+
+  const filteredClients = useCallback(() => {
+    if (query.length < 2) {
+      return clients;
+    }
+
+    return clients.filter((client) => client.name.toLowerCase().includes(query.toLowerCase()));
+  }, [query, clients]);
 
   if (isLoading) {
     return (
@@ -63,6 +72,13 @@ export default function ClientsScreen() {
             <Text className="text-sm font-semibold text-white">Lisää asiakas</Text>
           </TouchableOpacity>
         </View>
+        <View className="flex-1 w-100 py-4">
+          <TextInput className="border border-gray-300 rounded-lg px-4 py-3 text-base text-gray-900 bg-white"
+            onChangeText={(val) => setQuery(val)}
+            placeholder="Suodata"
+            value={query}
+          />
+        </View>
       </View>
       {clients.length === 0 ? (
         <View className="flex-1 items-center justify-center px-6 py-10">
@@ -71,10 +87,14 @@ export default function ClientsScreen() {
             Asiakkaat näkyvät täällä kun niitä on lisätty järjestelmään.
           </Text>
         </View>
+      ) : filteredClients().length === 0 ? (
+        <View className="flex-1 items-center justify-center px-6 py-10">
+          <Text className="text-lg font-semibold text-gray-900">Ei hakutuloksia</Text>
+        </View>
       ) : (
         <FlatList
           className="px-4 py-3"
-          data={clients}
+          data={filteredClients()}
           keyExtractor={(item) => item.id ?? `${item.name}-${item.email}`}
           renderItem={({ item }) => <ClientListItem client={item} />}
           showsVerticalScrollIndicator={false}

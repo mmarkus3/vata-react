@@ -199,7 +199,7 @@ export default function ClientDetailPage() {
             </View>
           )}
 
-          {client.address && (
+          {client.address?.street && (
             <View className="mb-3">
               <Text className="text-sm font-semibold uppercase tracking-wide text-gray-500">Osoite</Text>
               <Text className="text-gray-900">
