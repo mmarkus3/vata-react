@@ -1,7 +1,12 @@
 import { format } from 'date-fns';
 import { ChangeEvent, useState } from 'react';
 
-export function SelectMonth({ date, onChange }: { date: Date; onChange: (month: string) => void }) {
+interface SelectMonthProps {
+  date: Date;
+  onChange: (month: string) => void;
+}
+
+export function SelectMonth({ date, onChange }: SelectMonthProps) {
   const [month, setMonth] = useState(format(date, 'yyyy-MM'));
 
   const handleMonthChange = (e: ChangeEvent<HTMLInputElement>) => {

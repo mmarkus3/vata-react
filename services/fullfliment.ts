@@ -1,6 +1,6 @@
 import { Fullfilment } from '@/types/fullfilment';
 import { DocumentData, QueryDocumentSnapshot, SnapshotOptions, where } from 'firebase/firestore';
-import { getItems } from './firestore';
+import { getItems, saveItem } from './firestore';
 
 const converter = {
   toFirestore: (item: Fullfilment) => item,
@@ -32,5 +32,14 @@ export async function getCompanyFullfilments(companyId: string, startDate: Date,
   } catch (error) {
     console.error('Failed to fetch company fullfilments:', error);
     throw new Error(error instanceof Error ? error.message : 'Täyttöjen haku epäonnistui');
+  }
+}
+
+export async function createFullfilment(fullfilment: Omit<Fullfilment, 'id' | 'amount' | 'created'>) {
+  try {
+    return await saveItem('fullfilments', fullfilment);
+  } catch (error) {
+    console.error('Failed to create fullfilment:', error);
+    throw new Error(error instanceof Error ? error.message : 'Täytön luonti epäonnistui');
   }
 }

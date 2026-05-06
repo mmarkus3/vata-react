@@ -1,3 +1,4 @@
+import AddFullfilmentModal from '@/components/clients/AddFullfilmentModal';
 import SegmentControl from '@/components/common/SegmentControl';
 import { themeColors } from '@/constants/colors';
 import { getClientById } from '@/services/client';
@@ -5,7 +6,7 @@ import { getClientFullfilments } from '@/services/fullfliment';
 import type { Client } from '@/types/client';
 import { groupFullfilmentsByMonth, groupFullfilmentsByProduct, type FullfilmentByMonth, type FullfilmentByProduct } from '@/utils/fullfilmentGrouping';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 export default function ClientDetailPage() {
@@ -21,6 +22,29 @@ export default function ClientDetailPage() {
   const [clientError, setClientError] = useState<string | null>(null);
   const [fullfilmentsError, setFullfilmentsError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState(0); // 0 for monthly, 1 for product
+  const [isAddModalVisible, setIsAddModalVisible] = useState(false);
+
+  const loadFullfilments = useCallback(async () => {
+    if (!clientId || !client?.company) {
+      setIsLoadingFullfilments(false);
+      return;
+    }
+
+    setIsLoadingFullfilments(true);
+    setFullfilmentsError(null);
+
+    try {
+      const result = await getClientFullfilments(clientId, client.company);
+      setFullfilmentsByMonth(groupFullfilmentsByMonth(result));
+      setFullfilmentsByProduct(groupFullfilmentsByProduct(result));
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Täyttöjen haku epäonnistui';
+      setFullfilmentsError(message);
+      console.error('Fullfilments load error:', err);
+    } finally {
+      setIsLoadingFullfilments(false);
+    }
+  }, [client?.company, clientId]);
 
   useEffect(() => {
     const loadClient = async () => {
@@ -49,39 +73,20 @@ export default function ClientDetailPage() {
       }
     };
 
-    const loadFullfilments = async () => {
-      if (!clientId) {
-        setIsLoadingFullfilments(false);
-        return;
-      }
-
-      if (!client?.company) {
-        setIsLoadingFullfilments(false);
-        return;
-      }
-
-      setIsLoadingFullfilments(true);
-      setFullfilmentsError(null);
-
-      try {
-        const result = await getClientFullfilments(clientId, client.company);
-        setFullfilmentsByMonth(groupFullfilmentsByMonth(result));
-        setFullfilmentsByProduct(groupFullfilmentsByProduct(result));
-      } catch (err) {
-        const message = err instanceof Error ? err.message : 'Täyttöjen haku epäonnistui';
-        setFullfilmentsError(message);
-        console.error('Fullfilments load error:', err);
-      } finally {
-        setIsLoadingFullfilments(false);
-      }
-    };
-
     loadClient();
+  }, [clientId]);
+
+  useEffect(() => {
     loadFullfilments();
-  }, [client?.company, clientId]);
+  }, [loadFullfilments]);
 
   const handleBackPress = () => {
     router.back();
+  };
+
+  const handleFullfilmentCreated = async () => {
+    await loadFullfilments();
+    setIsAddModalVisible(false);
   };
 
   if (isLoadingClient) {
@@ -158,8 +163,16 @@ export default function ClientDetailPage() {
         </View>
 
         {/* Fullfilments Section with Segment Control */}
-        <View className="rounded-3xl bg-white p-6 mt-6 shadow-sm">
-          <Text className="text-xl font-bold text-gray-900 mb-4">Täytöt</Text>
+        <View className="mt-6 rounded-3xl bg-white p-6 shadow-sm">
+          <View className="mb-4 flex-row items-center justify-between">
+            <Text className="text-xl font-bold text-gray-900">Täytöt</Text>
+            <TouchableOpacity
+              onPress={() => setIsAddModalVisible(true)}
+              className="rounded-2xl bg-primary-600 px-4 py-2"
+            >
+              <Text className="text-sm font-semibold text-white">Lisää täyttö</Text>
+            </TouchableOpacity>
+          </View>
 
           <SegmentControl
             options={['Kuukausittain', 'Tuotteittain']}
@@ -176,28 +189,28 @@ export default function ClientDetailPage() {
                   <Text className="mt-2 text-gray-600">Ladataan täyttöjä...</Text>
                 </View>
               ) : fullfilmentsError ? (
-                <View className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <View className="rounded-lg border border-red-200 bg-red-50 p-4">
                   <Text className="text-red-700">{fullfilmentsError}</Text>
                 </View>
               ) : fullfilmentsByMonth.length === 0 ? (
-                <Text className="text-gray-500 italic">Ei täyttöjä</Text>
+                <Text className="italic text-gray-500">Ei täyttöjä</Text>
               ) : (
                 fullfilmentsByMonth.map((monthGroup) => (
                   <View key={monthGroup.month} className="mb-4">
-                    <View className="flex-row justify-between items-center mb-2">
+                    <View className="mb-2 flex-row items-center justify-between">
                       <Text className="text-lg font-semibold text-gray-900">{monthGroup.month}</Text>
                       <Text className="text-sm text-gray-600">Yhteensä: {monthGroup.totalAmount}</Text>
                     </View>
                     {monthGroup.fullfilments.map((fullfilment) => (
-                      <View key={fullfilment.id} className="ml-4 mb-2 p-3 bg-gray-50 rounded-lg">
+                      <View key={fullfilment.id} className="mb-2 ml-4 rounded-lg bg-gray-50 p-3">
                         <View className="flex-row justify-between">
-                          <Text className="text-gray-900 flex-1">
+                          <Text className="flex-1 text-gray-900">
                             {new Date(fullfilment.date).toLocaleDateString('fi-FI')}
                           </Text>
                           <Text className="text-gray-600">{fullfilment.amount || 0} kpl</Text>
                         </View>
-                        <Text className="text-sm text-gray-600 mt-1">
-                          {fullfilment.products.map(p => p.product.name).join(', ')}
+                        <Text className="mt-1 text-sm text-gray-600">
+                          {fullfilment.products.map((p) => p.product.name).join(', ')}
                         </Text>
                       </View>
                     ))}
@@ -214,20 +227,20 @@ export default function ClientDetailPage() {
                   <Text className="mt-2 text-gray-600">Ladataan täyttöjä...</Text>
                 </View>
               ) : fullfilmentsError ? (
-                <View className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <View className="rounded-lg border border-red-200 bg-red-50 p-4">
                   <Text className="text-red-700">{fullfilmentsError}</Text>
                 </View>
               ) : fullfilmentsByProduct.length === 0 ? (
-                <Text className="text-gray-500 italic">Ei täyttöjä</Text>
+                <Text className="italic text-gray-500">Ei täyttöjä</Text>
               ) : (
                 fullfilmentsByProduct.map((productGroup) => (
                   <View key={productGroup.productName} className="mb-4">
-                    <View className="flex-row justify-between items-center mb-2">
+                    <View className="mb-2 flex-row items-center justify-between">
                       <Text className="text-lg font-semibold text-gray-900">{productGroup.productName}</Text>
                       <Text className="text-sm text-gray-600">Yhteensä: {productGroup.totalAmount}</Text>
                     </View>
                     {productGroup.months.map((month) => (
-                      <View key={month.month} className="ml-4 mb-2 p-3 bg-gray-50 rounded-lg">
+                      <View key={month.month} className="mb-2 ml-4 rounded-lg bg-gray-50 p-3">
                         <View className="flex-row justify-between">
                           <Text className="text-gray-900">{month.month}</Text>
                           <Text className="text-gray-600">{month.totalAmount} kpl</Text>
@@ -241,6 +254,13 @@ export default function ClientDetailPage() {
           )}
         </View>
       </ScrollView>
+
+      <AddFullfilmentModal
+        visible={isAddModalVisible}
+        client={client}
+        onClose={() => setIsAddModalVisible(false)}
+        onCreated={handleFullfilmentCreated}
+      />
     </View>
   );
 }
