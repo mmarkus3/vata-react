@@ -1,10 +1,13 @@
+import InviteUserModal from '@/components/invite/InviteUserModal';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'expo-router';
+import { useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 export default function SettingsScreen() {
   const { user, signOut, company } = useAuth();
   const router = useRouter();
+  const [showInviteModal, setShowInviteModal] = useState(false);
 
   const handleSignOut = async () => {
     try {
@@ -31,6 +34,13 @@ export default function SettingsScreen() {
         </Text>
       </View>
 
+      <TouchableOpacity
+        className="bg-primary-600 rounded-lg py-3 active:bg-primary-700 mb-4"
+        onPress={() => setShowInviteModal(true)}
+      >
+        <Text className="text-white font-semibold text-center">Kutsu käyttäjä</Text>
+      </TouchableOpacity>
+
       {/* Sign Out Button */}
       <TouchableOpacity
         className="bg-secondary-600 rounded-lg py-3 active:bg-secondary-700"
@@ -38,6 +48,11 @@ export default function SettingsScreen() {
       >
         <Text className="text-white font-semibold text-center">Kirjaudu ulos</Text>
       </TouchableOpacity>
+      <InviteUserModal
+        visible={showInviteModal}
+        onClose={() => setShowInviteModal(false)}
+        onInvited={() => setShowInviteModal(false)}
+      />
     </View>
   );
 }
