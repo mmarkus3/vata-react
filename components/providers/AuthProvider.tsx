@@ -9,7 +9,8 @@ import {
   createUserWithEmailAndPassword,
   signOut as firebaseSignOut,
   onAuthStateChanged,
-  signInWithEmailAndPassword
+  sendPasswordResetEmail,
+  signInWithEmailAndPassword,
 } from 'firebase/auth';
 import { serverTimestamp } from 'firebase/firestore';
 import React, { createContext, FC, ReactNode, useEffect, useState } from 'react';
@@ -151,13 +152,27 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
       await signInWithEmailAndPassword(auth, email, password);
       // Profile will be set by the auth state listener
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Sign in failed';
+      const message = err instanceof Error ? err.message : 'Kirjautuminen epäonnistui';
       setError(message);
       throw new Error(message);
     } finally {
       setIsLoading(false);
     }
   };
+
+  const forgotPassword = async (email: string) => {
+    try {
+      setError(null);
+      setIsLoading(true);
+      await sendPasswordResetEmail(auth, email);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Salasanan palautus epäonnistui';
+      setError(message);
+      throw new Error(message);
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   const signOut = async (): Promise<void> => {
     try {
@@ -167,7 +182,7 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
       setUser(null);
       setCompany(null);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Sign out failed';
+      const message = err instanceof Error ? err.message : 'Rekisteröityminen epäonnistui';
       setError(message);
       throw new Error(message);
     } finally {
@@ -222,6 +237,7 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
     showCreateCompanyModal,
     signUp,
     signIn,
+    forgotPassword,
     signOut,
     createCompany,
     closeCreateCompanyModal,

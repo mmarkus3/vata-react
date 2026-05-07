@@ -1,13 +1,11 @@
 import { useAuth } from '@/hooks/useAuth';
-import { useRouter } from 'expo-router';
 import { FC, useCallback, useState } from 'react';
 import { ActivityIndicator, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
-type AuthMode = 'signin' | 'signup';
+type AuthMode = 'signin' | 'signup' | 'forgot';
 
 const LoginScreen: FC = () => {
-  const router = useRouter();
-  const { signIn, signUp, isLoading, error: authError } = useAuth();
+  const { signIn, signUp, forgotPassword, isLoading, error: authError } = useAuth();
   const [mode, setMode] = useState<AuthMode>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -17,7 +15,7 @@ const LoginScreen: FC = () => {
     setLocalError(null);
 
     // Validation
-    if (!email || !password) {
+    if (!email || (mode !== 'forgot' && !password)) {
       setLocalError('Anna sähköposti ja salasana');
       return;
     }
@@ -27,7 +25,7 @@ const LoginScreen: FC = () => {
       return;
     }
 
-    if (password.length < 6) {
+    if (mode !== 'forgot' && password.length < 6) {
       setLocalError('Salasanan tulee olla yli 6 merkkiä');
       return;
     }
@@ -35,18 +33,24 @@ const LoginScreen: FC = () => {
     try {
       if (mode === 'signin') {
         await signIn(email, password);
-      } else {
+      } else if (mode === 'signup') {
         await signUp(email, password);
+      } else {
+        await forgotPassword(email);
       }
       // Navigation will be handled by the layout based on auth state
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Kirjautuminen ei onnistunut';
       setLocalError(message);
     }
-  }, [email, password, mode, signIn, signUp, router]);
+  }, [email, password, mode, signIn, signUp, forgotPassword]);
 
-  const toggleMode = useCallback(() => {
-    setMode(mode === 'signin' ? 'signup' : 'signin');
+  const toggleMode = useCallback((newMode: AuthMode) => {
+    if (newMode === 'forgot') {
+      setMode(mode === 'signin' ? 'forgot' : 'signin');
+    } else {
+      setMode(mode === 'signin' ? 'signup' : 'signin');
+    }
     setLocalError(null);
   }, [mode]);
 
@@ -58,7 +62,7 @@ const LoginScreen: FC = () => {
       <View className="mb-8">
         <Text className="text-4xl font-bold text-gray-900 mb-2">Tervetuloa Varasto- ja täyttö Appiin</Text>
         <Text className="text-lg text-gray-600">
-          {mode === 'signin' ? 'Kirjaudu sisään' : 'Rekisteröidy'}
+          {mode === 'signin' ? 'Kirjaudu sisään' : mode === 'forgot' ? 'Palauta salasana' : 'Rekisteröidy'}
         </Text>
       </View>
 
@@ -85,21 +89,23 @@ const LoginScreen: FC = () => {
       </View>
 
       {/* Password Input */}
-      <View className="mb-6">
-        <Text className="text-sm font-semibold text-gray-700 mb-2">Salasana</Text>
-        <TextInput
-          className="border border-gray-300 rounded-lg px-4 py-3 text-base text-gray-900 bg-white"
-          placeholder="••••••••"
-          placeholderTextColor="#999"
-          secureTextEntry
-          editable={!isLoading}
-          value={password}
-          onChangeText={setPassword}
-        />
-        {mode === 'signup' && (
-          <Text className="text-xs text-gray-500 mt-2">Vähintään 6 merkkiä</Text>
-        )}
-      </View>
+      {['signin', 'signup'].includes(mode) && (
+        <View className="mb-6">
+          <Text className="text-sm font-semibold text-gray-700 mb-2">Salasana</Text>
+          <TextInput
+            className="border border-gray-300 rounded-lg px-4 py-3 text-base text-gray-900 bg-white"
+            placeholder="••••••••"
+            placeholderTextColor="#999"
+            secureTextEntry
+            editable={!isLoading}
+            value={password}
+            onChangeText={setPassword}
+          />
+          {mode === 'signup' && (
+            <Text className="text-xs text-gray-500 mt-2">Vähintään 6 merkkiä</Text>
+          )}
+        </View>
+      )}
 
       {/* Auth Button */}
       <TouchableOpacity
@@ -112,22 +118,38 @@ const LoginScreen: FC = () => {
           <ActivityIndicator color="white" size="small" />
         ) : (
           <Text className="text-white font-semibold text-center">
-            {mode === 'signin' ? 'Kirjaudu' : 'Luo tili'}
+            {mode === 'signin' ? 'Kirjaudu' : mode === 'forgot' ? 'Palauta' : 'Luo tili'}
           </Text>
         )}
       </TouchableOpacity>
 
       {/* Toggle Mode */}
-      <View className="flex-row items-center justify-center gap-2">
-        <Text className="text-gray-600">
-          {mode === 'signin' ? "Ei tunnusta?" : 'On jo tunnus?'}
-        </Text>
-        <TouchableOpacity onPress={toggleMode} disabled={isLoading}>
-          <Text className="text-primary-600 font-semibold">
-            {mode === 'signin' ? 'Rekisteröidy' : 'Kirjaudu'}
+      {['signin', 'forgot'].includes(mode) && (
+        <View className="flex-row items-center justify-center gap-2 mb-2">
+          {mode === 'signin' && (
+            <Text className="text-gray-600">
+              Salasana unohtunut?
+            </Text>
+          )}
+          <TouchableOpacity onPress={() => toggleMode('forgot')} disabled={isLoading}>
+            <Text className="text-primary-600 font-semibold">
+              {mode === 'signin' ? 'Palauta' : 'Peruuta'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
+      {['signin', 'signup'].includes(mode) && (
+        <View className="flex-row items-center justify-center gap-2">
+          <Text className="text-gray-600">
+            {mode === 'signin' ? "Ei tunnusta?" : 'On jo tunnus?'}
           </Text>
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity onPress={() => toggleMode('signup')} disabled={isLoading}>
+            <Text className="text-primary-600 font-semibold">
+              {mode === 'signin' ? 'Rekisteröidy' : 'Kirjaudu'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 };

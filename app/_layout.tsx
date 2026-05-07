@@ -61,7 +61,7 @@ function RootLayoutNav() {
         }}
       >
         <Stack.Screen name="login" options={{ title: 'VaTä' }} />
-        <Stack.Screen name="home" options={{ title: 'VaTä' }} />
+        <Stack.Screen name="(home)" options={{ title: 'VaTä' }} />
       </Stack>
 
       <CreateCompanyModal
