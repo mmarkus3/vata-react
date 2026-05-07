@@ -7,8 +7,7 @@
     "site": "vata-prod",
     "public": "dist",
     "ignore": [
-      "firebase.json",
-      "**/.*"
+      "firebase.json"
     ]
   },
   "functions": [
