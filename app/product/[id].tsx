@@ -213,7 +213,7 @@ export default function ProductDetailPage() {
 
           try {
             await deleteProduct(productId);
-            router.replace('/home');
+            router.replace('/(home)');
           } catch (err) {
             const message = err instanceof Error ? err.message : 'Poisto epäonnistui.';
             setError(message);

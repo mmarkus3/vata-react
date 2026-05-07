@@ -124,7 +124,7 @@ export default function ClientDetailPage() {
     try {
       await deleteClient(client.id);
       setIsDeleteModalVisible(false);
-      router.replace('/home/clients');
+      router.replace('/(home)/clients');
     } catch (error) {
       setActionError(error instanceof Error ? error.message : 'Asiakkaan poisto epäonnistui');
     } finally {

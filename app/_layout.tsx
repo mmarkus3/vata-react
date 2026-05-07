@@ -29,7 +29,7 @@ function RootLayoutNav() {
     } else if (user.profile?.company) {
       // User has a company, navigate to app
       if (segments[0] === 'login' || segments[0] == null) {
-        router.replace('/home');
+        router.replace('/(home)');
       }
     }
   }, [user, segments, isLoading, showCreateCompanyModal, router]);
@@ -37,7 +37,7 @@ function RootLayoutNav() {
   const handleCompanyCreated = async (companyId: string, companyName: string) => {
     try {
       await createCompany(companyName);
-      router.replace('/home');
+      router.replace('/(home)');
     } catch (error) {
       console.error('Failed to set company:', error);
     }
@@ -56,10 +56,11 @@ function RootLayoutNav() {
       <Stack
         screenOptions={{
           headerShown: false,
+          title: 'VaTä'
         }}
       >
-        <Stack.Screen name="login" />
-        <Stack.Screen name="home" />
+        <Stack.Screen name="login" options={{ title: 'VaTä' }} />
+        <Stack.Screen name="home" options={{ title: 'VaTä' }} />
       </Stack>
 
       <CreateCompanyModal
