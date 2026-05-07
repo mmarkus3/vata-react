@@ -48,7 +48,7 @@ export async function createProduct(product: Omit<Product, 'id'>, barcodeImageUr
 
 export async function getProductById(productId: string) {
   try {
-    return await getItem<Product>('products', productId);
+    return await getItem<Product>('products', productId, converter);
   } catch (error) {
     console.error('Failed to fetch product:', error);
     throw error;

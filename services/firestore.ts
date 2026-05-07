@@ -22,8 +22,8 @@ export async function deleteItem(collectionKey: string, id: string) {
   await deleteDoc(docRef);
 }
 
-export async function getItem<T>(collectionKey: string, id: string) {
-  const docRef = await getDoc(doc(firestore, collectionKey, id));
+export async function getItem<T>(collectionKey: string, id: string, converter: FirestoreDataConverter<DocumentData, DocumentData> | null = null) {
+  const docRef = await getDoc(converter ? doc(firestore, collectionKey, id).withConverter(converter) : doc(firestore, collectionKey, id));
   if (docRef.exists()) {
     return {
       id: docRef.id,

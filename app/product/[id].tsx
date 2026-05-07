@@ -243,7 +243,6 @@ export default function ProductDetailPage() {
 
         <View className="rounded-3xl bg-white p-6 shadow-sm">
           <Text className="text-2xl font-bold text-gray-900">Tuotteen tiedot</Text>
-          <Text className="text-sm text-gray-500 mt-1">ID: {product?.id}</Text>
 
           <View className="mt-5 space-y-4">
             <View>
@@ -323,7 +322,7 @@ export default function ProductDetailPage() {
                   className="mt-1 rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
                 />
               ) : (
-                <Text className="mt-1 text-base font-medium text-gray-900">€{product?.price.toFixed(2)}</Text>
+                <Text className="mt-1 text-base font-medium text-gray-900">{product?.price.toFixed(2)}€</Text>
               )}
             </View>
 
