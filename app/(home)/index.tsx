@@ -43,13 +43,10 @@ export default function StorageScreen() {
   return (
     <View className="flex-1 bg-slate-50">
       <View className="px-6 pt-8 pb-4 bg-white border-b border-gray-200">
-        <View className="flex-row items-start justify-between">
-          <View>
-            <Text className="text-2xl font-bold text-gray-900">Varasto</Text>
-            <Text className="text-gray-600 mt-1">
-              {products.length} tuote(tta) varastossa
-            </Text>
-          </View>
+        <View className="flex-row items-center justify-between">
+          <Text className="text-gray-600 mt-1">
+            {products.length} tuote(tta) varastossa
+          </Text>
           <TouchableOpacity
             onPress={() => setShowAddModal(true)}
             className="mt-1 rounded-2xl bg-primary-600 px-4 py-2"

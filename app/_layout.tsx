@@ -3,6 +3,7 @@ import { AuthProvider } from '@/components/providers/AuthProvider';
 import { themeColors } from '@/constants/colors';
 import { useAuth } from '@/hooks/useAuth';
 import { Stack, useRouter, useSegments } from 'expo-router';
+import Head from 'expo-router/head';
 import { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import '../i18n/config';
@@ -75,6 +76,10 @@ function RootLayoutNav() {
 export default function RootLayout() {
   return (
     <AuthProvider>
+      <Head>
+        <title>VaTä</title>
+        <meta name="description" content="Varasto- ja täyttö" />
+      </Head>
       <RootLayoutNav />
     </AuthProvider>
   );
