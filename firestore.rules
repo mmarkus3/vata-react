@@ -21,6 +21,13 @@ service cloud.firestore {
 			  get(/databases/$(database)/documents/users/$(request.auth.uid)).data.company
     }
 
+    match /categories/{document} {
+      allow read: if isMyCompanys();
+      allow create: if isUser();
+      allow update: if isMyCompanys();
+      allow delete: if isMyCompanys();
+    }
+
     match /clients/{document} {
       allow read: if isMyCompanys();
       allow create: if isUser();

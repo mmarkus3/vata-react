@@ -3,6 +3,7 @@
     "storage": "Storage",
     "clients": "Clients",
     "report": "Report",
-    "profile": "Profile"
+    "profile": "Profile",
+    "categories": "Categories"
   }
 }

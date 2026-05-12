@@ -1,10 +1,11 @@
 schema: spec-driven
 
 context: |
-  Tech stack: TypeScript, React-Native, Expo, Node.js
+  Tech stack: TypeScript, React-Native, Expo, Node.js, i18next
   We use conventional commits
-  Domain: storage management and fullfilment to clients platform
-  Style: Keep features modular and accessibility-friendly
+  Domain: storage management and fullfilment to client's stores platform
+  Style: Keep features modular and accessibility-friendly. Keep modals and buttons styles consistant
+  Localization: use i18next to translate hard-coded texts
   Testing: Jest
 
 # Project context (optional)

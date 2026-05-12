@@ -62,6 +62,17 @@ export default function AppLayout() {
         }}
       />
       <Tabs.Screen
+        name="categories"
+        options={{
+          title: t('nav.categories'),
+          tabBarLabel: t('nav.categories'),
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="folder-outline" size={size} color={color} />
+          ),
+          headerTitle: t('nav.categories'),
+        }}
+      />
+      <Tabs.Screen
         name="settings"
         options={{
           title: t('nav.profile'),
