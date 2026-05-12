@@ -10,12 +10,26 @@
     "profile": "Profiili",
     "categories": "Kategoriat"
   },
+  "addProduct": {
+    "fields": {
+      "retailPricePlaceholder": "Vähittäismyyntihinta (valinnainen)",
+      "unitPricePlaceholder": "Kilohinta €/kg (valinnainen)"
+    },
+    "errors": {
+      "retailPriceInvalid": "Anna kelvollinen vähittäismyyntihinta",
+      "unitPriceInvalid": "Anna kelvollinen kilohinta"
+    }
+  },
   "productDetail": {
     "title": "Tuotteen tiedot",
     "fields": {
       "barcode": "Viivakoodi",
       "name": "Nimi",
       "price": "Hinta",
+      "retailPrice": "Vähittäismyyntihinta",
+      "retailPricePlaceholder": "Anna vähittäismyyntihinta",
+      "unitPrice": "Kilohinta",
+      "unitPricePlaceholder": "Anna kilohinta €/kg",
       "amount": "Määrä",
       "ean": "EAN"
     },
@@ -53,6 +67,8 @@
       "nameRequired": "Anna tuotteen nimi.",
       "amountInvalid": "Anna kelvollinen määrä.",
       "priceInvalid": "Anna kelvollinen hinta.",
+      "retailPriceInvalid": "Anna kelvollinen vähittäismyyntihinta.",
+      "unitPriceInvalid": "Anna kelvollinen kilohinta.",
       "saveFailed": "Tallennus epäonnistui.",
       "resetAmountFailed": "Määrän nollaus epäonnistui.",
       "deleteFailed": "Poisto epäonnistui."

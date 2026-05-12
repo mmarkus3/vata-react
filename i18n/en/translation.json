@@ -10,12 +10,26 @@
     "profile": "Profile",
     "categories": "Categories"
   },
+  "addProduct": {
+    "fields": {
+      "retailPricePlaceholder": "Retail price (optional)",
+      "unitPricePlaceholder": "Unit price €/kg (optional)"
+    },
+    "errors": {
+      "retailPriceInvalid": "Enter a valid retail price",
+      "unitPriceInvalid": "Enter a valid unit price"
+    }
+  },
   "productDetail": {
     "title": "Product details",
     "fields": {
       "barcode": "Barcode",
       "name": "Name",
       "price": "Price",
+      "retailPrice": "Retail price",
+      "retailPricePlaceholder": "Enter retail price",
+      "unitPrice": "Unit price",
+      "unitPricePlaceholder": "Enter unit price €/kg",
       "amount": "Amount",
       "ean": "EAN"
     },
@@ -53,6 +67,8 @@
       "nameRequired": "Enter product name.",
       "amountInvalid": "Enter a valid amount.",
       "priceInvalid": "Enter a valid price.",
+      "retailPriceInvalid": "Enter a valid retail price.",
+      "unitPriceInvalid": "Enter a valid unit price.",
       "saveFailed": "Saving failed.",
       "resetAmountFailed": "Failed to reset amount.",
       "deleteFailed": "Deleting failed."

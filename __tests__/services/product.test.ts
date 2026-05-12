@@ -1,6 +1,7 @@
-import { getProductById, updateProduct } from '@/services/product';
+import { createProduct, getProductById, updateProduct } from '@/services/product';
 
 const mockGetItem = jest.fn();
+const mockSaveItem = jest.fn();
 const mockUpdateItem = jest.fn();
 const mockUploadProductImage = jest.fn();
 const mockUploadBarcodeImage = jest.fn();
@@ -13,7 +14,7 @@ jest.mock('firebase/firestore', () => ({
 jest.mock('@/services/firestore', () => ({
   getItem: (...args: unknown[]) => mockGetItem(...args),
   updateItem: (...args: unknown[]) => mockUpdateItem(...args),
-  saveItem: jest.fn(),
+  saveItem: (...args: unknown[]) => mockSaveItem(...args),
   deleteItem: jest.fn(),
   getSnapshotItems: jest.fn(),
 }));
@@ -63,6 +64,58 @@ describe('product service', () => {
     });
   });
 
+  it('creates product with retail and unit prices and supports optional empty values', async () => {
+    mockSaveItem.mockResolvedValueOnce('p1').mockResolvedValueOnce('p2');
+    mockUpdateItem.mockResolvedValue(undefined);
+
+    await createProduct({
+      name: 'Product A',
+      amount: 10,
+      price: 5.5,
+      retailPrice: 6.9,
+      unitPrice: 10.2,
+      barcode: '',
+      ean: '',
+      company: 'co1',
+      images: [],
+    });
+
+    await createProduct({
+      name: 'Product B',
+      amount: 5,
+      price: 4.2,
+      barcode: '',
+      ean: '',
+      company: 'co1',
+      images: [],
+    });
+
+    expect(mockSaveItem).toHaveBeenNthCalledWith(
+      1,
+      'products',
+      expect.objectContaining({ retailPrice: 6.9, unitPrice: 10.2 })
+    );
+    expect(mockSaveItem).toHaveBeenNthCalledWith(
+      2,
+      'products',
+      expect.not.objectContaining({ retailPrice: expect.anything(), unitPrice: expect.anything() })
+    );
+  });
+
+  it('updates existing product retail and unit prices', async () => {
+    mockUpdateItem.mockResolvedValue(undefined);
+
+    await updateProduct('p1', {
+      retailPrice: 7.5,
+      unitPrice: 11.9,
+    });
+
+    expect(mockUpdateItem).toHaveBeenCalledWith('products', 'p1', {
+      retailPrice: 7.5,
+      unitPrice: 11.9,
+    });
+  });
+
   it('returns product with image array on subsequent read after edit', async () => {
     mockGetItem.mockResolvedValue({
       id: 'p1',
@@ -72,6 +125,8 @@ describe('product service', () => {
       ean: '123',
       barcode: 'barcode',
       price: 5,
+      retailPrice: 7.5,
+      unitPrice: 11.9,
       images: ['https://cdn.example.com/new-image.jpg'],
     });
 
@@ -79,5 +134,7 @@ describe('product service', () => {
 
     expect(mockGetItem).toHaveBeenCalledWith('products', 'p1', expect.any(Object));
     expect(product?.images).toEqual(['https://cdn.example.com/new-image.jpg']);
+    expect(product?.retailPrice).toBe(7.5);
+    expect(product?.unitPrice).toBe(11.9);
   });
 });

@@ -3,6 +3,7 @@ import { createProduct } from '@/services/product';
 import * as ImagePicker from 'expo-image-picker';
 import type { FC } from 'react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Image, Modal, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 interface AddProductModalProps {
@@ -12,10 +13,13 @@ interface AddProductModalProps {
 }
 
 const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProductCreated }) => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
   const [price, setPrice] = useState('');
+  const [retailPrice, setRetailPrice] = useState('');
+  const [unitPrice, setUnitPrice] = useState('');
   const [barcode, setBarcode] = useState('');
   const [ean, setEan] = useState('');
   const [imageUrl, setImageUrl] = useState('');
@@ -101,6 +105,10 @@ const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProduct
 
     const amountValue = Number(amount);
     const priceValue = Number(price);
+    const retailPriceInput = retailPrice.trim();
+    const unitPriceInput = unitPrice.trim();
+    const retailPriceValue = retailPriceInput ? Number(retailPriceInput.replace(',', '.')) : undefined;
+    const unitPriceValue = unitPriceInput ? Number(unitPriceInput.replace(',', '.')) : undefined;
 
     if (Number.isNaN(amountValue) || amountValue < 0) {
       setError('Anna kelvollinen varastosaldo');
@@ -109,6 +117,16 @@ const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProduct
 
     if (Number.isNaN(priceValue) || priceValue < 0) {
       setError('Anna kelvollinen hinta');
+      return;
+    }
+
+    if (retailPriceValue !== undefined && (Number.isNaN(retailPriceValue) || retailPriceValue < 0)) {
+      setError(t('addProduct.errors.retailPriceInvalid'));
+      return;
+    }
+
+    if (unitPriceValue !== undefined && (Number.isNaN(unitPriceValue) || unitPriceValue < 0)) {
+      setError(t('addProduct.errors.unitPriceInvalid'));
       return;
     }
 
@@ -124,6 +142,8 @@ const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProduct
           name: name.trim(),
           amount: amountValue,
           price: priceValue,
+          retailPrice: retailPriceValue,
+          unitPrice: unitPriceValue,
           barcode: barcode.trim(),
           ean: ean.trim(),
           company: user.profile.company,
@@ -140,6 +160,8 @@ const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProduct
       setPrice('');
       setBarcode('');
       setEan('');
+      setRetailPrice('');
+      setUnitPrice('');
       setImageUrl('');
       setImageUrls([]);
       setSelectedProductImageUris([]);
@@ -181,6 +203,22 @@ const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProduct
               value={price}
               onChangeText={setPrice}
               placeholder="Hinta"
+              keyboardType="numeric"
+              className="rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
+              placeholderTextColor="#9ca3af"
+            />
+            <TextInput
+              value={retailPrice}
+              onChangeText={setRetailPrice}
+              placeholder={t('addProduct.fields.retailPricePlaceholder')}
+              keyboardType="numeric"
+              className="rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
+              placeholderTextColor="#9ca3af"
+            />
+            <TextInput
+              value={unitPrice}
+              onChangeText={setUnitPrice}
+              placeholder={t('addProduct.fields.unitPricePlaceholder')}
               keyboardType="numeric"
               className="rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
               placeholderTextColor="#9ca3af"

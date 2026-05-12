@@ -20,6 +20,8 @@ export default function ProductDetailPage() {
   const [editMode, setEditMode] = useState(false);
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
+  const [retailPrice, setRetailPrice] = useState('');
+  const [unitPrice, setUnitPrice] = useState('');
   const [amount, setAmount] = useState('');
   const [barcode, setBarcode] = useState('');
   const [barcodeImageUrl, setBarcodeImageUrl] = useState<string | null>(null);
@@ -54,6 +56,8 @@ export default function ProductDetailPage() {
           setProduct(result);
           setName(result.name);
           setPrice(String(result.price));
+          setRetailPrice(result.retailPrice !== undefined ? String(result.retailPrice) : '');
+          setUnitPrice(result.unitPrice !== undefined ? String(result.unitPrice) : '');
           setAmount(String(result.amount));
           setEan(result.ean);
           setProductImages(Array.isArray(result.images) ? result.images : []);
@@ -184,6 +188,10 @@ export default function ProductDetailPage() {
 
     const amountValue = Number(amount);
     const priceValue = Number(price);
+    const retailPriceInput = retailPrice.trim();
+    const unitPriceInput = unitPrice.trim();
+    const retailPriceValue = retailPriceInput ? Number(retailPriceInput.replace(',', '.')) : undefined;
+    const unitPriceValue = unitPriceInput ? Number(unitPriceInput.replace(',', '.')) : undefined;
 
     if (Number.isNaN(amountValue) || amountValue < 0) {
       setError(t('productDetail.errors.amountInvalid'));
@@ -192,6 +200,14 @@ export default function ProductDetailPage() {
 
     if (Number.isNaN(priceValue) || priceValue < 0) {
       setError(t('productDetail.errors.priceInvalid'));
+      return;
+    }
+    if (retailPriceValue !== undefined && (Number.isNaN(retailPriceValue) || retailPriceValue < 0)) {
+      setError(t('productDetail.errors.retailPriceInvalid'));
+      return;
+    }
+    if (unitPriceValue !== undefined && (Number.isNaN(unitPriceValue) || unitPriceValue < 0)) {
+      setError(t('productDetail.errors.unitPriceInvalid'));
       return;
     }
 
@@ -203,6 +219,8 @@ export default function ProductDetailPage() {
       const data: Partial<Omit<Product, 'id' | 'company'>> = {
         name: name.trim(),
         price: priceValue,
+        retailPrice: retailPriceValue,
+        unitPrice: unitPriceValue,
         amount: amountValue,
         ean: ean.trim(),
         images: [...productImages, ...imageUrls],
@@ -231,6 +249,8 @@ export default function ProductDetailPage() {
       const updated = await getProductById(productId);
       if (updated) {
         setProduct(updated);
+        setRetailPrice(updated.retailPrice !== undefined ? String(updated.retailPrice) : '');
+        setUnitPrice(updated.unitPrice !== undefined ? String(updated.unitPrice) : '');
         setProductImages(Array.isArray(updated.images) ? updated.images : []);
         if (/^https?:\/\//i.test(updated.barcode)) {
           setBarcodeImageUrl(updated.barcode);
@@ -379,7 +399,7 @@ export default function ProductDetailPage() {
                 <View className="mt-3 space-y-3">
                   {previewProductImages.map((uri, index) => (
                     <View key={`${uri}-${index}`} className="rounded-2xl bg-gray-50 p-3">
-                      <Image source={{ uri }} className="h-44 w-full rounded-2xl bg-gray-100" resizeMode="cover" />
+                      <Image source={{ uri }} className="h-10 w-10 rounded-2xl bg-gray-100" resizeMode="contain" />
                       {editMode ? (
                         <TouchableOpacity
                           onPress={() => {
@@ -474,6 +494,40 @@ export default function ProductDetailPage() {
                 />
               ) : (
                 <Text className="mt-1 text-base font-medium text-gray-900">{product?.price.toFixed(2)}€</Text>
+              )}
+            </View>
+
+            <View>
+              <Text className="text-sm text-gray-500">{t('productDetail.fields.retailPrice')}</Text>
+              {editMode ? (
+                <TextInput
+                  value={retailPrice}
+                  onChangeText={setRetailPrice}
+                  keyboardType="numeric"
+                  placeholder={t('productDetail.fields.retailPricePlaceholder')}
+                  className="mt-1 rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
+                />
+              ) : (
+                <Text className="mt-1 text-base font-medium text-gray-900">
+                  {product?.retailPrice !== undefined ? `${product.retailPrice.toFixed(2)}€` : '-'}
+                </Text>
+              )}
+            </View>
+
+            <View>
+              <Text className="text-sm text-gray-500">{t('productDetail.fields.unitPrice')}</Text>
+              {editMode ? (
+                <TextInput
+                  value={unitPrice}
+                  onChangeText={setUnitPrice}
+                  keyboardType="numeric"
+                  placeholder={t('productDetail.fields.unitPricePlaceholder')}
+                  className="mt-1 rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
+                />
+              ) : (
+                <Text className="mt-1 text-base font-medium text-gray-900">
+                  {product?.unitPrice !== undefined ? `${product.unitPrice.toFixed(2)}€/kg` : '-'}
+                </Text>
               )}
             </View>
 

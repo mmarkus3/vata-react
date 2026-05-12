@@ -30,8 +30,8 @@ const ProductListItem: FC<ProductListItemProps> = ({ product }) => {
         {product.images?.[0] ? (
           <Image
             source={{ uri: product.images[0] }}
-            className="h-24 w-full rounded-xl bg-gray-100"
-            resizeMode="cover"
+            className="h-10 w-10 rounded-xl bg-gray-100"
+            resizeMode="contain"
           />
         ) : null}
         <View className="flex-row items-center justify-between">

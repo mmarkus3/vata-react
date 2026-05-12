@@ -8,9 +8,13 @@ const converter = {
   fromFirestore: (snapshot: QueryDocumentSnapshot<DocumentData, DocumentData>, options?: SnapshotOptions | undefined) => {
     const product = snapshot.data(options) as Product;
     const price = product.price ? +product.price : 0;
+    const retailPrice = product.retailPrice !== undefined ? +product.retailPrice : undefined;
+    const unitPrice = product.unitPrice !== undefined ? +product.unitPrice : undefined;
     return {
       ...product,
       price,
+      retailPrice: Number.isNaN(retailPrice as number) ? null : retailPrice,
+      unitPrice: Number.isNaN(unitPrice as number) ? null : unitPrice,
       images: Array.isArray(product.images) ? product.images : [],
     };
   },
