@@ -1,5 +1,6 @@
 import { useAuth } from '@/hooks/useAuth';
 import { createProduct } from '@/services/product';
+import { Product } from '@/types/product';
 import * as ImagePicker from 'expo-image-picker';
 import type { FC } from 'react';
 import { useState } from 'react';
@@ -20,6 +21,15 @@ const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProduct
   const [price, setPrice] = useState('');
   const [retailPrice, setRetailPrice] = useState('');
   const [unitPrice, setUnitPrice] = useState('');
+  const [energyJoule, setEnergyJoule] = useState('');
+  const [energyCalory, setEnergyCalory] = useState('');
+  const [fat, setFat] = useState('');
+  const [saturatedFat, setSaturatedFat] = useState('');
+  const [carbohydrate, setCarbohydrate] = useState('');
+  const [saturatedCarbohydrate, setSaturatedCarbohydrate] = useState('');
+  const [protein, setProtein] = useState('');
+  const [salt, setSalt] = useState('');
+  const [fiber, setFiber] = useState('');
   const [barcode, setBarcode] = useState('');
   const [ean, setEan] = useState('');
   const [imageUrl, setImageUrl] = useState('');
@@ -109,6 +119,36 @@ const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProduct
     const unitPriceInput = unitPrice.trim();
     const retailPriceValue = retailPriceInput ? Number(retailPriceInput.replace(',', '.')) : undefined;
     const unitPriceValue = unitPriceInput ? Number(unitPriceInput.replace(',', '.')) : undefined;
+    const nutritionEntries = [
+      ['energyJoule', energyJoule],
+      ['energyCalory', energyCalory],
+      ['fat', fat],
+      ['saturatedFat', saturatedFat],
+      ['carbohydrate', carbohydrate],
+      ['saturatedCarbohydrate', saturatedCarbohydrate],
+      ['protein', protein],
+      ['salt', salt],
+      ['fiber', fiber],
+    ] as const;
+    const nutritionValues = Object.fromEntries(
+      nutritionEntries.map(([key, raw]) => {
+        const trimmed = raw.trim();
+        return [key, trimmed ? Number(trimmed.replace(',', '.')) : undefined];
+      })
+    ) as Partial<
+      Pick<
+        Product,
+        | 'energyJoule'
+        | 'energyCalory'
+        | 'fat'
+        | 'saturatedFat'
+        | 'carbohydrate'
+        | 'saturatedCarbohydrate'
+        | 'protein'
+        | 'salt'
+        | 'fiber'
+      >
+    >;
 
     if (Number.isNaN(amountValue) || amountValue < 0) {
       setError('Anna kelvollinen varastosaldo');
@@ -129,6 +169,12 @@ const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProduct
       setError(t('addProduct.errors.unitPriceInvalid'));
       return;
     }
+    for (const [key, value] of Object.entries(nutritionValues)) {
+      if (value !== undefined && (Number.isNaN(value) || value < 0)) {
+        setError(t(`addProduct.errors.${key}Invalid`));
+        return;
+      }
+    }
 
     if (!user?.profile?.company) {
       setError('Käyttäjällä ei ole yritystä liitettynä');
@@ -144,6 +190,7 @@ const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProduct
           price: priceValue,
           retailPrice: retailPriceValue,
           unitPrice: unitPriceValue,
+          ...nutritionValues,
           barcode: barcode.trim(),
           ean: ean.trim(),
           company: user.profile.company,
@@ -162,6 +209,15 @@ const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProduct
       setEan('');
       setRetailPrice('');
       setUnitPrice('');
+      setEnergyJoule('');
+      setEnergyCalory('');
+      setFat('');
+      setSaturatedFat('');
+      setCarbohydrate('');
+      setSaturatedCarbohydrate('');
+      setProtein('');
+      setSalt('');
+      setFiber('');
       setImageUrl('');
       setImageUrls([]);
       setSelectedProductImageUris([]);
@@ -227,6 +283,78 @@ const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProduct
               value={ean}
               onChangeText={setEan}
               placeholder="EAN"
+              className="rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
+              placeholderTextColor="#9ca3af"
+            />
+            <TextInput
+              value={energyJoule}
+              onChangeText={setEnergyJoule}
+              placeholder={t('addProduct.fields.energyJoulePlaceholder')}
+              keyboardType="numeric"
+              className="rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
+              placeholderTextColor="#9ca3af"
+            />
+            <TextInput
+              value={energyCalory}
+              onChangeText={setEnergyCalory}
+              placeholder={t('addProduct.fields.energyCaloryPlaceholder')}
+              keyboardType="numeric"
+              className="rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
+              placeholderTextColor="#9ca3af"
+            />
+            <TextInput
+              value={fat}
+              onChangeText={setFat}
+              placeholder={t('addProduct.fields.fatPlaceholder')}
+              keyboardType="numeric"
+              className="rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
+              placeholderTextColor="#9ca3af"
+            />
+            <TextInput
+              value={saturatedFat}
+              onChangeText={setSaturatedFat}
+              placeholder={t('addProduct.fields.saturatedFatPlaceholder')}
+              keyboardType="numeric"
+              className="rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
+              placeholderTextColor="#9ca3af"
+            />
+            <TextInput
+              value={carbohydrate}
+              onChangeText={setCarbohydrate}
+              placeholder={t('addProduct.fields.carbohydratePlaceholder')}
+              keyboardType="numeric"
+              className="rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
+              placeholderTextColor="#9ca3af"
+            />
+            <TextInput
+              value={saturatedCarbohydrate}
+              onChangeText={setSaturatedCarbohydrate}
+              placeholder={t('addProduct.fields.saturatedCarbohydratePlaceholder')}
+              keyboardType="numeric"
+              className="rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
+              placeholderTextColor="#9ca3af"
+            />
+            <TextInput
+              value={protein}
+              onChangeText={setProtein}
+              placeholder={t('addProduct.fields.proteinPlaceholder')}
+              keyboardType="numeric"
+              className="rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
+              placeholderTextColor="#9ca3af"
+            />
+            <TextInput
+              value={salt}
+              onChangeText={setSalt}
+              placeholder={t('addProduct.fields.saltPlaceholder')}
+              keyboardType="numeric"
+              className="rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
+              placeholderTextColor="#9ca3af"
+            />
+            <TextInput
+              value={fiber}
+              onChangeText={setFiber}
+              placeholder={t('addProduct.fields.fiberPlaceholder')}
+              keyboardType="numeric"
               className="rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
               placeholderTextColor="#9ca3af"
             />

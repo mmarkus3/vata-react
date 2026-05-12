@@ -102,6 +102,65 @@ describe('product service', () => {
     );
   });
 
+  it('creates product with nutrition fields and supports partial optional values', async () => {
+    mockSaveItem.mockResolvedValueOnce('p3').mockResolvedValueOnce('p4');
+
+    await createProduct({
+      name: 'Product C',
+      amount: 3,
+      price: 2.1,
+      energyJoule: 123,
+      energyCalory: 29,
+      fat: 1.2,
+      saturatedFat: 0.3,
+      carbohydrate: 5.5,
+      saturatedCarbohydrate: 2.1,
+      protein: 0.8,
+      salt: 0.2,
+      fiber: 1.0,
+      barcode: '',
+      ean: '',
+      company: 'co1',
+      images: [],
+    });
+
+    await createProduct({
+      name: 'Product D',
+      amount: 4,
+      price: 2.8,
+      energyJoule: 150,
+      protein: 1.1,
+      barcode: '',
+      ean: '',
+      company: 'co1',
+      images: [],
+    });
+
+    expect(mockSaveItem).toHaveBeenNthCalledWith(
+      1,
+      'products',
+      expect.objectContaining({
+        energyJoule: 123,
+        energyCalory: 29,
+        fat: 1.2,
+        saturatedFat: 0.3,
+        carbohydrate: 5.5,
+        saturatedCarbohydrate: 2.1,
+        protein: 0.8,
+        salt: 0.2,
+        fiber: 1.0,
+      })
+    );
+    expect(mockSaveItem).toHaveBeenNthCalledWith(
+      2,
+      'products',
+      expect.objectContaining({
+        energyJoule: 150,
+        protein: 1.1,
+      })
+    );
+  });
+
   it('updates existing product retail and unit prices', async () => {
     mockUpdateItem.mockResolvedValue(undefined);
 
@@ -116,6 +175,34 @@ describe('product service', () => {
     });
   });
 
+  it('updates existing product nutrition fields', async () => {
+    mockUpdateItem.mockResolvedValue(undefined);
+
+    await updateProduct('p1', {
+      energyJoule: 200,
+      energyCalory: 48,
+      fat: 3.1,
+      saturatedFat: 1.4,
+      carbohydrate: 8.9,
+      saturatedCarbohydrate: 4.4,
+      protein: 2.2,
+      salt: 0.5,
+      fiber: 1.7,
+    });
+
+    expect(mockUpdateItem).toHaveBeenCalledWith('products', 'p1', {
+      energyJoule: 200,
+      energyCalory: 48,
+      fat: 3.1,
+      saturatedFat: 1.4,
+      carbohydrate: 8.9,
+      saturatedCarbohydrate: 4.4,
+      protein: 2.2,
+      salt: 0.5,
+      fiber: 1.7,
+    });
+  });
+
   it('returns product with image array on subsequent read after edit', async () => {
     mockGetItem.mockResolvedValue({
       id: 'p1',
@@ -127,6 +214,15 @@ describe('product service', () => {
       price: 5,
       retailPrice: 7.5,
       unitPrice: 11.9,
+      energyJoule: 180,
+      energyCalory: 43,
+      fat: 2.4,
+      saturatedFat: 1.1,
+      carbohydrate: 7.2,
+      saturatedCarbohydrate: 3.3,
+      protein: 1.9,
+      salt: 0.4,
+      fiber: 0.9,
       images: ['https://cdn.example.com/new-image.jpg'],
     });
 
@@ -136,5 +232,14 @@ describe('product service', () => {
     expect(product?.images).toEqual(['https://cdn.example.com/new-image.jpg']);
     expect(product?.retailPrice).toBe(7.5);
     expect(product?.unitPrice).toBe(11.9);
+    expect(product?.energyJoule).toBe(180);
+    expect(product?.energyCalory).toBe(43);
+    expect(product?.fat).toBe(2.4);
+    expect(product?.saturatedFat).toBe(1.1);
+    expect(product?.carbohydrate).toBe(7.2);
+    expect(product?.saturatedCarbohydrate).toBe(3.3);
+    expect(product?.protein).toBe(1.9);
+    expect(product?.salt).toBe(0.4);
+    expect(product?.fiber).toBe(0.9);
   });
 });

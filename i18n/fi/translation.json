@@ -13,11 +13,29 @@
   "addProduct": {
     "fields": {
       "retailPricePlaceholder": "Vähittäismyyntihinta (valinnainen)",
-      "unitPricePlaceholder": "Kilohinta €/kg (valinnainen)"
+      "unitPricePlaceholder": "Kilohinta €/kg (valinnainen)",
+      "energyJoulePlaceholder": "Energia (kJ) (valinnainen)",
+      "energyCaloryPlaceholder": "Energia (kcal) (valinnainen)",
+      "fatPlaceholder": "Rasva (g) (valinnainen)",
+      "saturatedFatPlaceholder": "Rasva, josta tyydyttyneitä (g) (valinnainen)",
+      "carbohydratePlaceholder": "Hiilihydraatit (g) (valinnainen)",
+      "saturatedCarbohydratePlaceholder": "Hiilihydraatit, joista sokereita (g) (valinnainen)",
+      "proteinPlaceholder": "Proteiini (g) (valinnainen)",
+      "saltPlaceholder": "Suola (g) (valinnainen)",
+      "fiberPlaceholder": "Ravintokuitu (g) (valinnainen)"
     },
     "errors": {
       "retailPriceInvalid": "Anna kelvollinen vähittäismyyntihinta",
-      "unitPriceInvalid": "Anna kelvollinen kilohinta"
+      "unitPriceInvalid": "Anna kelvollinen kilohinta",
+      "energyJouleInvalid": "Anna kelvollinen energia (kJ)",
+      "energyCaloryInvalid": "Anna kelvollinen energia (kcal)",
+      "fatInvalid": "Anna kelvollinen rasva (g)",
+      "saturatedFatInvalid": "Anna kelvollinen tyydyttynyt rasva (g)",
+      "carbohydrateInvalid": "Anna kelvolliset hiilihydraatit (g)",
+      "saturatedCarbohydrateInvalid": "Anna kelvollinen sokerimäärä (g)",
+      "proteinInvalid": "Anna kelvollinen proteiini (g)",
+      "saltInvalid": "Anna kelvollinen suola (g)",
+      "fiberInvalid": "Anna kelvollinen ravintokuitu (g)"
     }
   },
   "productDetail": {
@@ -30,6 +48,24 @@
       "retailPricePlaceholder": "Anna vähittäismyyntihinta",
       "unitPrice": "Kilohinta",
       "unitPricePlaceholder": "Anna kilohinta €/kg",
+      "energyJoule": "Energia (kJ)",
+      "energyJoulePlaceholder": "Anna energia kJ",
+      "energyCalory": "Energia (kcal)",
+      "energyCaloryPlaceholder": "Anna energia kcal",
+      "fat": "Rasva (g)",
+      "fatPlaceholder": "Anna rasva g",
+      "saturatedFat": "Rasva, josta tyydyttyneitä (g)",
+      "saturatedFatPlaceholder": "Anna tyydyttynyt rasva g",
+      "carbohydrate": "Hiilihydraatit (g)",
+      "carbohydratePlaceholder": "Anna hiilihydraatit g",
+      "saturatedCarbohydrate": "Hiilihydraatit, joista sokereita (g)",
+      "saturatedCarbohydratePlaceholder": "Anna sokerit g",
+      "protein": "Proteiini (g)",
+      "proteinPlaceholder": "Anna proteiini g",
+      "salt": "Suola (g)",
+      "saltPlaceholder": "Anna suola g",
+      "fiber": "Ravintokuitu (g)",
+      "fiberPlaceholder": "Anna ravintokuitu g",
       "amount": "Määrä",
       "ean": "EAN"
     },
@@ -69,6 +105,15 @@
       "priceInvalid": "Anna kelvollinen hinta.",
       "retailPriceInvalid": "Anna kelvollinen vähittäismyyntihinta.",
       "unitPriceInvalid": "Anna kelvollinen kilohinta.",
+      "energyJouleInvalid": "Anna kelvollinen energia (kJ).",
+      "energyCaloryInvalid": "Anna kelvollinen energia (kcal).",
+      "fatInvalid": "Anna kelvollinen rasva (g).",
+      "saturatedFatInvalid": "Anna kelvollinen tyydyttynyt rasva (g).",
+      "carbohydrateInvalid": "Anna kelvolliset hiilihydraatit (g).",
+      "saturatedCarbohydrateInvalid": "Anna kelvollinen sokerimäärä (g).",
+      "proteinInvalid": "Anna kelvollinen proteiini (g).",
+      "saltInvalid": "Anna kelvollinen suola (g).",
+      "fiberInvalid": "Anna kelvollinen ravintokuitu (g).",
       "saveFailed": "Tallennus epäonnistui.",
       "resetAmountFailed": "Määrän nollaus epäonnistui.",
       "deleteFailed": "Poisto epäonnistui."

@@ -22,6 +22,15 @@ export default function ProductDetailPage() {
   const [price, setPrice] = useState('');
   const [retailPrice, setRetailPrice] = useState('');
   const [unitPrice, setUnitPrice] = useState('');
+  const [energyJoule, setEnergyJoule] = useState('');
+  const [energyCalory, setEnergyCalory] = useState('');
+  const [fat, setFat] = useState('');
+  const [saturatedFat, setSaturatedFat] = useState('');
+  const [carbohydrate, setCarbohydrate] = useState('');
+  const [saturatedCarbohydrate, setSaturatedCarbohydrate] = useState('');
+  const [protein, setProtein] = useState('');
+  const [salt, setSalt] = useState('');
+  const [fiber, setFiber] = useState('');
   const [amount, setAmount] = useState('');
   const [barcode, setBarcode] = useState('');
   const [barcodeImageUrl, setBarcodeImageUrl] = useState<string | null>(null);
@@ -58,6 +67,15 @@ export default function ProductDetailPage() {
           setPrice(String(result.price));
           setRetailPrice(result.retailPrice !== undefined ? String(result.retailPrice) : '');
           setUnitPrice(result.unitPrice !== undefined ? String(result.unitPrice) : '');
+          setEnergyJoule(result.energyJoule !== undefined ? String(result.energyJoule) : '');
+          setEnergyCalory(result.energyCalory !== undefined ? String(result.energyCalory) : '');
+          setFat(result.fat !== undefined ? String(result.fat) : '');
+          setSaturatedFat(result.saturatedFat !== undefined ? String(result.saturatedFat) : '');
+          setCarbohydrate(result.carbohydrate !== undefined ? String(result.carbohydrate) : '');
+          setSaturatedCarbohydrate(result.saturatedCarbohydrate !== undefined ? String(result.saturatedCarbohydrate) : '');
+          setProtein(result.protein !== undefined ? String(result.protein) : '');
+          setSalt(result.salt !== undefined ? String(result.salt) : '');
+          setFiber(result.fiber !== undefined ? String(result.fiber) : '');
           setAmount(String(result.amount));
           setEan(result.ean);
           setProductImages(Array.isArray(result.images) ? result.images : []);
@@ -192,6 +210,36 @@ export default function ProductDetailPage() {
     const unitPriceInput = unitPrice.trim();
     const retailPriceValue = retailPriceInput ? Number(retailPriceInput.replace(',', '.')) : undefined;
     const unitPriceValue = unitPriceInput ? Number(unitPriceInput.replace(',', '.')) : undefined;
+    const nutritionEntries = [
+      ['energyJoule', energyJoule],
+      ['energyCalory', energyCalory],
+      ['fat', fat],
+      ['saturatedFat', saturatedFat],
+      ['carbohydrate', carbohydrate],
+      ['saturatedCarbohydrate', saturatedCarbohydrate],
+      ['protein', protein],
+      ['salt', salt],
+      ['fiber', fiber],
+    ] as const;
+    const nutritionValues = Object.fromEntries(
+      nutritionEntries.map(([key, raw]) => {
+        const trimmed = raw.trim();
+        return [key, trimmed ? Number(trimmed.replace(',', '.')) : undefined];
+      })
+    ) as Partial<
+      Pick<
+        Product,
+        | 'energyJoule'
+        | 'energyCalory'
+        | 'fat'
+        | 'saturatedFat'
+        | 'carbohydrate'
+        | 'saturatedCarbohydrate'
+        | 'protein'
+        | 'salt'
+        | 'fiber'
+      >
+    >;
 
     if (Number.isNaN(amountValue) || amountValue < 0) {
       setError(t('productDetail.errors.amountInvalid'));
@@ -210,6 +258,12 @@ export default function ProductDetailPage() {
       setError(t('productDetail.errors.unitPriceInvalid'));
       return;
     }
+    for (const [key, value] of Object.entries(nutritionValues)) {
+      if (value !== undefined && (Number.isNaN(value) || value < 0)) {
+        setError(t(`productDetail.errors.${key}Invalid`));
+        return;
+      }
+    }
 
     setIsSaving(true);
     setBarcodeUploadProgress(null);
@@ -221,6 +275,7 @@ export default function ProductDetailPage() {
         price: priceValue,
         retailPrice: retailPriceValue,
         unitPrice: unitPriceValue,
+        ...nutritionValues,
         amount: amountValue,
         ean: ean.trim(),
         images: [...productImages, ...imageUrls],
@@ -251,6 +306,15 @@ export default function ProductDetailPage() {
         setProduct(updated);
         setRetailPrice(updated.retailPrice !== undefined ? String(updated.retailPrice) : '');
         setUnitPrice(updated.unitPrice !== undefined ? String(updated.unitPrice) : '');
+        setEnergyJoule(updated.energyJoule !== undefined ? String(updated.energyJoule) : '');
+        setEnergyCalory(updated.energyCalory !== undefined ? String(updated.energyCalory) : '');
+        setFat(updated.fat !== undefined ? String(updated.fat) : '');
+        setSaturatedFat(updated.saturatedFat !== undefined ? String(updated.saturatedFat) : '');
+        setCarbohydrate(updated.carbohydrate !== undefined ? String(updated.carbohydrate) : '');
+        setSaturatedCarbohydrate(updated.saturatedCarbohydrate !== undefined ? String(updated.saturatedCarbohydrate) : '');
+        setProtein(updated.protein !== undefined ? String(updated.protein) : '');
+        setSalt(updated.salt !== undefined ? String(updated.salt) : '');
+        setFiber(updated.fiber !== undefined ? String(updated.fiber) : '');
         setProductImages(Array.isArray(updated.images) ? updated.images : []);
         if (/^https?:\/\//i.test(updated.barcode)) {
           setBarcodeImageUrl(updated.barcode);
@@ -528,6 +592,141 @@ export default function ProductDetailPage() {
                 <Text className="mt-1 text-base font-medium text-gray-900">
                   {product?.unitPrice !== undefined ? `${product.unitPrice.toFixed(2)}€/kg` : '-'}
                 </Text>
+              )}
+            </View>
+
+            <View>
+              <Text className="text-sm text-gray-500">{t('productDetail.fields.energyJoule')}</Text>
+              {editMode ? (
+                <TextInput
+                  value={energyJoule}
+                  onChangeText={setEnergyJoule}
+                  keyboardType="numeric"
+                  placeholder={t('productDetail.fields.energyJoulePlaceholder')}
+                  className="mt-1 rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
+                />
+              ) : (
+                <Text className="mt-1 text-base font-medium text-gray-900">{product?.energyJoule ?? '-'}</Text>
+              )}
+            </View>
+
+            <View>
+              <Text className="text-sm text-gray-500">{t('productDetail.fields.energyCalory')}</Text>
+              {editMode ? (
+                <TextInput
+                  value={energyCalory}
+                  onChangeText={setEnergyCalory}
+                  keyboardType="numeric"
+                  placeholder={t('productDetail.fields.energyCaloryPlaceholder')}
+                  className="mt-1 rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
+                />
+              ) : (
+                <Text className="mt-1 text-base font-medium text-gray-900">{product?.energyCalory ?? '-'}</Text>
+              )}
+            </View>
+
+            <View>
+              <Text className="text-sm text-gray-500">{t('productDetail.fields.fat')}</Text>
+              {editMode ? (
+                <TextInput
+                  value={fat}
+                  onChangeText={setFat}
+                  keyboardType="numeric"
+                  placeholder={t('productDetail.fields.fatPlaceholder')}
+                  className="mt-1 rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
+                />
+              ) : (
+                <Text className="mt-1 text-base font-medium text-gray-900">{product?.fat ?? '-'}</Text>
+              )}
+            </View>
+
+            <View>
+              <Text className="text-sm text-gray-500">{t('productDetail.fields.saturatedFat')}</Text>
+              {editMode ? (
+                <TextInput
+                  value={saturatedFat}
+                  onChangeText={setSaturatedFat}
+                  keyboardType="numeric"
+                  placeholder={t('productDetail.fields.saturatedFatPlaceholder')}
+                  className="mt-1 rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
+                />
+              ) : (
+                <Text className="mt-1 text-base font-medium text-gray-900">{product?.saturatedFat ?? '-'}</Text>
+              )}
+            </View>
+
+            <View>
+              <Text className="text-sm text-gray-500">{t('productDetail.fields.carbohydrate')}</Text>
+              {editMode ? (
+                <TextInput
+                  value={carbohydrate}
+                  onChangeText={setCarbohydrate}
+                  keyboardType="numeric"
+                  placeholder={t('productDetail.fields.carbohydratePlaceholder')}
+                  className="mt-1 rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
+                />
+              ) : (
+                <Text className="mt-1 text-base font-medium text-gray-900">{product?.carbohydrate ?? '-'}</Text>
+              )}
+            </View>
+
+            <View>
+              <Text className="text-sm text-gray-500">{t('productDetail.fields.saturatedCarbohydrate')}</Text>
+              {editMode ? (
+                <TextInput
+                  value={saturatedCarbohydrate}
+                  onChangeText={setSaturatedCarbohydrate}
+                  keyboardType="numeric"
+                  placeholder={t('productDetail.fields.saturatedCarbohydratePlaceholder')}
+                  className="mt-1 rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
+                />
+              ) : (
+                <Text className="mt-1 text-base font-medium text-gray-900">{product?.saturatedCarbohydrate ?? '-'}</Text>
+              )}
+            </View>
+
+            <View>
+              <Text className="text-sm text-gray-500">{t('productDetail.fields.protein')}</Text>
+              {editMode ? (
+                <TextInput
+                  value={protein}
+                  onChangeText={setProtein}
+                  keyboardType="numeric"
+                  placeholder={t('productDetail.fields.proteinPlaceholder')}
+                  className="mt-1 rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
+                />
+              ) : (
+                <Text className="mt-1 text-base font-medium text-gray-900">{product?.protein ?? '-'}</Text>
+              )}
+            </View>
+
+            <View>
+              <Text className="text-sm text-gray-500">{t('productDetail.fields.salt')}</Text>
+              {editMode ? (
+                <TextInput
+                  value={salt}
+                  onChangeText={setSalt}
+                  keyboardType="numeric"
+                  placeholder={t('productDetail.fields.saltPlaceholder')}
+                  className="mt-1 rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
+                />
+              ) : (
+                <Text className="mt-1 text-base font-medium text-gray-900">{product?.salt ?? '-'}</Text>
+              )}
+            </View>
+
+            <View>
+              <Text className="text-sm text-gray-500">{t('productDetail.fields.fiber')}</Text>
+              {editMode ? (
+                <TextInput
+                  value={fiber}
+                  onChangeText={setFiber}
+                  keyboardType="numeric"
+                  placeholder={t('productDetail.fields.fiberPlaceholder')}
+                  className="mt-1 rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
+                />
+              ) : (
+                <Text className="mt-1 text-base font-medium text-gray-900">{product?.fiber ?? '-'}</Text>
               )}
             </View>
 

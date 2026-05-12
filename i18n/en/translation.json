@@ -13,11 +13,29 @@
   "addProduct": {
     "fields": {
       "retailPricePlaceholder": "Retail price (optional)",
-      "unitPricePlaceholder": "Unit price €/kg (optional)"
+      "unitPricePlaceholder": "Unit price €/kg (optional)",
+      "energyJoulePlaceholder": "Energy (kJ) (optional)",
+      "energyCaloryPlaceholder": "Energy (kcal) (optional)",
+      "fatPlaceholder": "Fat (g) (optional)",
+      "saturatedFatPlaceholder": "Fat, of which saturated (g) (optional)",
+      "carbohydratePlaceholder": "Carbohydrate (g) (optional)",
+      "saturatedCarbohydratePlaceholder": "Carbohydrate, of which sugars (g) (optional)",
+      "proteinPlaceholder": "Protein (g) (optional)",
+      "saltPlaceholder": "Salt (g) (optional)",
+      "fiberPlaceholder": "Fiber (g) (optional)"
     },
     "errors": {
       "retailPriceInvalid": "Enter a valid retail price",
-      "unitPriceInvalid": "Enter a valid unit price"
+      "unitPriceInvalid": "Enter a valid unit price",
+      "energyJouleInvalid": "Enter valid energy (kJ)",
+      "energyCaloryInvalid": "Enter valid energy (kcal)",
+      "fatInvalid": "Enter valid fat (g)",
+      "saturatedFatInvalid": "Enter valid saturated fat (g)",
+      "carbohydrateInvalid": "Enter valid carbohydrate (g)",
+      "saturatedCarbohydrateInvalid": "Enter valid sugar amount (g)",
+      "proteinInvalid": "Enter valid protein (g)",
+      "saltInvalid": "Enter valid salt (g)",
+      "fiberInvalid": "Enter valid fiber (g)"
     }
   },
   "productDetail": {
@@ -30,6 +48,24 @@
       "retailPricePlaceholder": "Enter retail price",
       "unitPrice": "Unit price",
       "unitPricePlaceholder": "Enter unit price €/kg",
+      "energyJoule": "Energy (kJ)",
+      "energyJoulePlaceholder": "Enter energy kJ",
+      "energyCalory": "Energy (kcal)",
+      "energyCaloryPlaceholder": "Enter energy kcal",
+      "fat": "Fat (g)",
+      "fatPlaceholder": "Enter fat g",
+      "saturatedFat": "Fat, of which saturated (g)",
+      "saturatedFatPlaceholder": "Enter saturated fat g",
+      "carbohydrate": "Carbohydrate (g)",
+      "carbohydratePlaceholder": "Enter carbohydrate g",
+      "saturatedCarbohydrate": "Carbohydrate, of which sugars (g)",
+      "saturatedCarbohydratePlaceholder": "Enter sugars g",
+      "protein": "Protein (g)",
+      "proteinPlaceholder": "Enter protein g",
+      "salt": "Salt (g)",
+      "saltPlaceholder": "Enter salt g",
+      "fiber": "Fiber (g)",
+      "fiberPlaceholder": "Enter fiber g",
       "amount": "Amount",
       "ean": "EAN"
     },
@@ -69,6 +105,15 @@
       "priceInvalid": "Enter a valid price.",
       "retailPriceInvalid": "Enter a valid retail price.",
       "unitPriceInvalid": "Enter a valid unit price.",
+      "energyJouleInvalid": "Enter valid energy (kJ).",
+      "energyCaloryInvalid": "Enter valid energy (kcal).",
+      "fatInvalid": "Enter valid fat (g).",
+      "saturatedFatInvalid": "Enter valid saturated fat (g).",
+      "carbohydrateInvalid": "Enter valid carbohydrate (g).",
+      "saturatedCarbohydrateInvalid": "Enter valid sugar amount (g).",
+      "proteinInvalid": "Enter valid protein (g).",
+      "saltInvalid": "Enter valid salt (g).",
+      "fiberInvalid": "Enter valid fiber (g).",
       "saveFailed": "Saving failed.",
       "resetAmountFailed": "Failed to reset amount.",
       "deleteFailed": "Deleting failed."

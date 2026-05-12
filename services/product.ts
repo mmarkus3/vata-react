@@ -7,14 +7,26 @@ const converter = {
   toFirestore: (item: Product) => item,
   fromFirestore: (snapshot: QueryDocumentSnapshot<DocumentData, DocumentData>, options?: SnapshotOptions | undefined) => {
     const product = snapshot.data(options) as Product;
+    const normalizeOptionalNumber = (value: unknown) => {
+      if (value === undefined || value === null || value === '') return undefined;
+      const parsed = +value;
+      return Number.isNaN(parsed) ? undefined : parsed;
+    };
     const price = product.price ? +product.price : 0;
-    const retailPrice = product.retailPrice !== undefined ? +product.retailPrice : undefined;
-    const unitPrice = product.unitPrice !== undefined ? +product.unitPrice : undefined;
     return {
       ...product,
       price,
-      retailPrice: Number.isNaN(retailPrice as number) ? null : retailPrice,
-      unitPrice: Number.isNaN(unitPrice as number) ? null : unitPrice,
+      retailPrice: normalizeOptionalNumber(product.retailPrice),
+      unitPrice: normalizeOptionalNumber(product.unitPrice),
+      energyJoule: normalizeOptionalNumber(product.energyJoule),
+      energyCalory: normalizeOptionalNumber(product.energyCalory),
+      fat: normalizeOptionalNumber(product.fat),
+      saturatedFat: normalizeOptionalNumber(product.saturatedFat),
+      carbohydrate: normalizeOptionalNumber(product.carbohydrate),
+      saturatedCarbohydrate: normalizeOptionalNumber(product.saturatedCarbohydrate),
+      protein: normalizeOptionalNumber(product.protein),
+      salt: normalizeOptionalNumber(product.salt),
+      fiber: normalizeOptionalNumber(product.fiber),
       images: Array.isArray(product.images) ? product.images : [],
     };
   },
