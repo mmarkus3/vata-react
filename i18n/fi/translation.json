@@ -1,9 +1,61 @@
 {
+  "common": {
+    "cancel": "Peruuta",
+    "delete": "Poista"
+  },
   "nav": {
     "storage": "Varasto",
     "clients": "Asiakkaat",
     "report": "Raportti",
     "profile": "Profiili",
     "categories": "Kategoriat"
+  },
+  "productDetail": {
+    "title": "Tuotteen tiedot",
+    "fields": {
+      "barcode": "Viivakoodi",
+      "name": "Nimi",
+      "price": "Hinta",
+      "amount": "Määrä",
+      "ean": "EAN"
+    },
+    "actions": {
+      "cancelEdit": "Keskeytä muokkaus",
+      "editProduct": "Muokkaa tuotetta"
+    },
+    "barcode": {
+      "newImageSelected": "Uusi kuva on valittu ja tallennetaan.",
+      "savedImage": "Tallennettu viivakoodikuva.",
+      "inputPlaceholder": "Syötä viivakoodi tai lisää kuva",
+      "addImage": "Lisää viivakoodikuva",
+      "uploadProgress": "Ladataan kuvaa {{progress}}%"
+    },
+    "productImages": {
+      "title": "Tuotekuvat",
+      "empty": "Ei tuotteeseen liitettyjä kuvia.",
+      "removeImage": "Poista kuva",
+      "urlPlaceholder": "Lisää kuvan URL",
+      "addUrl": "Lisää",
+      "addFromDevice": "Lisää laitteesta"
+    },
+    "delete": {
+      "title": "Poista tuote",
+      "confirmMessage": "Haluatko varmasti poistaa tämän tuotteen?"
+    },
+    "errors": {
+      "notSelected": "Tuotetta ei ole valittu.",
+      "notFound": "Tuotetta ei löytynyt.",
+      "loadFailed": "Tuotteen lataus epäonnistui.",
+      "mediaPermissionDenied": "Käyttöoikeutta mediakirjastoon ei myönnetty.",
+      "imagePickFailed": "Kuvan valinta epäonnistui.",
+      "imageUrlRequired": "Anna kuvan URL-osoite.",
+      "imageUrlInvalid": "Anna kelvollinen URL-osoite, joka alkaa http:// tai https://.",
+      "nameRequired": "Anna tuotteen nimi.",
+      "amountInvalid": "Anna kelvollinen määrä.",
+      "priceInvalid": "Anna kelvollinen hinta.",
+      "saveFailed": "Tallennus epäonnistui.",
+      "resetAmountFailed": "Määrän nollaus epäonnistui.",
+      "deleteFailed": "Poisto epäonnistui."
+    }
   }
 }

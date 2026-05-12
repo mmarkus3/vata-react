@@ -203,16 +203,16 @@ const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProduct
               className="rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
               placeholderTextColor="#9ca3af"
             />
-            <View className="flex-row gap-3">
+            <View className="flex-row gap-3 justify-end">
               <TouchableOpacity
                 onPress={handleAddImageUrl}
-                className="flex-1 rounded-2xl bg-primary-600 px-4 py-3"
+                className="rounded-2xl bg-primary-600 px-4 py-3"
               >
                 <Text className="text-center text-sm font-semibold text-white">Lisää URL</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={pickProductImage}
-                className="flex-1 rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 px-4 py-3 items-center justify-center"
+                className="rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 px-4 py-3 items-center justify-center"
               >
                 <Text className="text-sm text-gray-600">Valitse kuva</Text>
               </TouchableOpacity>

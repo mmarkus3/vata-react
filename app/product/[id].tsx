@@ -4,9 +4,11 @@ import type { Product } from '@/types/product';
 import * as ImagePicker from 'expo-image-picker';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Alert, Image, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function ProductDetailPage() {
+  const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const productId = typeof id === 'string' ? id : undefined;
@@ -36,7 +38,7 @@ export default function ProductDetailPage() {
   useEffect(() => {
     const load = async () => {
       if (!productId) {
-        setError('Tuotetta ei ole valittu.');
+        setError(t('productDetail.errors.notSelected'));
         setIsLoading(false);
         return;
       }
@@ -47,7 +49,7 @@ export default function ProductDetailPage() {
       try {
         const result = await getProductById(productId);
         if (!result) {
-          setError('Tuotetta ei löytynyt.');
+          setError(t('productDetail.errors.notFound'));
         } else {
           setProduct(result);
           setName(result.name);
@@ -67,7 +69,7 @@ export default function ProductDetailPage() {
           }
         }
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'Tuotteen lataus epäonnistui.';
+        const message = err instanceof Error ? err.message : t('productDetail.errors.loadFailed');
         setError(message);
       } finally {
         setIsLoading(false);
@@ -75,13 +77,13 @@ export default function ProductDetailPage() {
     };
 
     load();
-  }, [productId]);
+  }, [productId, t]);
 
   const handleSelectBarcodeImage = async () => {
     try {
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permission.granted) {
-        setError('Käyttöoikeutta mediakirjastoon ei myönnetty.');
+        setError(t('productDetail.errors.mediaPermissionDenied'));
         return;
       }
 
@@ -103,7 +105,7 @@ export default function ProductDetailPage() {
       setBarcodeImageUrl(null);
       setError(null);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Kuvan valinta epäonnistui.';
+      const message = err instanceof Error ? err.message : t('productDetail.errors.imagePickFailed');
       setError(message);
     }
   };
@@ -118,7 +120,7 @@ export default function ProductDetailPage() {
     try {
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permission.granted) {
-        setError('Käyttöoikeutta mediakirjastoon ei myönnetty.');
+        setError(t('productDetail.errors.mediaPermissionDenied'));
         return;
       }
 
@@ -139,7 +141,7 @@ export default function ProductDetailPage() {
       setNewProductImageUris((prev) => [...prev, selectedUri]);
       setError(null);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Kuvan valinta epäonnistui.';
+      const message = err instanceof Error ? err.message : t('productDetail.errors.imagePickFailed');
       setError(message);
     }
   };
@@ -147,12 +149,12 @@ export default function ProductDetailPage() {
   const handleAddImageUrl = () => {
     const trimmedUrl = imageUrlInput.trim();
     if (!trimmedUrl) {
-      setError('Anna kuvan URL-osoite.');
+      setError(t('productDetail.errors.imageUrlRequired'));
       return;
     }
 
     if (!/^https?:\/\//i.test(trimmedUrl)) {
-      setError('Anna kelvollinen URL-osoite, joka alkaa http:// tai https://.');
+      setError(t('productDetail.errors.imageUrlInvalid'));
       return;
     }
 
@@ -176,7 +178,7 @@ export default function ProductDetailPage() {
   const handleSave = async () => {
     if (!productId) return;
     if (!name.trim()) {
-      setError('Anna tuotteen nimi.');
+      setError(t('productDetail.errors.nameRequired'));
       return;
     }
 
@@ -184,12 +186,12 @@ export default function ProductDetailPage() {
     const priceValue = Number(price);
 
     if (Number.isNaN(amountValue) || amountValue < 0) {
-      setError('Anna kelvollinen määrä.');
+      setError(t('productDetail.errors.amountInvalid'));
       return;
     }
 
     if (Number.isNaN(priceValue) || priceValue < 0) {
-      setError('Anna kelvollinen hinta.');
+      setError(t('productDetail.errors.priceInvalid'));
       return;
     }
 
@@ -246,7 +248,7 @@ export default function ProductDetailPage() {
       setImageUrls([]);
       setEditMode(false);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Tallennus epäonnistui.';
+      const message = err instanceof Error ? err.message : t('productDetail.errors.saveFailed');
       setError(message);
     } finally {
       setIsSaving(false);
@@ -264,7 +266,7 @@ export default function ProductDetailPage() {
       const updated = await getProductById(productId);
       setProduct(updated);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Määrän nollaus epäonnistui.';
+      const message = err instanceof Error ? err.message : t('productDetail.errors.resetAmountFailed');
       setError(message);
     } finally {
       setIsSaving(false);
@@ -274,10 +276,10 @@ export default function ProductDetailPage() {
   const handleDelete = () => {
     if (!productId) return;
 
-    Alert.alert('Poista tuote', 'Haluatko varmasti poistaa tämän tuotteen?', [
-      { text: 'Peruuta', style: 'cancel' },
+    Alert.alert(t('productDetail.delete.title'), t('productDetail.delete.confirmMessage'), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Poista',
+        text: t('common.delete'),
         style: 'destructive',
         onPress: async () => {
           setIsDeleting(true);
@@ -287,7 +289,7 @@ export default function ProductDetailPage() {
             await deleteProduct(productId);
             router.replace('/(home)');
           } catch (err) {
-            const message = err instanceof Error ? err.message : 'Poisto epäonnistui.';
+            const message = err instanceof Error ? err.message : t('productDetail.errors.deleteFailed');
             setError(message);
           } finally {
             setIsDeleting(false);
@@ -307,18 +309,18 @@ export default function ProductDetailPage() {
 
   return (
     <View className="flex-1 bg-slate-50">
-      <Stack.Screen options={{ title: product?.name ?? 'Tuotteen tiedot' }} />
+      <Stack.Screen options={{ title: product?.name ?? t('productDetail.title') }} />
       <ScrollView className="px-6 py-6">
         <TouchableOpacity onPress={() => router.back()} className="mb-4 rounded-full bg-white px-4 py-3 shadow-sm">
           <Text className="text-sm font-semibold text-primary-600">← Palaa</Text>
         </TouchableOpacity>
 
         <View className="rounded-3xl bg-white p-6 shadow-sm">
-          <Text className="text-2xl font-bold text-gray-900">Tuotteen tiedot</Text>
+          <Text className="text-2xl font-bold text-gray-900">{t('productDetail.title')}</Text>
 
           <View className="mt-5 space-y-4">
             <View>
-              <Text className="text-sm text-gray-500">Viivakoodi</Text>
+              <Text className="text-sm text-gray-500">{t('productDetail.fields.barcode')}</Text>
               {previewBarcodeImageUri ? (
                 <View className="mt-3 space-y-3">
                   <Image
@@ -343,9 +345,9 @@ export default function ProductDetailPage() {
                     </View>
                   ) : null}
                   {newBarcodeImageUri ? (
-                    <Text className="text-sm text-gray-500">Uusi kuva on valittu ja tallennetaan.</Text>
+                    <Text className="text-sm text-gray-500">{t('productDetail.barcode.newImageSelected')}</Text>
                   ) : (
-                    <Text className="text-sm text-gray-500">Tallennettu viivakoodikuva.</Text>
+                    <Text className="text-sm text-gray-500">{t('productDetail.barcode.savedImage')}</Text>
                   )}
                 </View>
               ) : editMode ? (
@@ -353,26 +355,26 @@ export default function ProductDetailPage() {
                   <TextInput
                     value={barcode}
                     onChangeText={setBarcode}
-                    placeholder="Syötä viivakoodi tai lisää kuva"
+                    placeholder={t('productDetail.barcode.inputPlaceholder')}
                     className="mt-1 rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
                   />
                   <TouchableOpacity
                     onPress={handleSelectBarcodeImage}
                     className="rounded-2xl bg-primary-600 px-4 py-3"
                   >
-                    <Text className="text-center text-sm font-semibold text-white">Lisää viivakoodikuva</Text>
+                    <Text className="text-center text-sm font-semibold text-white">{t('productDetail.barcode.addImage')}</Text>
                   </TouchableOpacity>
                 </View>
               ) : (
                 <Text className="mt-1 text-base font-medium text-gray-900">{product?.barcode || '-'}</Text>
               )}
               {barcodeUploadProgress !== null ? (
-                <Text className="mt-2 text-sm text-gray-500">Ladataan kuvaa {barcodeUploadProgress}%</Text>
+                <Text className="mt-2 text-sm text-gray-500">{t('productDetail.barcode.uploadProgress', { progress: barcodeUploadProgress })}</Text>
               ) : null}
             </View>
 
             <View>
-              <Text className="text-sm text-gray-500">Tuotekuvat</Text>
+              <Text className="text-sm text-gray-500">{t('productDetail.productImages.title')}</Text>
               {previewProductImages.length > 0 ? (
                 <View className="mt-3 space-y-3">
                   {previewProductImages.map((uri, index) => (
@@ -388,15 +390,17 @@ export default function ProductDetailPage() {
                             }
                           }}
                           className="mt-3 rounded-2xl bg-secondary-100 px-4 py-3"
+                          accessibilityRole="button"
+                          accessibilityLabel={t('productDetail.productImages.removeImage')}
                         >
-                          <Text className="text-center text-sm font-semibold text-secondary-700">Poista kuva</Text>
+                          <Text className="text-center text-sm font-semibold text-secondary-700">{t('productDetail.productImages.removeImage')}</Text>
                         </TouchableOpacity>
                       ) : null}
                     </View>
                   ))}
                 </View>
               ) : (
-                <Text className="mt-2 text-base font-medium text-gray-900">Ei tuotteeseen liitettyjä kuvia.</Text>
+                <Text className="mt-2 text-base font-medium text-gray-900">{t('productDetail.productImages.empty')}</Text>
               )}
 
               {editMode ? (
@@ -405,22 +409,26 @@ export default function ProductDetailPage() {
                     <TextInput
                       value={imageUrlInput}
                       onChangeText={setImageUrlInput}
-                      placeholder="Lisää kuvan URL"
+                      placeholder={t('productDetail.productImages.urlPlaceholder')}
                       className="flex-1 rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
                       placeholderTextColor="#9ca3af"
                     />
                     <TouchableOpacity
                       onPress={handleAddImageUrl}
                       className="rounded-2xl bg-primary-600 px-4 py-3"
+                      accessibilityRole="button"
+                      accessibilityLabel={t('productDetail.productImages.addUrl')}
                     >
-                      <Text className="text-center text-sm font-semibold text-white">Lisää</Text>
+                      <Text className="text-center text-sm font-semibold text-white">{t('productDetail.productImages.addUrl')}</Text>
                     </TouchableOpacity>
                   </View>
                   <TouchableOpacity
                     onPress={handleSelectProductImage}
                     className="rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 px-4 py-6 items-center"
+                    accessibilityRole="button"
+                    accessibilityLabel={t('productDetail.productImages.addFromDevice')}
                   >
-                    <Text className="text-sm text-gray-600">Lisää laitteesta</Text>
+                    <Text className="text-sm text-gray-600">{t('productDetail.productImages.addFromDevice')}</Text>
                   </TouchableOpacity>
                   {imageUrls.length > 0 && (
                     <View className="space-y-3">
@@ -431,7 +439,7 @@ export default function ProductDetailPage() {
                               {url}
                             </Text>
                             <TouchableOpacity onPress={() => handleRemoveImageUrl(index)}>
-                              <Text className="text-sm font-semibold text-secondary-600">Poista</Text>
+                              <Text className="text-sm font-semibold text-secondary-600">{t('common.delete')}</Text>
                             </TouchableOpacity>
                           </View>
                         </View>
@@ -443,7 +451,7 @@ export default function ProductDetailPage() {
             </View>
 
             <View>
-              <Text className="text-sm text-gray-500">Nimi</Text>
+              <Text className="text-sm text-gray-500">{t('productDetail.fields.name')}</Text>
               {editMode ? (
                 <TextInput
                   value={name}
@@ -456,7 +464,7 @@ export default function ProductDetailPage() {
             </View>
 
             <View>
-              <Text className="text-sm text-gray-500">Hinta</Text>
+              <Text className="text-sm text-gray-500">{t('productDetail.fields.price')}</Text>
               {editMode ? (
                 <TextInput
                   value={price}
@@ -470,7 +478,7 @@ export default function ProductDetailPage() {
             </View>
 
             <View>
-              <Text className="text-sm text-gray-500">Määrä</Text>
+              <Text className="text-sm text-gray-500">{t('productDetail.fields.amount')}</Text>
               {editMode ? (
                 <TextInput
                   value={amount}
@@ -484,7 +492,7 @@ export default function ProductDetailPage() {
             </View>
 
             <View>
-              <Text className="text-sm text-gray-500">EAN</Text>
+              <Text className="text-sm text-gray-500">{t('productDetail.fields.ean')}</Text>
               {editMode ? (
                 <TextInput
                   value={ean}
@@ -505,7 +513,7 @@ export default function ProductDetailPage() {
               onPress={() => setEditMode((prev) => !prev)}
               className="rounded-2xl bg-primary-600 px-4 py-3"
             >
-              <Text className="text-center text-sm font-semibold text-white">{editMode ? 'Keskeytä muokkaus' : 'Muokkaa tuotetta'}</Text>
+              <Text className="text-center text-sm font-semibold text-white">{editMode ? t('productDetail.actions.cancelEdit') : t('productDetail.actions.editProduct')}</Text>
             </TouchableOpacity>
 
             {editMode ? (

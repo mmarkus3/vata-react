@@ -1,9 +1,61 @@
 {
+  "common": {
+    "cancel": "Cancel",
+    "delete": "Delete"
+  },
   "nav": {
     "storage": "Storage",
     "clients": "Clients",
     "report": "Report",
     "profile": "Profile",
     "categories": "Categories"
+  },
+  "productDetail": {
+    "title": "Product details",
+    "fields": {
+      "barcode": "Barcode",
+      "name": "Name",
+      "price": "Price",
+      "amount": "Amount",
+      "ean": "EAN"
+    },
+    "actions": {
+      "cancelEdit": "Cancel editing",
+      "editProduct": "Edit product"
+    },
+    "barcode": {
+      "newImageSelected": "A new image is selected and will be saved.",
+      "savedImage": "Saved barcode image.",
+      "inputPlaceholder": "Enter barcode or add an image",
+      "addImage": "Add barcode image",
+      "uploadProgress": "Uploading image {{progress}}%"
+    },
+    "productImages": {
+      "title": "Product images",
+      "empty": "No images attached to this product.",
+      "removeImage": "Remove image",
+      "urlPlaceholder": "Add image URL",
+      "addUrl": "Add",
+      "addFromDevice": "Add from device"
+    },
+    "delete": {
+      "title": "Delete product",
+      "confirmMessage": "Are you sure you want to delete this product?"
+    },
+    "errors": {
+      "notSelected": "No product selected.",
+      "notFound": "Product not found.",
+      "loadFailed": "Failed to load product.",
+      "mediaPermissionDenied": "Media library permission was not granted.",
+      "imagePickFailed": "Image selection failed.",
+      "imageUrlRequired": "Enter an image URL.",
+      "imageUrlInvalid": "Enter a valid URL starting with http:// or https://.",
+      "nameRequired": "Enter product name.",
+      "amountInvalid": "Enter a valid amount.",
+      "priceInvalid": "Enter a valid price.",
+      "saveFailed": "Saving failed.",
+      "resetAmountFailed": "Failed to reset amount.",
+      "deleteFailed": "Deleting failed."
+    }
   }
 }
