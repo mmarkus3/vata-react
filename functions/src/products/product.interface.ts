@@ -1,0 +1,29 @@
+export interface Product {
+  id?: string;
+  amount: number;
+  name: string;
+  company: string;
+  ean: string;
+  barcode: string;
+  price: number;
+  retailPrice?: number;
+  unitPrice?: number;
+  images: string[];
+  category?: string;
+  energyJoule?: number;
+  energyCalory?: number;
+  fat?: number;
+  saturatedFat?: number;
+  carbohydrate?: number;
+  saturatedCarbohydrate?: number;
+  protein?: number;
+  salt?: number;
+  fiber?: number;
+  countryOfOrigin?: string;
+  ingredients_fi?: string;
+  ingredients_sv?: string;
+  ingredients_en?: string;
+  description_fi?: string;
+  description_sv?: string;
+  description_en?: string;
+}

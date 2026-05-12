@@ -6,7 +6,7 @@ import { sendEmail } from '../email/send-email';
 export interface SubItem {
   guid: string;
   name: string;
-};
+}
 
 export interface FullfilmentItem extends SubItem {
   price: number;

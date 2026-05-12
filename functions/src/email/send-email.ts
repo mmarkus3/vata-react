@@ -1,4 +1,4 @@
-import * as sendGrid from '@sendgrid/mail';
+import sendGrid from '@sendgrid/mail';
 
 export const sender = {
   email: 'tilaukset@finnut.fi',
