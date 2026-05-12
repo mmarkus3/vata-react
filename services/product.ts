@@ -122,6 +122,8 @@ export async function updateProduct(
       await deleteBarcodeImage(options.oldBarcodeImageUrl);
     }
 
+    const existingImages = Array.isArray(data.images) ? data.images : [];
+
     if (options.productImageUris && options.productImageUris.length > 0) {
       if (!options.companyId) {
         throw new Error('Company ID is required to upload product images.');
@@ -137,12 +139,12 @@ export async function updateProduct(
 
       data = {
         ...data,
-        images: [...(options.imageLinks ?? []), ...uploadedUrls],
+        images: [...existingImages, ...(options.imageLinks ?? []), ...uploadedUrls],
       };
     } else if (options.imageLinks) {
       data = {
         ...data,
-        images: options.imageLinks,
+        images: [...existingImages, ...options.imageLinks],
       };
     }
 

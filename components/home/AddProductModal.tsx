@@ -130,6 +130,7 @@ const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProduct
           images: [],
         },
         {
+          barcodeImageUri: selectedBarcodeImageUri ?? undefined,
           productImageUris: selectedProductImageUris,
           imageLinks: imageUrls,
         }

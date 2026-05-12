@@ -27,6 +27,7 @@ export default function ProductDetailPage() {
   const [productImages, setProductImages] = useState<string[]>([]);
   const [newProductImageUris, setNewProductImageUris] = useState<string[]>([]);
   const [imageUrlInput, setImageUrlInput] = useState('');
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [ean, setEan] = useState('');
   const [error, setError] = useState<string | null>(null);
   const previewBarcodeImageUri = newBarcodeImageUri ?? barcodeImageUrl;
@@ -53,6 +54,7 @@ export default function ProductDetailPage() {
           setPrice(String(result.price));
           setAmount(String(result.amount));
           setEan(result.ean);
+          setProductImages(Array.isArray(result.images) ? result.images : []);
 
           if (/^https?:\/\//i.test(result.barcode)) {
             setBarcodeImageUrl(result.barcode);
@@ -112,6 +114,65 @@ export default function ProductDetailPage() {
     setError(null);
   };
 
+  const handleSelectProductImage = async () => {
+    try {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        setError('Käyttöoikeutta mediakirjastoon ei myönnetty.');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 0.8,
+      });
+
+      if (result.canceled) {
+        return;
+      }
+
+      const selectedUri = result.assets?.[0]?.uri;
+      if (!selectedUri) {
+        return;
+      }
+
+      setNewProductImageUris((prev) => [...prev, selectedUri]);
+      setError(null);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Kuvan valinta epäonnistui.';
+      setError(message);
+    }
+  };
+
+  const handleAddImageUrl = () => {
+    const trimmedUrl = imageUrlInput.trim();
+    if (!trimmedUrl) {
+      setError('Anna kuvan URL-osoite.');
+      return;
+    }
+
+    if (!/^https?:\/\//i.test(trimmedUrl)) {
+      setError('Anna kelvollinen URL-osoite, joka alkaa http:// tai https://.');
+      return;
+    }
+
+    setImageUrls((prev) => [...prev, trimmedUrl]);
+    setImageUrlInput('');
+    setError(null);
+  };
+
+  const handleRemoveExistingProductImage = (index: number) => {
+    setProductImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleRemoveNewProductImage = (index: number) => {
+    setNewProductImageUris((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleRemoveImageUrl = (index: number) => {
+    setImageUrls((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const handleSave = async () => {
     if (!productId) return;
     if (!name.trim()) {
@@ -142,10 +203,11 @@ export default function ProductDetailPage() {
         price: priceValue,
         amount: amountValue,
         ean: ean.trim(),
+        images: [...productImages, ...imageUrls],
       };
 
       if (newBarcodeImageUri) {
-        // Save the new image URL and replace the existing barcode image.
+        data.barcode = previewBarcodeImageUri ?? undefined;
       } else if (previewBarcodeImageUri) {
         data.barcode = previewBarcodeImageUri;
       } else {
@@ -155,15 +217,19 @@ export default function ProductDetailPage() {
       await updateProduct(
         productId,
         data,
-        product?.company,
-        originalBarcodeImageUrl ?? undefined,
-        newBarcodeImageUri ?? undefined,
-        (progress) => setBarcodeUploadProgress(progress)
+        {
+          companyId: product?.company,
+          oldBarcodeImageUrl: originalBarcodeImageUrl ?? undefined,
+          newBarcodeImageUri: newBarcodeImageUri ?? undefined,
+          productImageUris: newProductImageUris,
+          onUploadProgress: (progress) => setBarcodeUploadProgress(progress),
+        }
       );
 
       const updated = await getProductById(productId);
       if (updated) {
         setProduct(updated);
+        setProductImages(Array.isArray(updated.images) ? updated.images : []);
         if (/^https?:\/\//i.test(updated.barcode)) {
           setBarcodeImageUrl(updated.barcode);
           setOriginalBarcodeImageUrl(updated.barcode);
@@ -176,6 +242,8 @@ export default function ProductDetailPage() {
       }
 
       setNewBarcodeImageUri(null);
+      setNewProductImageUris([]);
+      setImageUrls([]);
       setEditMode(false);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Tallennus epäonnistui.';
@@ -300,6 +368,77 @@ export default function ProductDetailPage() {
               )}
               {barcodeUploadProgress !== null ? (
                 <Text className="mt-2 text-sm text-gray-500">Ladataan kuvaa {barcodeUploadProgress}%</Text>
+              ) : null}
+            </View>
+
+            <View>
+              <Text className="text-sm text-gray-500">Tuotekuvat</Text>
+              {previewProductImages.length > 0 ? (
+                <View className="mt-3 space-y-3">
+                  {previewProductImages.map((uri, index) => (
+                    <View key={`${uri}-${index}`} className="rounded-2xl bg-gray-50 p-3">
+                      <Image source={{ uri }} className="h-44 w-full rounded-2xl bg-gray-100" resizeMode="cover" />
+                      {editMode ? (
+                        <TouchableOpacity
+                          onPress={() => {
+                            if (index < productImages.length) {
+                              handleRemoveExistingProductImage(index);
+                            } else {
+                              handleRemoveNewProductImage(index - productImages.length);
+                            }
+                          }}
+                          className="mt-3 rounded-2xl bg-secondary-100 px-4 py-3"
+                        >
+                          <Text className="text-center text-sm font-semibold text-secondary-700">Poista kuva</Text>
+                        </TouchableOpacity>
+                      ) : null}
+                    </View>
+                  ))}
+                </View>
+              ) : (
+                <Text className="mt-2 text-base font-medium text-gray-900">Ei tuotteeseen liitettyjä kuvia.</Text>
+              )}
+
+              {editMode ? (
+                <View className="mt-4 space-y-3">
+                  <View className="flex-row gap-3">
+                    <TextInput
+                      value={imageUrlInput}
+                      onChangeText={setImageUrlInput}
+                      placeholder="Lisää kuvan URL"
+                      className="flex-1 rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
+                      placeholderTextColor="#9ca3af"
+                    />
+                    <TouchableOpacity
+                      onPress={handleAddImageUrl}
+                      className="rounded-2xl bg-primary-600 px-4 py-3"
+                    >
+                      <Text className="text-center text-sm font-semibold text-white">Lisää</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <TouchableOpacity
+                    onPress={handleSelectProductImage}
+                    className="rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 px-4 py-6 items-center"
+                  >
+                    <Text className="text-sm text-gray-600">Lisää laitteesta</Text>
+                  </TouchableOpacity>
+                  {imageUrls.length > 0 && (
+                    <View className="space-y-3">
+                      {imageUrls.map((url, index) => (
+                        <View key={`url-${index}`} className="rounded-2xl border border-gray-200 bg-gray-50 p-3">
+                          <View className="flex-row items-center justify-between">
+                            <Text className="flex-1 text-sm text-gray-900" numberOfLines={1}>
+                              {url}
+                            </Text>
+                            <TouchableOpacity onPress={() => handleRemoveImageUrl(index)}>
+                              <Text className="text-sm font-semibold text-secondary-600">Poista</Text>
+                            </TouchableOpacity>
+                          </View>
+                        </View>
+                      ))}
+                    </View>
+                  )}
+                </View>
               ) : null}
             </View>
 
