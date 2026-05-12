@@ -1,7 +1,7 @@
 import type { Product } from '@/types/product';
 import { DocumentData, QueryDocumentSnapshot, SnapshotOptions, where } from 'firebase/firestore';
 import { deleteItem, getItem, getSnapshotItems, saveItem, updateItem } from './firestore';
-import { deleteBarcodeImage, uploadBarcodeImage } from './storage';
+import { deleteBarcodeImage, uploadBarcodeImage, uploadProductImage } from './storage';
 
 const converter = {
   toFirestore: (item: Product) => item,
@@ -11,6 +11,7 @@ const converter = {
     return {
       ...product,
       price,
+      images: Array.isArray(product.images) ? product.images : [],
     };
   },
 };
@@ -24,18 +25,42 @@ export function getProductsByCompany(companyId: string, cb: (results: Product[])
   }
 }
 
-export async function createProduct(product: Omit<Product, 'id'>, barcodeImageUri?: string) {
-  try {
-    // First, save the product without image to get the ID
-    const productId = await saveItem('products', product);
+interface CreateProductOptions {
+  barcodeImageUri?: string;
+  productImageUris?: string[];
+  imageLinks?: string[];
+}
 
-    if (barcodeImageUri) {
+export async function createProduct(product: Omit<Product, 'id'>, options: CreateProductOptions = {}) {
+  try {
+    const productToSave = {
+      ...product,
+      images: options.imageLinks ?? [],
+    };
+
+    const productId = await saveItem('products', productToSave);
+
+    if (options.barcodeImageUri) {
       const timestamp = Date.now();
       const fileName = `barcode-${timestamp}.jpg`;
-      const barcodeImageUrl = await uploadBarcodeImage(product.company, productId, barcodeImageUri, fileName);
+      const barcodeImageUrl = await uploadBarcodeImage(product.company, productId, options.barcodeImageUri, fileName);
 
       await updateItem('products', productId, {
         barcode: barcodeImageUrl,
+      });
+    }
+
+    if (options.productImageUris && options.productImageUris.length > 0) {
+      const uploadedUrls = [] as string[];
+      for (const imageUri of options.productImageUris) {
+        const timestamp = Date.now();
+        const fileName = `product-${timestamp}-${Math.random().toString(16).slice(2, 8)}.jpg`;
+        const imageUrl = await uploadProductImage(product.company, productId, imageUri, fileName);
+        uploadedUrls.push(imageUrl);
+      }
+
+      await updateItem('products', productId, {
+        images: [...(options.imageLinks ?? []), ...uploadedUrls],
       });
     }
 
@@ -55,28 +80,34 @@ export async function getProductById(productId: string) {
   }
 }
 
+interface UpdateProductOptions {
+  companyId?: string;
+  oldBarcodeImageUrl?: string;
+  newBarcodeImageUri?: string;
+  productImageUris?: string[];
+  imageLinks?: string[];
+  onUploadProgress?: (progress: number) => void;
+}
+
 export async function updateProduct(
   productId: string,
   data: Partial<Omit<Product, 'id' | 'company'>>,
-  companyId?: string,
-  oldBarcodeImageUrl?: string,
-  newBarcodeImageUri?: string,
-  onUploadProgress?: (progress: number) => void
+  options: UpdateProductOptions = {}
 ) {
   try {
-    if (newBarcodeImageUri) {
-      if (!companyId) {
+    if (options.newBarcodeImageUri) {
+      if (!options.companyId) {
         throw new Error('Company ID is required to upload a new barcode image.');
       }
 
       const timestamp = Date.now();
       const fileName = `barcode-${timestamp}.jpg`;
       const barcodeImageUrl = await uploadBarcodeImage(
-        companyId,
+        options.companyId,
         productId,
-        newBarcodeImageUri,
+        options.newBarcodeImageUri,
         fileName,
-        onUploadProgress
+        options.onUploadProgress
       );
 
       data = {
@@ -84,11 +115,35 @@ export async function updateProduct(
         barcode: barcodeImageUrl,
       };
 
-      if (oldBarcodeImageUrl) {
-        await deleteBarcodeImage(oldBarcodeImageUrl);
+      if (options.oldBarcodeImageUrl) {
+        await deleteBarcodeImage(options.oldBarcodeImageUrl);
       }
-    } else if (!data.barcode && oldBarcodeImageUrl) {
-      await deleteBarcodeImage(oldBarcodeImageUrl);
+    } else if (!data.barcode && options.oldBarcodeImageUrl) {
+      await deleteBarcodeImage(options.oldBarcodeImageUrl);
+    }
+
+    if (options.productImageUris && options.productImageUris.length > 0) {
+      if (!options.companyId) {
+        throw new Error('Company ID is required to upload product images.');
+      }
+
+      const uploadedUrls = [] as string[];
+      for (const imageUri of options.productImageUris) {
+        const timestamp = Date.now();
+        const fileName = `product-${timestamp}-${Math.random().toString(16).slice(2, 8)}.jpg`;
+        const imageUrl = await uploadProductImage(options.companyId, productId, imageUri, fileName, options.onUploadProgress);
+        uploadedUrls.push(imageUrl);
+      }
+
+      data = {
+        ...data,
+        images: [...(options.imageLinks ?? []), ...uploadedUrls],
+      };
+    } else if (options.imageLinks) {
+      data = {
+        ...data,
+        images: options.imageLinks,
+      };
     }
 
     await updateItem('products', productId, data);

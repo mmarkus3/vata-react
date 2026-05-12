@@ -18,11 +18,14 @@ const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProduct
   const [price, setPrice] = useState('');
   const [barcode, setBarcode] = useState('');
   const [ean, setEan] = useState('');
-  const [selectedImageUri, setSelectedImageUri] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState('');
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [selectedProductImageUris, setSelectedProductImageUris] = useState<string[]>([]);
+  const [selectedBarcodeImageUri, setSelectedBarcodeImageUri] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const pickImage = async () => {
+  const pickProductImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
       setError('Tarvitset luvan käyttää kuvakirjastoa');
@@ -37,8 +40,55 @@ const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProduct
     });
 
     if (!result.canceled) {
-      setSelectedImageUri(result.assets[0].uri);
+      const uri = result.assets[0].uri;
+      setSelectedProductImageUris((prev) => [...prev, uri]);
+      setError(null);
     }
+  };
+
+  const pickBarcodeImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      setError('Tarvitset luvan käyttää kuvakirjastoa');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setSelectedBarcodeImageUri(result.assets[0].uri);
+      setError(null);
+    }
+  };
+
+  const handleAddImageUrl = () => {
+    const trimmedUrl = imageUrl.trim();
+    if (!trimmedUrl) {
+      setError('Anna kuvan URL-osoite');
+      return;
+    }
+
+    if (!/^https?:\/\//i.test(trimmedUrl)) {
+      setError('Anna kelvollinen URL-osoite, joka alkaa http:// tai https://');
+      return;
+    }
+
+    setImageUrls((prev) => [...prev, trimmedUrl]);
+    setImageUrl('');
+    setError(null);
+  };
+
+  const handleRemoveImageUrl = (index: number) => {
+    setImageUrls((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleRemoveSelectedProductImage = (index: number) => {
+    setSelectedProductImageUris((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleCreate = async () => {
@@ -69,20 +119,30 @@ const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProduct
 
     try {
       setIsLoading(true);
-      await createProduct({
-        name: name.trim(),
-        amount: amountValue,
-        price: priceValue,
-        barcode: barcode.trim(),
-        ean: ean.trim(),
-        company: user.profile.company,
-      }, selectedImageUri || undefined);
+      await createProduct(
+        {
+          name: name.trim(),
+          amount: amountValue,
+          price: priceValue,
+          barcode: barcode.trim(),
+          ean: ean.trim(),
+          company: user.profile.company,
+          images: [],
+        },
+        {
+          productImageUris: selectedProductImageUris,
+          imageLinks: imageUrls,
+        }
+      );
       setName('');
       setAmount('');
       setPrice('');
       setBarcode('');
       setEan('');
-      setSelectedImageUri(null);
+      setImageUrl('');
+      setImageUrls([]);
+      setSelectedProductImageUris([]);
+      setSelectedBarcodeImageUri(null);
       onProductCreated();
       onClose();
     } catch (err) {
@@ -133,19 +193,76 @@ const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProduct
             />
           </View>
 
+          <View className="mt-5 space-y-3">
+            <Text className="text-sm font-medium text-gray-700">Tuotekuvat</Text>
+            <TextInput
+              value={imageUrl}
+              onChangeText={setImageUrl}
+              placeholder="Lisää kuvan URL"
+              className="rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
+              placeholderTextColor="#9ca3af"
+            />
+            <View className="flex-row gap-3">
+              <TouchableOpacity
+                onPress={handleAddImageUrl}
+                className="flex-1 rounded-2xl bg-primary-600 px-4 py-3"
+              >
+                <Text className="text-center text-sm font-semibold text-white">Lisää URL</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={pickProductImage}
+                className="flex-1 rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 px-4 py-3 items-center justify-center"
+              >
+                <Text className="text-sm text-gray-600">Valitse kuva</Text>
+              </TouchableOpacity>
+            </View>
+
+            {(imageUrls.length > 0 || selectedProductImageUris.length > 0) && (
+              <View className="space-y-3">
+                {imageUrls.map((url, index) => (
+                  <View
+                    key={`link-${index}`}
+                    className="rounded-2xl border border-gray-200 bg-gray-50 p-3"
+                  >
+                    <View className="flex-row items-center justify-between">
+                      <Text className="flex-1 text-sm text-gray-900" numberOfLines={1}>
+                        {url}
+                      </Text>
+                      <TouchableOpacity onPress={() => handleRemoveImageUrl(index)}>
+                        <Text className="text-sm font-semibold text-secondary-600">Poista</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                ))}
+                {selectedProductImageUris.map((uri, index) => (
+                  <View key={`local-${index}`} className="space-y-2">
+                    <Image source={{ uri }} className="h-32 w-full rounded-2xl bg-gray-100" resizeMode="contain" />
+                    <TouchableOpacity onPress={() => handleRemoveSelectedProductImage(index)} className="rounded-2xl bg-secondary-100 px-4 py-3">
+                      <Text className="text-center text-sm font-semibold text-secondary-700">Poista valittu kuva</Text>
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </View>
+            )}
+          </View>
+
           <View className="mt-4">
             <Text className="text-sm font-medium text-gray-700 mb-2">Viivakoodikuva (valinnainen)</Text>
             <TouchableOpacity
-              onPress={pickImage}
+              onPress={pickBarcodeImage}
               className="rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 px-4 py-6 items-center"
             >
-              <Text className="text-sm text-gray-600">Valitse kuva</Text>
+              <Text className="text-sm text-gray-600">Valitse viivakoodikuva</Text>
             </TouchableOpacity>
-            {selectedImageUri && (
-              <View className="mt-3">
-                <Image source={{ uri: selectedImageUri }} className="w-full h-32 rounded-lg" resizeMode="contain" />
+            {selectedBarcodeImageUri ? (
+              <View className="mt-3 space-y-3">
+                <Image
+                  source={{ uri: selectedBarcodeImageUri }}
+                  className="w-full h-32 rounded-lg"
+                  resizeMode="contain"
+                />
               </View>
-            )}
+            ) : null}
           </View>
 
           {error ? <Text className="text-sm text-secondary-600 mt-3">{error}</Text> : null}

@@ -24,9 +24,13 @@ export default function ProductDetailPage() {
   const [newBarcodeImageUri, setNewBarcodeImageUri] = useState<string | null>(null);
   const [originalBarcodeImageUrl, setOriginalBarcodeImageUrl] = useState<string | null>(null);
   const [barcodeUploadProgress, setBarcodeUploadProgress] = useState<number | null>(null);
+  const [productImages, setProductImages] = useState<string[]>([]);
+  const [newProductImageUris, setNewProductImageUris] = useState<string[]>([]);
+  const [imageUrlInput, setImageUrlInput] = useState('');
   const [ean, setEan] = useState('');
   const [error, setError] = useState<string | null>(null);
   const previewBarcodeImageUri = newBarcodeImageUri ?? barcodeImageUrl;
+  const previewProductImages = [...productImages, ...newProductImageUris];
 
   useEffect(() => {
     const load = async () => {
