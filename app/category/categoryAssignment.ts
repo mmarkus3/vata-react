@@ -1,12 +1,20 @@
 import type { Product } from '@/types/product';
 
-export function getAssignableProducts(products: Product[], activeCategoryName: string): Product[] {
-  const normalizedCategory = activeCategoryName.trim();
-  if (!normalizedCategory) {
+export function getAssignableProducts(
+  products: Product[],
+  activeCategoryId: string,
+  legacyCategoryName?: string
+): Product[] {
+  const normalizedCategoryId = activeCategoryId.trim();
+  const normalizedLegacyName = legacyCategoryName?.trim() ?? '';
+  if (!normalizedCategoryId && !normalizedLegacyName) {
     return products;
   }
 
-  return products.filter((product) => (product.category ?? '') !== normalizedCategory);
+  return products.filter((product) => {
+    const reference = product.category ?? '';
+    return reference !== normalizedCategoryId && (!normalizedLegacyName || reference !== normalizedLegacyName);
+  });
 }
 
 export function filterProductsByName(products: Product[], searchTerm: string): Product[] {

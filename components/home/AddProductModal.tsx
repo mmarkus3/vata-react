@@ -12,6 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useCategories } from '@/hooks/useCategories';
 import { createProduct } from '@/services/product';
 import Accordion from '@/components/ui/accordion';
+import { resolveCategoryIdFromReference } from '@/utils/categoryReference';
 import { buildProductCategoryOptions } from '@/utils/productCategoryOptions';
 import * as ImagePicker from 'expo-image-picker';
 import type { FC } from 'react';
@@ -190,12 +191,13 @@ const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProduct
     const descriptionFi = values.description_fi.trim();
     const descriptionSv = values.description_sv.trim();
     const descriptionEn = values.description_en.trim();
+    const categoryId = resolveCategoryIdFromReference(categories, values.category);
 
     try {
       setIsLoading(true);
       await createProduct(
         {
-          category: values.category.trim(),
+          category: categoryId,
           name: values.name.trim(),
           amount: amountValue,
           price: priceValue,

@@ -50,6 +50,29 @@ export function getProductsByCompanyAndCategory(companyId: string, category: str
   }
 }
 
+export function getProductsByCompanyAndCategoryReference(
+  companyId: string,
+  categoryId: string,
+  legacyCategoryName: string | undefined,
+  cb: (results: Product[]) => void
+) {
+  try {
+    return getProductsByCompany(companyId, (results) => {
+      const normalizedId = categoryId.trim();
+      const normalizedLegacyName = legacyCategoryName?.trim() ?? '';
+      cb(
+        results.filter((product) => {
+          const reference = product.category?.trim() ?? '';
+          return reference === normalizedId || (normalizedLegacyName && reference === normalizedLegacyName);
+        })
+      );
+    });
+  } catch (error) {
+    console.error('Failed to fetch products by category reference:', error);
+    throw error;
+  }
+}
+
 interface CreateProductOptions {
   barcodeImageUri?: string;
   productImageUris?: string[];

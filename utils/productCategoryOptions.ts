@@ -1,4 +1,5 @@
 import type { Category } from '@/types/category';
+import { getCategoryLabelFromReference, resolveCategoryIdFromReference } from '@/utils/categoryReference';
 
 export interface ProductCategoryOption {
   value: string;
@@ -10,27 +11,28 @@ export const buildProductCategoryOptions = (
   categories: Category[],
   selectedCategory?: string | null
 ): ProductCategoryOption[] => {
-  const uniqueByName = new Map<string, ProductCategoryOption>();
+  const uniqueById = new Map<string, ProductCategoryOption>();
 
   for (const category of categories) {
-    const value = category.name.trim();
-    if (!value) continue;
+    const value = category.id?.trim();
+    const label = category.name.trim();
+    if (!value || !label) continue;
 
-    if (!uniqueByName.has(value)) {
-      uniqueByName.set(value, {
+    if (!uniqueById.has(value)) {
+      uniqueById.set(value, {
         value,
-        label: value,
+        label,
       });
     }
   }
 
-  const options = Array.from(uniqueByName.values()).sort((a, b) => a.label.localeCompare(b.label));
+  const options = Array.from(uniqueById.values()).sort((a, b) => a.label.localeCompare(b.label));
 
-  const normalizedSelected = selectedCategory?.trim();
-  if (normalizedSelected && !uniqueByName.has(normalizedSelected)) {
+  const normalizedSelected = resolveCategoryIdFromReference(categories, selectedCategory);
+  if (normalizedSelected && !uniqueById.has(normalizedSelected)) {
     options.unshift({
       value: normalizedSelected,
-      label: normalizedSelected,
+      label: getCategoryLabelFromReference(categories, selectedCategory),
       isFallback: true,
     });
   }

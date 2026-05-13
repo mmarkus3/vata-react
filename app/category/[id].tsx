@@ -5,7 +5,7 @@ import { themeColors } from '@/constants/colors';
 import { useAuth } from '@/hooks/useAuth';
 import { useCategories } from '@/hooks/useCategories';
 import { getCategoryById } from '@/services/category';
-import { getProductsByCompanyAndCategory } from '@/services/product';
+import { getProductsByCompanyAndCategoryReference } from '@/services/product';
 import type { Category } from '@/types/category';
 import type { Product } from '@/types/product';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
@@ -62,7 +62,7 @@ export default function CategoryDetailPage() {
   }, [loadCategory]);
 
   useEffect(() => {
-    if (!user?.profile?.company || !category?.name) {
+    if (!user?.profile?.company || !category?.id) {
       setProducts([]);
       setIsLoadingProducts(false);
       return;
@@ -70,7 +70,7 @@ export default function CategoryDetailPage() {
 
     setIsLoadingProducts(true);
 
-    const unsubscribe = getProductsByCompanyAndCategory(user.profile.company, category.name, (results) => {
+    const unsubscribe = getProductsByCompanyAndCategoryReference(user.profile.company, category.id, category.name, (results) => {
       setProducts(results);
       setIsLoadingProducts(false);
     });
@@ -80,7 +80,7 @@ export default function CategoryDetailPage() {
         unsubscribe();
       }
     };
-  }, [user?.profile?.company, category?.name]);
+  }, [user?.profile?.company, category?.id, category?.name]);
 
   const handleDelete = () => {
     if (!category?.id) {
@@ -216,6 +216,7 @@ export default function CategoryDetailPage() {
 
       <CategoryProductAssignmentModal
         visible={showAddProductsModal}
+        categoryId={category?.id ?? ''}
         categoryName={category?.name ?? ''}
         onClose={() => setShowAddProductsModal(false)}
         onAssigned={() => {

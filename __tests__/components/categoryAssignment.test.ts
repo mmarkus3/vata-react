@@ -3,19 +3,19 @@ import { filterProductsByName, getAssignableProducts, getCategoryAssignmentStatu
 describe('categoryAssignment helpers', () => {
   it('filters out products already assigned to active category', () => {
     const products = [
-      { id: '1', name: 'Milk', category: 'Dairy' },
-      { id: '2', name: 'Bread', category: 'Bakery' },
+      { id: '1', name: 'Milk', category: 'cat-1' },
+      { id: '2', name: 'Bread', category: 'cat-2' },
       { id: '3', name: 'Butter', category: 'Dairy' },
     ] as any;
 
-    const result = getAssignableProducts(products, 'Dairy');
+    const result = getAssignableProducts(products, 'cat-1', 'Dairy');
 
-    expect(result).toEqual([{ id: '2', name: 'Bread', category: 'Bakery' }]);
+    expect(result).toEqual([{ id: '2', name: 'Bread', category: 'cat-2' }]);
   });
 
-  it('returns all products when active category is empty', () => {
+  it('returns all products when active category id and legacy name are empty', () => {
     const products = [{ id: '1', name: 'Milk', category: 'Dairy' }] as any;
-    expect(getAssignableProducts(products, '  ')).toEqual(products);
+    expect(getAssignableProducts(products, '  ', '  ')).toEqual(products);
   });
 
   it('filters products by name case-insensitively', () => {

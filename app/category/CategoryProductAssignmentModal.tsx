@@ -9,6 +9,7 @@ import { ActivityIndicator, Modal, ScrollView, Text, TextInput, TouchableOpacity
 
 interface CategoryProductAssignmentModalProps {
   visible: boolean;
+  categoryId: string;
   categoryName: string;
   onClose: () => void;
   onAssigned: () => void;
@@ -16,6 +17,7 @@ interface CategoryProductAssignmentModalProps {
 
 export default function CategoryProductAssignmentModal({
   visible,
+  categoryId,
   categoryName,
   onClose,
   onAssigned,
@@ -50,8 +52,8 @@ export default function CategoryProductAssignmentModal({
   }, [visible, user?.profile?.company]);
 
   const assignableProducts = useMemo(
-    () => getAssignableProducts(candidateProducts, categoryName),
-    [candidateProducts, categoryName]
+    () => getAssignableProducts(candidateProducts, categoryId, categoryName),
+    [candidateProducts, categoryId, categoryName]
   );
   const filteredProducts = useMemo(
     () => filterProductsByName(assignableProducts, searchTerm),
@@ -81,7 +83,7 @@ export default function CategoryProductAssignmentModal({
   };
 
   const handleAssignProducts = async () => {
-    if (!categoryName || selectedProductIds.length === 0 || isAssigningProducts) {
+    if (!categoryId || selectedProductIds.length === 0 || isAssigningProducts) {
       return;
     }
 
@@ -90,7 +92,7 @@ export default function CategoryProductAssignmentModal({
 
     try {
       for (const productId of selectedProductIds) {
-        await updateProduct(productId, { category: categoryName });
+        await updateProduct(productId, { category: categoryId });
       }
 
       setSelectedProductIds([]);

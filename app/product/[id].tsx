@@ -15,6 +15,7 @@ import { themeColors } from '@/constants/colors';
 import { useCategories } from '@/hooks/useCategories';
 import { deleteProduct, getProductById, updateProduct } from '@/services/product';
 import type { Product } from '@/types/product';
+import { getCategoryLabelFromReference, resolveCategoryIdFromReference } from '@/utils/categoryReference';
 import { buildProductCategoryOptions } from '@/utils/productCategoryOptions';
 import * as ImagePicker from 'expo-image-picker';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
@@ -52,6 +53,7 @@ export default function ProductDetailPage() {
     handleSubmit,
     reset,
     getValues,
+    setValue,
     formState: { errors },
   } = useForm<ProductDetailFormValues>({
     defaultValues: defaultProductDetailFormValues,
@@ -110,6 +112,14 @@ export default function ProductDetailPage() {
       return { ...prev, [section]: true };
     });
   }, [errors]);
+
+  useEffect(() => {
+    const currentCategory = getValues('category');
+    const resolvedCategoryId = resolveCategoryIdFromReference(categories, currentCategory);
+    if (currentCategory && resolvedCategoryId !== currentCategory) {
+      setValue('category', resolvedCategoryId);
+    }
+  }, [categories, getValues, setValue]);
 
   useEffect(() => {
     const load = async () => {
@@ -306,7 +316,7 @@ export default function ProductDetailPage() {
 
     try {
       const data: Partial<Omit<Product, 'id' | 'company'>> = {
-        category: values.category.trim() || undefined,
+        category: resolveCategoryIdFromReference(categories, values.category) || undefined,
         name: values.name.trim(),
         price: priceValue,
         retailPrice: retailPriceValue,
@@ -636,7 +646,7 @@ export default function ProductDetailPage() {
                       )}
                     />
                   ) : (
-                    <Text className="mt-1 text-base font-medium text-gray-900">{product?.category || '-'}</Text>
+                    <Text className="mt-1 text-base font-medium text-gray-900">{product ? getCategoryLabelFromReference(categories, product.category) || '-' : '-'}</Text>
                   )}
                 </View>
 

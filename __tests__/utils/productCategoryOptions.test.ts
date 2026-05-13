@@ -9,20 +9,33 @@ describe('buildProductCategoryOptions', () => {
     ]);
 
     expect(options).toEqual([
-      { value: 'Beverages', label: 'Beverages' },
-      { value: 'Snacks', label: 'Snacks' },
+      { value: '2', label: 'Beverages' },
+      { value: '1', label: 'Snacks' },
+      { value: '3', label: 'Snacks' },
     ]);
   });
 
-  it('prepends fallback option when selected category is stale', () => {
+  it('resolves selected legacy category name to id when possible', () => {
     const options = buildProductCategoryOptions(
       [{ id: '1', name: 'Snacks', description: '', company: 'c1' }],
-      'Legacy Category'
+      'Snacks'
     );
 
     expect(options[0]).toEqual({
-      value: 'Legacy Category',
-      label: 'Legacy Category',
+      value: '1',
+      label: 'Snacks',
+    });
+  });
+
+  it('prepends fallback option when selected category reference is stale', () => {
+    const options = buildProductCategoryOptions(
+      [{ id: '1', name: 'Snacks', description: '', company: 'c1' }],
+      'legacy-id-or-name'
+    );
+
+    expect(options[0]).toEqual({
+      value: 'legacy-id-or-name',
+      label: 'legacy-id-or-name',
       isFallback: true,
     });
   });
