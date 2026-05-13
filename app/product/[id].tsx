@@ -1,4 +1,3 @@
-import { themeColors } from '@/constants/colors';
 import {
   buildNutritionValues,
   defaultProductDetailFormValues,
@@ -9,6 +8,7 @@ import {
   ProductDetailFormValues,
   toProductDetailFormValues,
 } from '@/app/product/productDetailForm';
+import { themeColors } from '@/constants/colors';
 import { deleteProduct, getProductById, updateProduct } from '@/services/product';
 import type { Product } from '@/types/product';
 import * as ImagePicker from 'expo-image-picker';
@@ -530,22 +530,22 @@ export default function ProductDetailPage() {
               <Text className="text-sm text-gray-500">{t('productDetail.fields.retailPrice')}</Text>
               {editMode
                 ? renderInput('retailPrice', {
-                    keyboardType: 'numeric',
-                    placeholder: t('productDetail.fields.retailPricePlaceholder'),
-                    rules: numericOptionalRule('retailPrice'),
-                  })
-                : <Text className="mt-1 text-base font-medium text-gray-900">{product?.retailPrice !== undefined ? `${product.retailPrice.toFixed(2)}€` : '-'}</Text>}
+                  keyboardType: 'numeric',
+                  placeholder: t('productDetail.fields.retailPricePlaceholder'),
+                  rules: numericOptionalRule('retailPrice'),
+                })
+                : <Text className="mt-1 text-base font-medium text-gray-900">{product?.retailPrice != null ? `${product.retailPrice.toFixed(2)}€` : '-'}</Text>}
             </View>
 
             <View>
               <Text className="text-sm text-gray-500">{t('productDetail.fields.unitPrice')}</Text>
               {editMode
                 ? renderInput('unitPrice', {
-                    keyboardType: 'numeric',
-                    placeholder: t('productDetail.fields.unitPricePlaceholder'),
-                    rules: numericOptionalRule('unitPrice'),
-                  })
-                : <Text className="mt-1 text-base font-medium text-gray-900">{product?.unitPrice !== undefined ? `${product.unitPrice.toFixed(2)}€/kg` : '-'}</Text>}
+                  keyboardType: 'numeric',
+                  placeholder: t('productDetail.fields.unitPricePlaceholder'),
+                  rules: numericOptionalRule('unitPrice'),
+                })
+                : <Text className="mt-1 text-base font-medium text-gray-900">{product?.unitPrice != null ? `${product.unitPrice.toFixed(2)}€/kg` : '-'}</Text>}
             </View>
 
             <View>

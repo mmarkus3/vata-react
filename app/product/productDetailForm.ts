@@ -52,9 +52,9 @@ export const defaultProductDetailFormValues: ProductDetailFormValues = {
   ean: '',
 };
 
-export const parseOptionalDecimal = (raw: string): number | undefined => {
+export const parseOptionalDecimal = (raw: string): number | null => {
   const trimmed = raw.trim();
-  if (!trimmed) return undefined;
+  if (!trimmed) return null;
   return Number(trimmed.replace(',', '.'));
 };
 
