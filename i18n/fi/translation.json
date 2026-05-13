@@ -25,6 +25,9 @@
       "fiberPlaceholder": "Ravintokuitu (g) (valinnainen)"
     },
     "errors": {
+      "nameRequired": "Anna tuotteen nimi.",
+      "amountInvalid": "Anna kelvollinen määrä.",
+      "priceInvalid": "Anna kelvollinen hinta.",
       "retailPriceInvalid": "Anna kelvollinen vähittäismyyntihinta",
       "unitPriceInvalid": "Anna kelvollinen kilohinta",
       "energyJouleInvalid": "Anna kelvollinen energia (kJ)",
@@ -35,7 +38,12 @@
       "saturatedCarbohydrateInvalid": "Anna kelvollinen sokerimäärä (g)",
       "proteinInvalid": "Anna kelvollinen proteiini (g)",
       "saltInvalid": "Anna kelvollinen suola (g)",
-      "fiberInvalid": "Anna kelvollinen ravintokuitu (g)"
+      "fiberInvalid": "Anna kelvollinen ravintokuitu (g)",
+      "mediaPermissionDenied": "Käyttöoikeutta mediakirjastoon ei myönnetty.",
+      "imageUrlRequired": "Anna kuvan URL-osoite.",
+      "imageUrlInvalid": "Anna kelvollinen URL-osoite, joka alkaa http:// tai https://.",
+      "companyMissing": "Käyttäjällä ei ole yritystä liitettynä",
+      "saveFailed": "Tuotteen tallennus epäonnistui"
     }
   },
   "productDetail": {

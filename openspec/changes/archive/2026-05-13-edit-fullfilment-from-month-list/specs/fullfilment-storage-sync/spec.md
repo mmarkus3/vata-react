@@ -7,6 +7,8 @@ The system MUST persist fullfilment creation or fullfilment edits and related in
 - **WHEN** an error occurs during fullfilment create/edit inventory adjustment
 - **THEN** system commits neither fullfilment changes nor any inventory decrements/increments
 
+## ADDED Requirements
+
 ### Requirement: Fullfilment edit SHALL adjust inventory by delta
 The system MUST recalculate inventory changes based on difference between original and edited fullfilment product amounts.
 

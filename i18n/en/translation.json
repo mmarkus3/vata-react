@@ -25,6 +25,9 @@
       "fiberPlaceholder": "Fiber (g) (optional)"
     },
     "errors": {
+      "nameRequired": "Enter product name.",
+      "amountInvalid": "Enter a valid amount.",
+      "priceInvalid": "Enter a valid price.",
       "retailPriceInvalid": "Enter a valid retail price",
       "unitPriceInvalid": "Enter a valid unit price",
       "energyJouleInvalid": "Enter valid energy (kJ)",
@@ -35,7 +38,12 @@
       "saturatedCarbohydrateInvalid": "Enter valid sugar amount (g)",
       "proteinInvalid": "Enter valid protein (g)",
       "saltInvalid": "Enter valid salt (g)",
-      "fiberInvalid": "Enter valid fiber (g)"
+      "fiberInvalid": "Enter valid fiber (g)",
+      "mediaPermissionDenied": "Media library permission was not granted.",
+      "imageUrlRequired": "Enter an image URL.",
+      "imageUrlInvalid": "Enter a valid URL starting with http:// or https://.",
+      "companyMissing": "No company is linked to the user.",
+      "saveFailed": "Product save failed"
     }
   },
   "productDetail": {

@@ -26,25 +26,22 @@ The system SHALL display comprehensive client information including name, compan
 - **AND** handles missing information gracefully (shows "Ei tiedossa" for empty fields)
 
 ### Requirement: Fullfilment History by Month
-The system SHALL display fullfilments grouped by month in chronological order (newest first), showing total amounts and dates for each fullfilment. The system SHALL provide a segment control to toggle between monthly and product-based views.
+The system SHALL display fullfilments grouped by month in chronological order and support opening a selected fullfilment from the monthly list for editing.
 
 #### Scenario: Display monthly fullfilment groups
 - **WHEN** user views the client detail page and selects "Kuukausittain" tab
-- **THEN** system shows a "Täyttymiset kuukausittain" section
-- **AND** groups fullfilments by month (format: "MMMM YYYY")
-- **AND** displays each fullfilment with date, product name, and amount
-- **AND** shows total amount for each month
+- **THEN** system shows fullfilments grouped by month
+- **AND** displays each fullfilment with date, product names, and amount totals
 
-#### Scenario: Segment control display
-- **WHEN** user views the fullfilments section
-- **THEN** system displays a segment control with "Kuukausittain" and "Tuotteittain" options
-- **AND** "Kuukausittain" is selected by default
+#### Scenario: Open fullfilment from monthly list
+- **WHEN** user taps a fullfilment row in monthly list
+- **THEN** system opens edit interface for that fullfilment
+- **AND** preloads current fullfilment data into editable fields
 
-#### Scenario: Switch between views
-- **WHEN** user taps on a segment control option
-- **THEN** system updates the active tab visually
-- **AND** displays the corresponding fullfilment view
-- **AND** maintains the selection state
+#### Scenario: Refresh list after successful edit
+- **WHEN** user saves valid fullfilment edits
+- **THEN** system closes edit interface
+- **AND** refreshes monthly and product-grouped fullfilment data
 
 ### Requirement: Fullfilment History by Product and Month
 The system SHALL display fullfilments grouped first by product, then by month within each product, showing cumulative amounts. The system SHALL provide a segment control to toggle between monthly and product-based views.
@@ -68,32 +65,16 @@ The system SHALL display fullfilments grouped first by product, then by month wi
 - **AND** maintains the selection state
 
 ### Requirement: Loading and Error States
-The system SHALL handle loading states and errors appropriately during data fetching and client lifecycle operations.
+The system SHALL handle loading states and errors appropriately during data fetching and fullfilment edit operations.
 
 #### Scenario: Loading client data
 - **WHEN** user navigates to client detail page
-- **THEN** system shows a loading indicator while fetching client data
-- **AND** shows a loading indicator while fetching fullfilment data
+- **THEN** system shows a loading indicator while fetching client and fullfilment data
 
-#### Scenario: Handle missing client
-- **WHEN** client with the specified ID does not exist
-- **THEN** system displays an error message "Asiakasta ei löytynyt"
-- **AND** provides a way to navigate back to the clients list
-
-#### Scenario: Handle fullfilment fetch errors
-- **WHEN** fullfilment data cannot be fetched
-- **THEN** system displays an error message for the fullfilment sections
-- **AND** still displays client information if available
-
-#### Scenario: Handle client update errors
-- **WHEN** updating client data fails
+#### Scenario: Handle fullfilment edit errors
+- **WHEN** fullfilment edit save fails
 - **THEN** system displays an error message
-- **AND** keeps edit form open with entered values
-
-#### Scenario: Handle client delete errors
-- **WHEN** deleting client fails
-- **THEN** system displays an error message
-- **AND** keeps user on client detail page
+- **AND** keeps edit interface open with current user input
 
 ### Requirement: Responsive Design
 The system SHALL ensure the client detail page is usable on mobile devices with appropriate spacing and typography.
