@@ -1,20 +1,40 @@
 import { firestore } from '@/services/firebase';
 import { addDoc, collection, deleteDoc, doc, DocumentData, FirestoreDataConverter, getDoc, getDocs, onSnapshot, query, QueryFieldFilterConstraint, runTransaction, setDoc, updateDoc, where } from 'firebase/firestore';
 
+export function normalizeFirestoreData<T>(value: T): T {
+  if (value === undefined) {
+    return null as T;
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((item) => normalizeFirestoreData(item)) as T;
+  }
+
+  if (value && typeof value === 'object') {
+    const result: Record<string, unknown> = {};
+
+    for (const [key, item] of Object.entries(value as Record<string, unknown>)) {
+      result[key] = normalizeFirestoreData(item);
+    }
+
+    return result as T;
+  }
+
+  return value;
+}
+
 export async function saveItem(collectionKey: string, item: object) {
-  const docRef = await addDoc(collection(firestore, collectionKey), item);
+  const docRef = await addDoc(collection(firestore, collectionKey), normalizeFirestoreData(item));
   return docRef.id;
 }
 
 export async function saveAsItem(collectionKey: string, id: string, item: object) {
-  await setDoc(doc(firestore, collectionKey, id), item);
+  await setDoc(doc(firestore, collectionKey, id), normalizeFirestoreData(item));
 }
 
 export async function updateItem(collectionKey: string, id: string, data: object) {
   const docRef = doc(firestore, collectionKey, id);
-  await updateDoc(docRef, {
-    ...data,
-  });
+  await updateDoc(docRef, normalizeFirestoreData(data));
 }
 
 export async function deleteItem(collectionKey: string, id: string) {
