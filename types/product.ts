@@ -9,7 +9,7 @@ export interface Product {
   retailPrice: number | null;
   unitPrice: number | null;
   images: string[];
-  category?: string;
+  category: string;
   energyJoule: number | null;
   energyCalory: number | null;
   fat: number | null;

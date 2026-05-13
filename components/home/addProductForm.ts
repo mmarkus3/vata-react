@@ -1,6 +1,7 @@
 import { Product } from '@/types/product';
 
 export interface AddProductFormValues {
+  category: string;
   name: string;
   amount: string;
   price: string;
@@ -34,6 +35,7 @@ export const nutritionFieldKeys = [
 export type NutritionFieldKey = (typeof nutritionFieldKeys)[number];
 
 export const defaultAddProductFormValues: AddProductFormValues = {
+  category: '',
   name: '',
   amount: '',
   price: '',
@@ -52,10 +54,10 @@ export const defaultAddProductFormValues: AddProductFormValues = {
   ean: '',
 };
 
-export const parseOptionalDecimal = (raw: string): number | undefined => {
+export const parseOptionalDecimal = (raw: string): number | null => {
   const trimmed = raw.trim();
   if (!trimmed) {
-    return undefined;
+    return null;
   }
 
   return Number(trimmed.replace(',', '.'));

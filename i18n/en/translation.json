@@ -22,7 +22,11 @@
       "saturatedCarbohydratePlaceholder": "Carbohydrate, of which sugars (g) (optional)",
       "proteinPlaceholder": "Protein (g) (optional)",
       "saltPlaceholder": "Salt (g) (optional)",
-      "fiberPlaceholder": "Fiber (g) (optional)"
+      "fiberPlaceholder": "Fiber (g) (optional)",
+      "categoryLabel": "Category",
+      "noCategory": "No category",
+      "categoryLoading": "Loading categories...",
+      "noCategoriesAvailable": "No categories available."
     },
     "errors": {
       "nameRequired": "Enter product name.",
@@ -75,7 +79,12 @@
       "fiber": "Fiber (g)",
       "fiberPlaceholder": "Enter fiber g",
       "amount": "Amount",
-      "ean": "EAN"
+      "ean": "EAN",
+      "category": "Category",
+      "noCategory": "No category",
+      "categoryLoading": "Loading categories...",
+      "noCategoriesAvailable": "No categories available.",
+      "categoryFallback": "deleted"
     },
     "actions": {
       "cancelEdit": "Cancel editing",

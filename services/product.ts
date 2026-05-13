@@ -41,6 +41,15 @@ export function getProductsByCompany(companyId: string, cb: (results: Product[])
   }
 }
 
+export function getProductsByCompanyAndCategory(companyId: string, category: string, cb: (results: Product[]) => void) {
+  try {
+    return getSnapshotItems<Product>('products', cb, [where('company', '==', companyId), where('category', '==', category)], converter);
+  } catch (error) {
+    console.error('Failed to fetch products:', error);
+    throw error;
+  }
+}
+
 interface CreateProductOptions {
   barcodeImageUri?: string;
   productImageUris?: string[];

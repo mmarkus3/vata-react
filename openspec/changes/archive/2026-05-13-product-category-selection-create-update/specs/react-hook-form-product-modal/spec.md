@@ -1,8 +1,5 @@
-# react-hook-form-product-modal Specification
+## MODIFIED Requirements
 
-## Purpose
-TBD - created by archiving change use-react-hook-form-add-product-modal. Update Purpose after archive.
-## Requirements
 ### Requirement: Product create modal uses declarative form state and validation
 The system SHALL manage `AddProductModal` form fields, including optional category selection, through a declarative form model that centralizes field values, validation rules, and submit handling.
 
@@ -21,4 +18,3 @@ The system SHALL manage `AddProductModal` form fields, including optional catego
 #### Scenario: Create submission includes selected category
 - **WHEN** a user selects a category option in product create form and saves successfully
 - **THEN** the create payload includes the selected category value
-

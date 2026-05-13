@@ -54,6 +54,7 @@ describe('productDetailForm helpers', () => {
   it('builds form defaults from product and clears barcode input when barcode is image URL', () => {
     const values = toProductDetailFormValues({
       name: 'Milk',
+      category: 'Dairy',
       amount: 5,
       company: 'company-1',
       ean: '123',
@@ -74,6 +75,7 @@ describe('productDetailForm helpers', () => {
     });
 
     expect(values.name).toBe('Milk');
+    expect(values.category).toBe('Dairy');
     expect(values.price).toBe('1.99');
     expect(values.amount).toBe('5');
     expect(values.barcode).toBe('');

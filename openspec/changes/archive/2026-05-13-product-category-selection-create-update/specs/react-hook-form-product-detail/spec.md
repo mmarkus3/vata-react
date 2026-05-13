@@ -1,8 +1,5 @@
-# react-hook-form-product-detail Specification
+## MODIFIED Requirements
 
-## Purpose
-TBD - created by archiving change use-react-hook-form-product-detail. Update Purpose after archive.
-## Requirements
 ### Requirement: Product detail edit form uses declarative field state
 The product detail edit flow SHALL manage editable scalar product fields, including optional category selection, through a declarative form model that centralizes field values, validation rules, and submit handling.
 
@@ -22,4 +19,3 @@ The product detail edit flow SHALL manage editable scalar product fields, includ
 #### Scenario: Edit submission includes chosen category value
 - **WHEN** a user saves product edits with a selected category value
 - **THEN** the update payload includes that category value
-

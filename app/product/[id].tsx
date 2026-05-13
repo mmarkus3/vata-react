@@ -9,8 +9,10 @@ import {
   toProductDetailFormValues,
 } from '@/app/product/productDetailForm';
 import { themeColors } from '@/constants/colors';
+import { useCategories } from '@/hooks/useCategories';
 import { deleteProduct, getProductById, updateProduct } from '@/services/product';
 import type { Product } from '@/types/product';
+import { buildProductCategoryOptions } from '@/utils/productCategoryOptions';
 import * as ImagePicker from 'expo-image-picker';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -20,6 +22,7 @@ import { ActivityIndicator, Alert, Image, ScrollView, Text, TextInput, Touchable
 
 export default function ProductDetailPage() {
   const { t } = useTranslation();
+  const { categories, isLoading: isLoadingCategories } = useCategories();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const productId = typeof id === 'string' ? id : undefined;
@@ -53,6 +56,7 @@ export default function ProductDetailPage() {
   const previewProductImages = [...productImages, ...newProductImageUris];
 
   const fieldErrorOrder: Path<ProductDetailFormValues>[] = [
+    'category',
     'name',
     'price',
     'amount',
@@ -254,6 +258,7 @@ export default function ProductDetailPage() {
 
     try {
       const data: Partial<Omit<Product, 'id' | 'company'>> = {
+        category: values.category.trim() || undefined,
         name: values.name.trim(),
         price: priceValue,
         retailPrice: retailPriceValue,
@@ -361,6 +366,7 @@ export default function ProductDetailPage() {
   }
 
   const displayedError = error ?? firstFieldError(errors);
+  const categoryOptions = buildProductCategoryOptions(categories, getValues('category'));
 
   const renderInput = (
     name: Path<ProductDetailFormValues>,
@@ -514,6 +520,54 @@ export default function ProductDetailPage() {
                   )}
                 </View>
               ) : null}
+            </View>
+
+            <View>
+              <Text className="text-sm text-gray-500">{t('productDetail.fields.category')}</Text>
+              {editMode ? (
+                <Controller
+                  control={control}
+                  name="category"
+                  render={({ field: { value, onChange } }) => (
+                    <View className="mt-2 space-y-2">
+                      <View className="flex-row flex-wrap gap-2">
+                        <TouchableOpacity
+                          onPress={() => {
+                            setError(null);
+                            onChange('');
+                          }}
+                          className={`rounded-2xl border px-3 py-2 ${!value ? 'border-primary-600 bg-primary-50' : 'border-gray-300 bg-gray-50'}`}
+                        >
+                          <Text className={`text-sm ${!value ? 'text-primary-700' : 'text-gray-700'}`}>{t('productDetail.fields.noCategory')}</Text>
+                        </TouchableOpacity>
+                        {categoryOptions.map((option) => {
+                          const isSelected = value === option.value;
+                          return (
+                            <TouchableOpacity
+                              key={option.value}
+                              onPress={() => {
+                                setError(null);
+                                onChange(option.value);
+                              }}
+                              className={`rounded-2xl border px-3 py-2 ${isSelected ? 'border-primary-600 bg-primary-50' : 'border-gray-300 bg-gray-50'}`}
+                            >
+                              <Text className={`text-sm ${isSelected ? 'text-primary-700' : 'text-gray-700'}`}>
+                                {option.isFallback ? `${option.label} (${t('productDetail.fields.categoryFallback')})` : option.label}
+                              </Text>
+                            </TouchableOpacity>
+                          );
+                        })}
+                      </View>
+                      {isLoadingCategories ? <Text className="text-xs text-gray-500">{t('productDetail.fields.categoryLoading')}</Text> : null}
+                      {!isLoadingCategories && categoryOptions.length === 0 ? (
+                        <Text className="text-xs text-gray-500">{t('productDetail.fields.noCategoriesAvailable')}</Text>
+                      ) : null}
+                    </View>
+                  )}
+                />
+              ) : (
+                <Text className="mt-1 text-base font-medium text-gray-900">{product?.category || '-'}</Text>
+              )}
             </View>
 
             <View>

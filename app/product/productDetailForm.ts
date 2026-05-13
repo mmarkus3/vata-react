@@ -1,6 +1,7 @@
 import type { Product } from '@/types/product';
 
 export interface ProductDetailFormValues {
+  category: string;
   name: string;
   price: string;
   retailPrice: string;
@@ -34,6 +35,7 @@ export const nutritionFieldKeys = [
 export type NutritionFieldKey = (typeof nutritionFieldKeys)[number];
 
 export const defaultProductDetailFormValues: ProductDetailFormValues = {
+  category: '',
   name: '',
   price: '',
   retailPrice: '',
@@ -72,19 +74,20 @@ export const toProductDetailFormValues = (product: Product): ProductDetailFormVa
   const barcode = /^https?:\/\//i.test(product.barcode) ? '' : product.barcode;
 
   return {
+    category: product.category ?? '',
     name: product.name,
     price: String(product.price),
-    retailPrice: product.retailPrice !== undefined ? String(product.retailPrice) : '',
-    unitPrice: product.unitPrice !== undefined ? String(product.unitPrice) : '',
-    energyJoule: product.energyJoule !== undefined ? String(product.energyJoule) : '',
-    energyCalory: product.energyCalory !== undefined ? String(product.energyCalory) : '',
-    fat: product.fat !== undefined ? String(product.fat) : '',
-    saturatedFat: product.saturatedFat !== undefined ? String(product.saturatedFat) : '',
-    carbohydrate: product.carbohydrate !== undefined ? String(product.carbohydrate) : '',
-    saturatedCarbohydrate: product.saturatedCarbohydrate !== undefined ? String(product.saturatedCarbohydrate) : '',
-    protein: product.protein !== undefined ? String(product.protein) : '',
-    salt: product.salt !== undefined ? String(product.salt) : '',
-    fiber: product.fiber !== undefined ? String(product.fiber) : '',
+    retailPrice: product.retailPrice != null ? String(product.retailPrice) : '',
+    unitPrice: product.unitPrice != null ? String(product.unitPrice) : '',
+    energyJoule: product.energyJoule != null ? String(product.energyJoule) : '',
+    energyCalory: product.energyCalory != null ? String(product.energyCalory) : '',
+    fat: product.fat != null ? String(product.fat) : '',
+    saturatedFat: product.saturatedFat != null ? String(product.saturatedFat) : '',
+    carbohydrate: product.carbohydrate != null ? String(product.carbohydrate) : '',
+    saturatedCarbohydrate: product.saturatedCarbohydrate != null ? String(product.saturatedCarbohydrate) : '',
+    protein: product.protein != null ? String(product.protein) : '',
+    salt: product.salt != null ? String(product.salt) : '',
+    fiber: product.fiber != null ? String(product.fiber) : '',
     amount: String(product.amount),
     barcode,
     ean: product.ean,

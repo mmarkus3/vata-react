@@ -8,7 +8,9 @@ import {
   parseOptionalDecimal,
 } from '@/components/home/addProductForm';
 import { useAuth } from '@/hooks/useAuth';
+import { useCategories } from '@/hooks/useCategories';
 import { createProduct } from '@/services/product';
+import { buildProductCategoryOptions } from '@/utils/productCategoryOptions';
 import * as ImagePicker from 'expo-image-picker';
 import type { FC } from 'react';
 import { useState } from 'react';
@@ -25,6 +27,7 @@ interface AddProductModalProps {
 const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProductCreated }) => {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const { categories, isLoading: isLoadingCategories } = useCategories();
   const {
     control,
     handleSubmit,
@@ -58,6 +61,7 @@ const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProduct
   });
 
   const fieldErrorOrder: Path<AddProductFormValues>[] = [
+    'category',
     'name',
     'amount',
     'price',
@@ -168,6 +172,7 @@ const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProduct
       setIsLoading(true);
       await createProduct(
         {
+          category: values.category.trim(),
           name: values.name.trim(),
           amount: amountValue,
           price: priceValue,
@@ -180,7 +185,7 @@ const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProduct
           images: [],
         },
         {
-          barcodeImageUri: selectedBarcodeImageUri ?? undefined,
+          barcodeImageUri: selectedBarcodeImageUri ?? null,
           productImageUris: selectedProductImageUris,
           imageLinks: imageUrls,
         }
@@ -198,6 +203,7 @@ const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProduct
   };
 
   const displayedError = error ?? firstFieldError(errors);
+  const categoryOptions = buildProductCategoryOptions(categories);
 
   const renderInput = (
     name: Path<AddProductFormValues>,
@@ -237,6 +243,47 @@ const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProduct
           <Text className="text-sm text-gray-500 mt-2">Täytä tuotteen tiedot ja tallenna varastoon.</Text>
 
           <View className="mt-5 space-y-3">
+            <View>
+              <Text className="mb-2 text-sm font-medium text-gray-700">{t('addProduct.fields.categoryLabel')}</Text>
+              <Controller
+                control={control}
+                name="category"
+                render={({ field: { value, onChange } }) => (
+                  <View className="space-y-2">
+                    <View className="flex-row flex-wrap gap-2">
+                      <TouchableOpacity
+                        onPress={() => {
+                          setError(null);
+                          onChange('');
+                        }}
+                        className={`rounded-2xl border px-3 py-2 ${!value ? 'border-primary-600 bg-primary-50' : 'border-gray-300 bg-gray-50'}`}
+                      >
+                        <Text className={`text-sm ${!value ? 'text-primary-700' : 'text-gray-700'}`}>{t('addProduct.fields.noCategory')}</Text>
+                      </TouchableOpacity>
+                      {categoryOptions.map((option) => {
+                        const isSelected = value === option.value;
+                        return (
+                          <TouchableOpacity
+                            key={option.value}
+                            onPress={() => {
+                              setError(null);
+                              onChange(option.value);
+                            }}
+                            className={`rounded-2xl border px-3 py-2 ${isSelected ? 'border-primary-600 bg-primary-50' : 'border-gray-300 bg-gray-50'}`}
+                          >
+                            <Text className={`text-sm ${isSelected ? 'text-primary-700' : 'text-gray-700'}`}>{option.label}</Text>
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                    {isLoadingCategories ? <Text className="text-xs text-gray-500">{t('addProduct.fields.categoryLoading')}</Text> : null}
+                    {!isLoadingCategories && categoryOptions.length === 0 ? (
+                      <Text className="text-xs text-gray-500">{t('addProduct.fields.noCategoriesAvailable')}</Text>
+                    ) : null}
+                  </View>
+                )}
+              />
+            </View>
             {renderInput('name', 'Tuotteen nimi', {
               rules: {
                 validate: (value) => (value.trim() ? true : t('addProduct.errors.nameRequired')),

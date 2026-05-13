@@ -22,7 +22,11 @@
       "saturatedCarbohydratePlaceholder": "Hiilihydraatit, joista sokereita (g) (valinnainen)",
       "proteinPlaceholder": "Proteiini (g) (valinnainen)",
       "saltPlaceholder": "Suola (g) (valinnainen)",
-      "fiberPlaceholder": "Ravintokuitu (g) (valinnainen)"
+      "fiberPlaceholder": "Ravintokuitu (g) (valinnainen)",
+      "categoryLabel": "Kategoria",
+      "noCategory": "Ei kategoriaa",
+      "categoryLoading": "Ladataan kategorioita...",
+      "noCategoriesAvailable": "Ei kategorioita saatavilla."
     },
     "errors": {
       "nameRequired": "Anna tuotteen nimi.",
@@ -75,7 +79,12 @@
       "fiber": "Ravintokuitu (g)",
       "fiberPlaceholder": "Anna ravintokuitu g",
       "amount": "Määrä",
-      "ean": "EAN"
+      "ean": "EAN",
+      "category": "Kategoria",
+      "noCategory": "Ei kategoriaa",
+      "categoryLoading": "Ladataan kategorioita...",
+      "noCategoriesAvailable": "Ei kategorioita saatavilla.",
+      "categoryFallback": "poistettu"
     },
     "actions": {
       "cancelEdit": "Keskeytä muokkaus",
