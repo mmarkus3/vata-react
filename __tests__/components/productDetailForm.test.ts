@@ -82,6 +82,7 @@ describe('productDetailForm helpers', () => {
     });
 
     expect(values.name).toBe('Milk');
+    expect(values.showInWebshop).toBe(false);
     expect(values.category).toBe('Dairy');
     expect(values.price).toBe('1.99');
     expect(values.amount).toBe('5');
@@ -95,5 +96,32 @@ describe('productDetailForm helpers', () => {
     expect(values.description_fi).toBe('Kotimainen maito');
     expect(values.description_sv).toBe('Inhemsk mjolk');
     expect(values.description_en).toBe('Domestic milk');
+  });
+
+  it('keeps explicit showInWebshop value from product', () => {
+    const values = toProductDetailFormValues({
+      name: 'Bread',
+      category: '',
+      amount: 2,
+      company: 'company-1',
+      ean: '456',
+      barcode: '',
+      price: 2.99,
+      images: [],
+      retailPrice: null,
+      unitPrice: null,
+      energyJoule: null,
+      energyCalory: null,
+      fat: null,
+      saturatedFat: null,
+      carbohydrate: null,
+      saturatedCarbohydrate: null,
+      protein: null,
+      salt: null,
+      fiber: null,
+      showInWebshop: false,
+    });
+
+    expect(values.showInWebshop).toBe(false);
   });
 });

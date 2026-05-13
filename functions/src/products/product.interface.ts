@@ -26,4 +26,5 @@ export interface Product {
   description_fi?: string;
   description_sv?: string;
   description_en?: string;
+  showInWebshop?: boolean;
 }

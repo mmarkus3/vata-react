@@ -1,6 +1,7 @@
 import { Product } from '@/types/product';
 
 export interface AddProductFormValues {
+  showInWebshop: boolean;
   category: string;
   name: string;
   countryOfOrigin: string;
@@ -42,6 +43,7 @@ export const nutritionFieldKeys = [
 export type NutritionFieldKey = (typeof nutritionFieldKeys)[number];
 
 export const defaultAddProductFormValues: AddProductFormValues = {
+  showInWebshop: false,
   category: '',
   name: '',
   countryOfOrigin: '',

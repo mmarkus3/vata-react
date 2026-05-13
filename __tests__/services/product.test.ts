@@ -55,6 +55,7 @@ describe('product service', () => {
 
     expect(mockUploadProductImage).toHaveBeenCalledTimes(2);
     expect(mockUpdateItem).toHaveBeenCalledWith('products', 'p1', {
+      showInWebshop: false,
       images: [
         'https://cdn.example.com/existing.jpg',
         'https://cdn.example.com/link.jpg',
@@ -93,12 +94,32 @@ describe('product service', () => {
     expect(mockSaveItem).toHaveBeenNthCalledWith(
       1,
       'products',
-      expect.objectContaining({ retailPrice: 6.9, unitPrice: 10.2 })
+      expect.objectContaining({ retailPrice: 6.9, unitPrice: 10.2, showInWebshop: false })
     );
     expect(mockSaveItem).toHaveBeenNthCalledWith(
       2,
       'products',
-      expect.not.objectContaining({ retailPrice: expect.anything(), unitPrice: expect.anything() })
+      expect.objectContaining({ showInWebshop: false })
+    );
+  });
+
+  it('persists explicit showInWebshop value on create', async () => {
+    mockSaveItem.mockResolvedValueOnce('p5');
+
+    await createProduct({
+      name: 'Product E',
+      amount: 1,
+      price: 1.5,
+      barcode: '',
+      ean: '',
+      company: 'co1',
+      images: [],
+      showInWebshop: false,
+    });
+
+    expect(mockSaveItem).toHaveBeenCalledWith(
+      'products',
+      expect.objectContaining({ showInWebshop: false })
     );
   });
 
@@ -170,6 +191,7 @@ describe('product service', () => {
     });
 
     expect(mockUpdateItem).toHaveBeenCalledWith('products', 'p1', {
+      showInWebshop: false,
       retailPrice: 7.5,
       unitPrice: 11.9,
     });
@@ -191,6 +213,7 @@ describe('product service', () => {
     });
 
     expect(mockUpdateItem).toHaveBeenCalledWith('products', 'p1', {
+      showInWebshop: false,
       energyJoule: 200,
       energyCalory: 48,
       fat: 3.1,
@@ -200,6 +223,18 @@ describe('product service', () => {
       protein: 2.2,
       salt: 0.5,
       fiber: 1.7,
+    });
+  });
+
+  it('updates explicit showInWebshop value', async () => {
+    mockUpdateItem.mockResolvedValue(undefined);
+
+    await updateProduct('p1', {
+      showInWebshop: false,
+    });
+
+    expect(mockUpdateItem).toHaveBeenCalledWith('products', 'p1', {
+      showInWebshop: false,
     });
   });
 

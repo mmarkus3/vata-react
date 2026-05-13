@@ -28,6 +28,7 @@ interface AddProductModalProps {
 }
 
 const fieldErrorOrder: Path<AddProductFormValues>[] = [
+  'showInWebshop',
   'category',
   'name',
   'countryOfOrigin',
@@ -197,6 +198,7 @@ const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProduct
       setIsLoading(true);
       await createProduct(
         {
+          showInWebshop: values.showInWebshop,
           category: categoryId,
           name: values.name.trim(),
           amount: amountValue,
@@ -305,6 +307,36 @@ const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProduct
               onToggle={() => toggleSection('basic')}
             >
               <View className="space-y-3">
+                <View>
+                  <Text className="mb-2 text-sm font-medium text-gray-700">{t('addProduct.fields.showInWebshopLabel')}</Text>
+                  <Controller
+                    control={control}
+                    name="showInWebshop"
+                    render={({ field: { value, onChange } }) => (
+                      <View className="flex-row gap-2">
+                        <TouchableOpacity
+                          onPress={() => {
+                            setError(null);
+                            onChange(true);
+                          }}
+                          className={`rounded-2xl border px-3 py-2 ${value ? 'border-primary-600 bg-primary-50' : 'border-gray-300 bg-gray-50'}`}
+                        >
+                          <Text className={`text-sm ${value ? 'text-primary-700' : 'text-gray-700'}`}>{t('addProduct.fields.showInWebshopYes')}</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          onPress={() => {
+                            setError(null);
+                            onChange(false);
+                          }}
+                          className={`rounded-2xl border px-3 py-2 ${!value ? 'border-primary-600 bg-primary-50' : 'border-gray-300 bg-gray-50'}`}
+                        >
+                          <Text className={`text-sm ${!value ? 'text-primary-700' : 'text-gray-700'}`}>{t('addProduct.fields.showInWebshopNo')}</Text>
+                        </TouchableOpacity>
+                      </View>
+                    )}
+                  />
+                </View>
+
                 <View>
                   <Text className="mb-2 text-sm font-medium text-gray-700">{t('addProduct.fields.categoryLabel')}</Text>
                   <Controller

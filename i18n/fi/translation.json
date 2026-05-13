@@ -12,6 +12,9 @@
   },
   "addProduct": {
     "fields": {
+      "showInWebshopLabel": "Näytetään verkkokaupassa",
+      "showInWebshopYes": "Kyllä",
+      "showInWebshopNo": "Ei",
       "retailPricePlaceholder": "Vähittäismyyntihinta (valinnainen)",
       "unitPricePlaceholder": "Kilohinta €/kg (valinnainen)",
       "energyJoulePlaceholder": "Energia (kJ) (valinnainen)",
@@ -66,6 +69,9 @@
   "productDetail": {
     "title": "Tuotteen tiedot",
     "fields": {
+      "showInWebshop": "Näytetään verkkokaupassa",
+      "showInWebshopYes": "Kyllä",
+      "showInWebshopNo": "Ei",
       "barcode": "Viivakoodi",
       "name": "Nimi",
       "price": "Hinta",

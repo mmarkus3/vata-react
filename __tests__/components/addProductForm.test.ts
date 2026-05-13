@@ -59,6 +59,7 @@ describe('addProductForm helpers', () => {
   });
 
   it('includes multilingual content fields in defaults', () => {
+    expect(defaultAddProductFormValues.showInWebshop).toBe(false);
     expect(defaultAddProductFormValues.countryOfOrigin).toBe('');
     expect(defaultAddProductFormValues.ingredients_fi).toBe('');
     expect(defaultAddProductFormValues.ingredients_sv).toBe('');

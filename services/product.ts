@@ -16,6 +16,7 @@ const converter = {
     return {
       ...product,
       price,
+      showInWebshop: product.showInWebshop ?? false,
       retailPrice: normalizeOptionalNumber(product.retailPrice),
       unitPrice: normalizeOptionalNumber(product.unitPrice),
       energyJoule: normalizeOptionalNumber(product.energyJoule),
@@ -83,6 +84,7 @@ export async function createProduct(product: Omit<Product, 'id'>, options: Creat
   try {
     const productToSave = {
       ...product,
+      showInWebshop: product.showInWebshop ?? false,
       images: options.imageLinks ?? [],
     };
 
@@ -143,6 +145,11 @@ export async function updateProduct(
   options: UpdateProductOptions = {}
 ) {
   try {
+    data = {
+      ...data,
+      showInWebshop: data.showInWebshop ?? false,
+    };
+
     if (options.newBarcodeImageUri) {
       if (!options.companyId) {
         throw new Error('Company ID is required to upload a new barcode image.');

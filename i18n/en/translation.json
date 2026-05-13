@@ -12,6 +12,9 @@
   },
   "addProduct": {
     "fields": {
+      "showInWebshopLabel": "Show in webshop",
+      "showInWebshopYes": "Yes",
+      "showInWebshopNo": "No",
       "retailPricePlaceholder": "Retail price (optional)",
       "unitPricePlaceholder": "Unit price €/kg (optional)",
       "energyJoulePlaceholder": "Energy (kJ) (optional)",
@@ -66,6 +69,9 @@
   "productDetail": {
     "title": "Product details",
     "fields": {
+      "showInWebshop": "Show in webshop",
+      "showInWebshopYes": "Yes",
+      "showInWebshopNo": "No",
       "barcode": "Barcode",
       "name": "Name",
       "price": "Price",

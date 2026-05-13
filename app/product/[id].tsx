@@ -25,6 +25,7 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Alert, Image, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 const fieldErrorOrder: Path<ProductDetailFormValues>[] = [
+  'showInWebshop',
   'category',
   'name',
   'countryOfOrigin',
@@ -316,6 +317,7 @@ export default function ProductDetailPage() {
 
     try {
       const data: Partial<Omit<Product, 'id' | 'company'>> = {
+        showInWebshop: values.showInWebshop,
         category: resolveCategoryIdFromReference(categories, values.category) || undefined,
         name: values.name.trim(),
         price: priceValue,
@@ -600,6 +602,42 @@ export default function ProductDetailPage() {
                       )}
                     </View>
                   ) : null}
+                </View>
+
+                <View>
+                  <Text className="text-sm text-gray-500">{t('productDetail.fields.showInWebshop')}</Text>
+                  {editMode ? (
+                    <Controller
+                      control={control}
+                      name="showInWebshop"
+                      render={({ field: { value, onChange } }) => (
+                        <View className="mt-2 flex-row gap-2">
+                          <TouchableOpacity
+                            onPress={() => {
+                              setError(null);
+                              onChange(true);
+                            }}
+                            className={`rounded-2xl border px-3 py-2 ${value ? 'border-primary-600 bg-primary-50' : 'border-gray-300 bg-gray-50'}`}
+                          >
+                            <Text className={`text-sm ${value ? 'text-primary-700' : 'text-gray-700'}`}>{t('productDetail.fields.showInWebshopYes')}</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            onPress={() => {
+                              setError(null);
+                              onChange(false);
+                            }}
+                            className={`rounded-2xl border px-3 py-2 ${!value ? 'border-primary-600 bg-primary-50' : 'border-gray-300 bg-gray-50'}`}
+                          >
+                            <Text className={`text-sm ${!value ? 'text-primary-700' : 'text-gray-700'}`}>{t('productDetail.fields.showInWebshopNo')}</Text>
+                          </TouchableOpacity>
+                        </View>
+                      )}
+                    />
+                  ) : (
+                    <Text className="mt-1 text-base font-medium text-gray-900">
+                      {product?.showInWebshop ? t('productDetail.fields.showInWebshopYes') : t('productDetail.fields.showInWebshopNo')}
+                    </Text>
+                  )}
                 </View>
 
                 <View>

@@ -6,6 +6,7 @@ export type ProductDetailSectionKey = 'basic' | 'additionalInfo' | 'price' | 'nu
 
 export const productDetailSectionFields: Record<ProductDetailSectionKey, Path<ProductDetailFormValues>[]> = {
   basic: [
+    'showInWebshop',
     'barcode',
     'category',
     'name',

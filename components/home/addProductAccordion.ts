@@ -6,6 +6,7 @@ export type AddProductSectionKey = 'basic' | 'additionalInfo' | 'price' | 'nutri
 
 export const sectionFields: Record<AddProductSectionKey, Path<AddProductFormValues>[]> = {
   basic: [
+    'showInWebshop',
     'category',
     'name',
     'countryOfOrigin',
