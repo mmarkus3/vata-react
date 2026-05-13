@@ -1,16 +1,16 @@
-import { getAssignableProducts } from '@/app/category/categoryAssignment';
+import CategoryProductAssignmentModal from '@/app/category/CategoryProductAssignmentModal';
 import { getCategoryDetailProductsState } from '@/app/category/categoryDetailState';
 import EditCategoryModal from '@/components/categories/EditCategoryModal';
 import { themeColors } from '@/constants/colors';
 import { useAuth } from '@/hooks/useAuth';
 import { useCategories } from '@/hooks/useCategories';
 import { getCategoryById } from '@/services/category';
-import { getProductsByCompany, getProductsByCompanyAndCategory, updateProduct } from '@/services/product';
+import { getProductsByCompanyAndCategory } from '@/services/product';
 import type { Category } from '@/types/category';
 import type { Product } from '@/types/product';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, Modal, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 export default function CategoryDetailPage() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -26,12 +26,7 @@ export default function CategoryDetailPage() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showAddProductsModal, setShowAddProductsModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isLoadingCandidates, setIsLoadingCandidates] = useState(false);
-  const [isAssigningProducts, setIsAssigningProducts] = useState(false);
-  const [assignmentError, setAssignmentError] = useState<string | null>(null);
   const [assignmentSuccess, setAssignmentSuccess] = useState<string | null>(null);
-  const [candidateProducts, setCandidateProducts] = useState<Product[]>([]);
-  const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
 
   const categoryId = typeof id === 'string' ? id : undefined;
 
@@ -87,26 +82,6 @@ export default function CategoryDetailPage() {
     };
   }, [user?.profile?.company, category?.name]);
 
-  useEffect(() => {
-    if (!showAddProductsModal || !user?.profile?.company) {
-      return;
-    }
-
-    setIsLoadingCandidates(true);
-    setAssignmentError(null);
-
-    const unsubscribe = getProductsByCompany(user.profile.company, (results) => {
-      setCandidateProducts(results);
-      setIsLoadingCandidates(false);
-    });
-
-    return () => {
-      if (typeof unsubscribe === 'function') {
-        unsubscribe();
-      }
-    };
-  }, [showAddProductsModal, user?.profile?.company]);
-
   const handleDelete = () => {
     if (!category?.id) {
       return;
@@ -138,59 +113,10 @@ export default function CategoryDetailPage() {
 
   const categoryNames = useMemo(() => categories.map((entry) => entry.name), [categories]);
   const productsState = getCategoryDetailProductsState({ isLoadingProducts, error, products });
-  const assignableProducts = useMemo(
-    () => getAssignableProducts(candidateProducts, category?.name ?? ''),
-    [candidateProducts, category?.name]
-  );
-
-  const toggleProductSelection = (productId: string) => {
-    setAssignmentError(null);
-    setAssignmentSuccess(null);
-    setSelectedProductIds((prev) =>
-      prev.includes(productId) ? prev.filter((id) => id !== productId) : [...prev, productId]
-    );
-  };
 
   const openAddProductsModal = () => {
-    setAssignmentError(null);
     setAssignmentSuccess(null);
-    setSelectedProductIds([]);
     setShowAddProductsModal(true);
-  };
-
-  const closeAddProductsModal = () => {
-    if (isAssigningProducts) {
-      return;
-    }
-
-    setShowAddProductsModal(false);
-    setSelectedProductIds([]);
-    setAssignmentError(null);
-  };
-
-  const handleAssignProducts = async () => {
-    if (!category?.name || selectedProductIds.length === 0 || isAssigningProducts) {
-      return;
-    }
-
-    setIsAssigningProducts(true);
-    setAssignmentError(null);
-    setAssignmentSuccess(null);
-
-    try {
-      for (const productId of selectedProductIds) {
-        await updateProduct(productId, { category: category.name });
-      }
-
-      setAssignmentSuccess('Tuotteet lisättiin kategoriaan.');
-      setSelectedProductIds([]);
-      setShowAddProductsModal(false);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Tuotteiden lisääminen kategoriaan epäonnistui';
-      setAssignmentError(message);
-    } finally {
-      setIsAssigningProducts(false);
-    }
   };
 
   if (isLoadingCategory) {
@@ -288,72 +214,15 @@ export default function CategoryDetailPage() {
         existingNames={categoryNames}
       />
 
-      <Modal visible={showAddProductsModal} transparent animationType="slide" onRequestClose={closeAddProductsModal}>
-        <View className="flex-1 justify-end bg-black/40 px-4 py-6">
-          <View className="max-h-[80%] rounded-3xl bg-white p-6 shadow-lg">
-            <Text className="text-xl font-bold text-gray-900">Lisää tuotteita</Text>
-            <Text className="mt-2 text-sm text-gray-600">Valitse tuotteet, jotka lisätään kategoriaan {category?.name}.</Text>
-
-            {assignmentError ? (
-              <View className="mt-4 rounded-2xl border border-red-300 bg-red-50 px-4 py-3">
-                <Text className="text-sm text-red-700">{assignmentError}</Text>
-              </View>
-            ) : null}
-
-            <View className="mt-4">
-              {isLoadingCandidates ? (
-                <View className="flex-row items-center">
-                  <ActivityIndicator size="small" color={themeColors.primary[600]} />
-                  <Text className="ml-2 text-sm text-gray-600">Ladataan tuotteita...</Text>
-                </View>
-              ) : assignableProducts.length === 0 ? (
-                <View className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3">
-                  <Text className="text-sm text-gray-600">Ei lisättäviä tuotteita.</Text>
-                </View>
-              ) : (
-                <ScrollView className="max-h-80">
-                  <View className="space-y-2">
-                    {assignableProducts.map((product) => {
-                      const isSelected = !!product.id && selectedProductIds.includes(product.id);
-                      return (
-                        <TouchableOpacity
-                          key={product.id}
-                          onPress={() => product.id && toggleProductSelection(product.id)}
-                          className={`rounded-2xl border px-4 py-3 ${isSelected ? 'border-primary-600 bg-primary-50' : 'border-gray-200 bg-gray-50'}`}
-                        >
-                          <Text className={`text-sm font-semibold ${isSelected ? 'text-primary-700' : 'text-gray-900'}`}>{product.name}</Text>
-                          <Text className="mt-1 text-xs text-gray-600">{product.amount} kpl</Text>
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </View>
-                </ScrollView>
-              )}
-            </View>
-
-            <View className="mt-6 flex-row gap-3">
-              <TouchableOpacity
-                onPress={closeAddProductsModal}
-                disabled={isAssigningProducts}
-                className="flex-1 rounded-2xl bg-gray-100 px-4 py-3"
-              >
-                <Text className="text-center text-sm font-semibold text-gray-700">Peruuta</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={handleAssignProducts}
-                disabled={selectedProductIds.length === 0 || isAssigningProducts}
-                className={`flex-1 rounded-2xl px-4 py-3 ${selectedProductIds.length === 0 || isAssigningProducts ? 'bg-primary-300' : 'bg-primary-600'}`}
-              >
-                {isAssigningProducts ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <Text className="text-center text-sm font-semibold text-white">Lisää valitut</Text>
-                )}
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
+      <CategoryProductAssignmentModal
+        visible={showAddProductsModal}
+        categoryName={category?.name ?? ''}
+        onClose={() => setShowAddProductsModal(false)}
+        onAssigned={() => {
+          setAssignmentSuccess('Tuotteet lisättiin kategoriaan.');
+          setShowAddProductsModal(false);
+        }}
+      />
     </View>
   );
 }

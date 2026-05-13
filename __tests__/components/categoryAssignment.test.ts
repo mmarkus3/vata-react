@@ -1,4 +1,4 @@
-import { getAssignableProducts, getCategoryAssignmentStatus } from '@/app/category/categoryAssignment';
+import { filterProductsByName, getAssignableProducts, getCategoryAssignmentStatus } from '@/app/category/categoryAssignment';
 
 describe('categoryAssignment helpers', () => {
   it('filters out products already assigned to active category', () => {
@@ -16,6 +16,20 @@ describe('categoryAssignment helpers', () => {
   it('returns all products when active category is empty', () => {
     const products = [{ id: '1', name: 'Milk', category: 'Dairy' }] as any;
     expect(getAssignableProducts(products, '  ')).toEqual(products);
+  });
+
+  it('filters products by name case-insensitively', () => {
+    const products = [
+      { id: '1', name: 'Organic Milk' },
+      { id: '2', name: 'Bread' },
+      { id: '3', name: 'Almond milk' },
+    ] as any;
+
+    expect(filterProductsByName(products, 'milk')).toEqual([
+      { id: '1', name: 'Organic Milk' },
+      { id: '3', name: 'Almond milk' },
+    ]);
+    expect(filterProductsByName(products, '   ')).toEqual(products);
   });
 
   it('resolves assignment status precedence correctly', () => {

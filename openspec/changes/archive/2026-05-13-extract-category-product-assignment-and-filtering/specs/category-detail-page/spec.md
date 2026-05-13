@@ -1,8 +1,5 @@
-# category-detail-page Specification
+## MODIFIED Requirements
 
-## Purpose
-TBD - created by archiving change category-detail-page-with-products. Update Purpose after archive.
-## Requirements
 ### Requirement: Category detail page shows category metadata and products
 The system SHALL provide a category detail page that displays category name, description, products assigned to the category, and an action to add products into the current category through a dedicated assignment module.
 
@@ -44,4 +41,3 @@ The system SHALL expose category edit and delete actions in the category detail 
 - **WHEN** a user views categories list screen
 - **THEN** each list item provides navigation to detail
 - **AND** list items do not present inline edit/delete controls
-

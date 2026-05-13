@@ -9,6 +9,15 @@ export function getAssignableProducts(products: Product[], activeCategoryName: s
   return products.filter((product) => (product.category ?? '') !== normalizedCategory);
 }
 
+export function filterProductsByName(products: Product[], searchTerm: string): Product[] {
+  const normalizedTerm = searchTerm.trim().toLowerCase();
+  if (!normalizedTerm) {
+    return products;
+  }
+
+  return products.filter((product) => product.name.toLowerCase().includes(normalizedTerm));
+}
+
 export type CategoryAssignmentStatus = 'idle' | 'assigning' | 'success' | 'error';
 
 export function getCategoryAssignmentStatus(args: {
