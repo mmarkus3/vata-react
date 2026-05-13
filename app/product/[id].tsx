@@ -1,13 +1,16 @@
+import { getSectionForField, ProductDetailSectionKey } from '@/app/product/productDetailAccordion';
 import {
   buildNutritionValues,
   defaultProductDetailFormValues,
   isNonNegativeNumber,
   isRequiredNonNegativeNumber,
+  NutritionFieldKey,
   nutritionFieldKeys,
   parseOptionalDecimal,
   ProductDetailFormValues,
   toProductDetailFormValues,
 } from '@/app/product/productDetailForm';
+import Accordion from '@/components/ui/accordion';
 import { themeColors } from '@/constants/colors';
 import { useCategories } from '@/hooks/useCategories';
 import { deleteProduct, getProductById, updateProduct } from '@/services/product';
@@ -19,6 +22,16 @@ import { useEffect, useState } from 'react';
 import { Controller, FieldErrors, Path, RegisterOptions, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Alert, Image, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+
+const fieldErrorOrder: Path<ProductDetailFormValues>[] = [
+  'category',
+  'name',
+  'price',
+  'amount',
+  'retailPrice',
+  'unitPrice',
+  ...nutritionFieldKeys,
+];
 
 export default function ProductDetailPage() {
   const { t } = useTranslation();
@@ -52,18 +65,13 @@ export default function ProductDetailPage() {
   const [imageUrlInput, setImageUrlInput] = useState('');
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [openSections, setOpenSections] = useState<Record<ProductDetailSectionKey, boolean>>({
+    basic: true,
+    price: false,
+    nutritions: false,
+  });
   const previewBarcodeImageUri = newBarcodeImageUri ?? barcodeImageUrl;
   const previewProductImages = [...productImages, ...newProductImageUris];
-
-  const fieldErrorOrder: Path<ProductDetailFormValues>[] = [
-    'category',
-    'name',
-    'price',
-    'amount',
-    'retailPrice',
-    'unitPrice',
-    ...nutritionFieldKeys,
-  ];
 
   const firstFieldError = (fieldErrors: FieldErrors<ProductDetailFormValues>): string | null => {
     for (const key of fieldErrorOrder) {
@@ -74,6 +82,26 @@ export default function ProductDetailPage() {
     }
     return null;
   };
+
+  useEffect(() => {
+    const firstErrorField = fieldErrorOrder.find((field) => Boolean(errors[field]));
+    if (!firstErrorField) {
+      return;
+    }
+
+    const section = getSectionForField(firstErrorField);
+    if (!section) {
+      return;
+    }
+
+    setOpenSections((prev) => {
+      if (prev[section]) {
+        return prev;
+      }
+
+      return { ...prev, [section]: true };
+    });
+  }, [errors]);
 
   useEffect(() => {
     const load = async () => {
@@ -127,9 +155,14 @@ export default function ProductDetailPage() {
       reset(toProductDetailFormValues(product));
       setError(null);
       resetEditAssets();
+      setOpenSections({ basic: true, price: false, nutritions: false });
     }
 
     setEditMode((prev) => !prev);
+  };
+
+  const toggleSection = (section: ProductDetailSectionKey) => {
+    setOpenSections((prev) => ({ ...prev, [section]: !prev[section] }));
   };
 
   const handleSelectBarcodeImage = async () => {
@@ -397,6 +430,15 @@ export default function ProductDetailPage() {
     />
   );
 
+  const renderNumericNutritionInput = (name: NutritionFieldKey, placeholderKey: string) =>
+    editMode
+      ? renderInput(name, {
+        keyboardType: 'numeric',
+        placeholder: t(placeholderKey),
+        rules: numericOptionalRule(name),
+      })
+      : <Text className="mt-1 text-base font-medium text-gray-900">{product?.[name] ?? '-'}</Text>;
+
   return (
     <View className="flex-1 bg-slate-50">
       <Stack.Screen options={{ title: product?.name ?? t('productDetail.title') }} />
@@ -409,253 +451,269 @@ export default function ProductDetailPage() {
           <Text className="text-2xl font-bold text-gray-900">{t('productDetail.title')}</Text>
 
           <View className="mt-5 space-y-4">
-            <View>
-              <Text className="text-sm text-gray-500">{t('productDetail.fields.barcode')}</Text>
-              {previewBarcodeImageUri ? (
-                <View className="mt-3 space-y-3">
-                  <Image source={{ uri: previewBarcodeImageUri }} className="h-48 w-full rounded-2xl bg-gray-100" resizeMode="contain" />
-                  {editMode ? (
-                    <View className="flex-row flex-wrap gap-3">
-                      <TouchableOpacity onPress={handleRemoveBarcodeImage} className="rounded-2xl bg-secondary-600 px-4 py-3">
-                        <Text className="text-center text-sm font-semibold text-white">Poista kuva</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity onPress={handleSelectBarcodeImage} className="rounded-2xl bg-primary-600 px-4 py-3">
-                        <Text className="text-center text-sm font-semibold text-white">Valitse uusi kuva</Text>
-                      </TouchableOpacity>
-                    </View>
-                  ) : null}
-                  {newBarcodeImageUri ? (
-                    <Text className="text-sm text-gray-500">{t('productDetail.barcode.newImageSelected')}</Text>
-                  ) : (
-                    <Text className="text-sm text-gray-500">{t('productDetail.barcode.savedImage')}</Text>
-                  )}
-                </View>
-              ) : editMode ? (
-                <View className="space-y-3">
-                  {renderInput('barcode', { placeholder: t('productDetail.barcode.inputPlaceholder') })}
-                  <TouchableOpacity onPress={handleSelectBarcodeImage} className="rounded-2xl bg-primary-600 px-4 py-3">
-                    <Text className="text-center text-sm font-semibold text-white">{t('productDetail.barcode.addImage')}</Text>
-                  </TouchableOpacity>
-                </View>
-              ) : (
-                <Text className="mt-1 text-base font-medium text-gray-900">{product?.barcode || '-'}</Text>
-              )}
-              {barcodeUploadProgress !== null ? (
-                <Text className="mt-2 text-sm text-gray-500">{t('productDetail.barcode.uploadProgress', { progress: barcodeUploadProgress })}</Text>
-              ) : null}
-            </View>
-
-            <View>
-              <Text className="text-sm text-gray-500">{t('productDetail.productImages.title')}</Text>
-              {previewProductImages.length > 0 ? (
-                <View className="mt-3 space-y-3">
-                  {previewProductImages.map((uri, index) => (
-                    <View key={`${uri}-${index}`} className="rounded-2xl bg-gray-50 p-3">
-                      <Image source={{ uri }} className="h-10 w-10 rounded-2xl bg-gray-100" resizeMode="contain" />
+            <Accordion
+              title={t('productDetail.sections.basic')}
+              isOpen={openSections.basic}
+              onToggle={() => toggleSection('basic')}
+            >
+              <View className="space-y-4">
+                <View>
+                  <Text className="text-sm text-gray-500">{t('productDetail.fields.barcode')}</Text>
+                  {previewBarcodeImageUri ? (
+                    <View className="mt-3 space-y-3">
+                      <Image source={{ uri: previewBarcodeImageUri }} className="h-48 w-full rounded-2xl bg-gray-100" resizeMode="contain" />
                       {editMode ? (
-                        <TouchableOpacity
-                          onPress={() => {
-                            if (index < productImages.length) {
-                              handleRemoveExistingProductImage(index);
-                            } else {
-                              handleRemoveNewProductImage(index - productImages.length);
-                            }
-                          }}
-                          className="mt-3 rounded-2xl bg-secondary-100 px-4 py-3"
-                          accessibilityRole="button"
-                          accessibilityLabel={t('productDetail.productImages.removeImage')}
-                        >
-                          <Text className="text-center text-sm font-semibold text-secondary-700">{t('productDetail.productImages.removeImage')}</Text>
-                        </TouchableOpacity>
+                        <View className="flex-row flex-wrap gap-3">
+                          <TouchableOpacity onPress={handleRemoveBarcodeImage} className="rounded-2xl bg-secondary-600 px-4 py-3">
+                            <Text className="text-center text-sm font-semibold text-white">Poista kuva</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity onPress={handleSelectBarcodeImage} className="rounded-2xl bg-primary-600 px-4 py-3">
+                            <Text className="text-center text-sm font-semibold text-white">Valitse uusi kuva</Text>
+                          </TouchableOpacity>
+                        </View>
                       ) : null}
+                      {newBarcodeImageUri ? (
+                        <Text className="text-sm text-gray-500">{t('productDetail.barcode.newImageSelected')}</Text>
+                      ) : (
+                        <Text className="text-sm text-gray-500">{t('productDetail.barcode.savedImage')}</Text>
+                      )}
                     </View>
-                  ))}
-                </View>
-              ) : (
-                <Text className="mt-2 text-base font-medium text-gray-900">{t('productDetail.productImages.empty')}</Text>
-              )}
-
-              {editMode ? (
-                <View className="mt-4 space-y-3">
-                  <View className="flex-row gap-3">
-                    <TextInput
-                      value={imageUrlInput}
-                      onChangeText={setImageUrlInput}
-                      placeholder={t('productDetail.productImages.urlPlaceholder')}
-                      className="flex-1 rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
-                      placeholderTextColor="#9ca3af"
-                    />
-                    <TouchableOpacity
-                      onPress={handleAddImageUrl}
-                      className="rounded-2xl bg-primary-600 px-4 py-3"
-                      accessibilityRole="button"
-                      accessibilityLabel={t('productDetail.productImages.addUrl')}
-                    >
-                      <Text className="text-center text-sm font-semibold text-white">{t('productDetail.productImages.addUrl')}</Text>
-                    </TouchableOpacity>
-                  </View>
-                  <TouchableOpacity
-                    onPress={handleSelectProductImage}
-                    className="rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 px-4 py-6 items-center"
-                    accessibilityRole="button"
-                    accessibilityLabel={t('productDetail.productImages.addFromDevice')}
-                  >
-                    <Text className="text-sm text-gray-600">{t('productDetail.productImages.addFromDevice')}</Text>
-                  </TouchableOpacity>
-                  {imageUrls.length > 0 && (
+                  ) : editMode ? (
                     <View className="space-y-3">
-                      {imageUrls.map((url, index) => (
-                        <View key={`url-${index}`} className="rounded-2xl border border-gray-200 bg-gray-50 p-3">
-                          <View className="flex-row items-center justify-between">
-                            <Text className="flex-1 text-sm text-gray-900" numberOfLines={1}>
-                              {url}
-                            </Text>
-                            <TouchableOpacity onPress={() => handleRemoveImageUrl(index)}>
-                              <Text className="text-sm font-semibold text-secondary-600">{t('common.delete')}</Text>
+                      {renderInput('barcode', { placeholder: t('productDetail.barcode.inputPlaceholder') })}
+                      <TouchableOpacity onPress={handleSelectBarcodeImage} className="rounded-2xl bg-primary-600 px-4 py-3">
+                        <Text className="text-center text-sm font-semibold text-white">{t('productDetail.barcode.addImage')}</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ) : (
+                    <Text className="mt-1 text-base font-medium text-gray-900">{product?.barcode || '-'}</Text>
+                  )}
+                  {barcodeUploadProgress !== null ? (
+                    <Text className="mt-2 text-sm text-gray-500">{t('productDetail.barcode.uploadProgress', { progress: barcodeUploadProgress })}</Text>
+                  ) : null}
+                </View>
+
+                <View>
+                  <Text className="text-sm text-gray-500">{t('productDetail.productImages.title')}</Text>
+                  {previewProductImages.length > 0 ? (
+                    <View className="mt-3 space-y-3">
+                      {previewProductImages.map((uri, index) => (
+                        <View key={`${uri}-${index}`} className="rounded-2xl bg-gray-50 p-3">
+                          <Image source={{ uri }} className="h-10 w-10 rounded-2xl bg-gray-100" resizeMode="contain" />
+                          {editMode ? (
+                            <TouchableOpacity
+                              onPress={() => {
+                                if (index < productImages.length) {
+                                  handleRemoveExistingProductImage(index);
+                                } else {
+                                  handleRemoveNewProductImage(index - productImages.length);
+                                }
+                              }}
+                              className="mt-3 rounded-2xl bg-secondary-100 px-4 py-3"
+                              accessibilityRole="button"
+                              accessibilityLabel={t('productDetail.productImages.removeImage')}
+                            >
+                              <Text className="text-center text-sm font-semibold text-secondary-700">{t('productDetail.productImages.removeImage')}</Text>
                             </TouchableOpacity>
-                          </View>
+                          ) : null}
                         </View>
                       ))}
                     </View>
+                  ) : (
+                    <Text className="mt-2 text-base font-medium text-gray-900">{t('productDetail.productImages.empty')}</Text>
                   )}
-                </View>
-              ) : null}
-            </View>
 
-            <View>
-              <Text className="text-sm text-gray-500">{t('productDetail.fields.category')}</Text>
-              {editMode ? (
-                <Controller
-                  control={control}
-                  name="category"
-                  render={({ field: { value, onChange } }) => (
-                    <View className="mt-2 space-y-2">
-                      <View className="flex-row flex-wrap gap-2">
+                  {editMode ? (
+                    <View className="mt-4 space-y-3">
+                      <View className="flex-row gap-3">
+                        <TextInput
+                          value={imageUrlInput}
+                          onChangeText={setImageUrlInput}
+                          placeholder={t('productDetail.productImages.urlPlaceholder')}
+                          className="flex-1 rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
+                          placeholderTextColor="#9ca3af"
+                        />
                         <TouchableOpacity
-                          onPress={() => {
-                            setError(null);
-                            onChange('');
-                          }}
-                          className={`rounded-2xl border px-3 py-2 ${!value ? 'border-primary-600 bg-primary-50' : 'border-gray-300 bg-gray-50'}`}
+                          onPress={handleAddImageUrl}
+                          className="rounded-2xl bg-primary-600 px-4 py-3"
+                          accessibilityRole="button"
+                          accessibilityLabel={t('productDetail.productImages.addUrl')}
                         >
-                          <Text className={`text-sm ${!value ? 'text-primary-700' : 'text-gray-700'}`}>{t('productDetail.fields.noCategory')}</Text>
+                          <Text className="text-center text-sm font-semibold text-white">{t('productDetail.productImages.addUrl')}</Text>
                         </TouchableOpacity>
-                        {categoryOptions.map((option) => {
-                          const isSelected = value === option.value;
-                          return (
+                      </View>
+                      <TouchableOpacity
+                        onPress={handleSelectProductImage}
+                        className="rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 px-4 py-6 items-center"
+                        accessibilityRole="button"
+                        accessibilityLabel={t('productDetail.productImages.addFromDevice')}
+                      >
+                        <Text className="text-sm text-gray-600">{t('productDetail.productImages.addFromDevice')}</Text>
+                      </TouchableOpacity>
+                      {imageUrls.length > 0 && (
+                        <View className="space-y-3">
+                          {imageUrls.map((url, index) => (
+                            <View key={`url-${index}`} className="rounded-2xl border border-gray-200 bg-gray-50 p-3">
+                              <View className="flex-row items-center justify-between">
+                                <Text className="flex-1 text-sm text-gray-900" numberOfLines={1}>
+                                  {url}
+                                </Text>
+                                <TouchableOpacity onPress={() => handleRemoveImageUrl(index)}>
+                                  <Text className="text-sm font-semibold text-secondary-600">{t('common.delete')}</Text>
+                                </TouchableOpacity>
+                              </View>
+                            </View>
+                          ))}
+                        </View>
+                      )}
+                    </View>
+                  ) : null}
+                </View>
+
+                <View>
+                  <Text className="text-sm text-gray-500">{t('productDetail.fields.category')}</Text>
+                  {editMode ? (
+                    <Controller
+                      control={control}
+                      name="category"
+                      render={({ field: { value, onChange } }) => (
+                        <View className="mt-2 space-y-2">
+                          <View className="flex-row flex-wrap gap-2">
                             <TouchableOpacity
-                              key={option.value}
                               onPress={() => {
                                 setError(null);
-                                onChange(option.value);
+                                onChange('');
                               }}
-                              className={`rounded-2xl border px-3 py-2 ${isSelected ? 'border-primary-600 bg-primary-50' : 'border-gray-300 bg-gray-50'}`}
+                              className={`rounded-2xl border px-3 py-2 ${!value ? 'border-primary-600 bg-primary-50' : 'border-gray-300 bg-gray-50'}`}
                             >
-                              <Text className={`text-sm ${isSelected ? 'text-primary-700' : 'text-gray-700'}`}>
-                                {option.isFallback ? `${option.label} (${t('productDetail.fields.categoryFallback')})` : option.label}
-                              </Text>
+                              <Text className={`text-sm ${!value ? 'text-primary-700' : 'text-gray-700'}`}>{t('productDetail.fields.noCategory')}</Text>
                             </TouchableOpacity>
-                          );
-                        })}
-                      </View>
-                      {isLoadingCategories ? <Text className="text-xs text-gray-500">{t('productDetail.fields.categoryLoading')}</Text> : null}
-                      {!isLoadingCategories && categoryOptions.length === 0 ? (
-                        <Text className="text-xs text-gray-500">{t('productDetail.fields.noCategoriesAvailable')}</Text>
-                      ) : null}
-                    </View>
+                            {categoryOptions.map((option) => {
+                              const isSelected = value === option.value;
+                              return (
+                                <TouchableOpacity
+                                  key={option.value}
+                                  onPress={() => {
+                                    setError(null);
+                                    onChange(option.value);
+                                  }}
+                                  className={`rounded-2xl border px-3 py-2 ${isSelected ? 'border-primary-600 bg-primary-50' : 'border-gray-300 bg-gray-50'}`}
+                                >
+                                  <Text className={`text-sm ${isSelected ? 'text-primary-700' : 'text-gray-700'}`}>
+                                    {option.isFallback ? `${option.label} (${t('productDetail.fields.categoryFallback')})` : option.label}
+                                  </Text>
+                                </TouchableOpacity>
+                              );
+                            })}
+                          </View>
+                          {isLoadingCategories ? <Text className="text-xs text-gray-500">{t('productDetail.fields.categoryLoading')}</Text> : null}
+                          {!isLoadingCategories && categoryOptions.length === 0 ? (
+                            <Text className="text-xs text-gray-500">{t('productDetail.fields.noCategoriesAvailable')}</Text>
+                          ) : null}
+                        </View>
+                      )}
+                    />
+                  ) : (
+                    <Text className="mt-1 text-base font-medium text-gray-900">{product?.category || '-'}</Text>
                   )}
-                />
-              ) : (
-                <Text className="mt-1 text-base font-medium text-gray-900">{product?.category || '-'}</Text>
-              )}
-            </View>
+                </View>
 
-            <View>
-              <Text className="text-sm text-gray-500">{t('productDetail.fields.name')}</Text>
-              {editMode ? renderInput('name', { rules: { validate: (value) => (value.trim() ? true : t('productDetail.errors.nameRequired')) } }) : <Text className="mt-1 text-base font-medium text-gray-900">{product?.name}</Text>}
-            </View>
+                <View>
+                  <Text className="text-sm text-gray-500">{t('productDetail.fields.name')}</Text>
+                  {editMode ? renderInput('name', { rules: { validate: (value) => (value.trim() ? true : t('productDetail.errors.nameRequired')) } }) : <Text className="mt-1 text-base font-medium text-gray-900">{product?.name}</Text>}
+                </View>
 
-            <View>
-              <Text className="text-sm text-gray-500">{t('productDetail.fields.price')}</Text>
-              {editMode ? renderInput('price', { keyboardType: 'numeric', rules: numericRequiredRule('priceInvalid') }) : <Text className="mt-1 text-base font-medium text-gray-900">{product?.price.toFixed(2)}€</Text>}
-            </View>
+                <View>
+                  <Text className="text-sm text-gray-500">{t('productDetail.fields.amount')}</Text>
+                  {editMode ? renderInput('amount', { keyboardType: 'numeric', rules: numericRequiredRule('amountInvalid') }) : <Text className="mt-1 text-base font-medium text-gray-900">{product?.amount}</Text>}
+                </View>
 
-            <View>
-              <Text className="text-sm text-gray-500">{t('productDetail.fields.retailPrice')}</Text>
-              {editMode
-                ? renderInput('retailPrice', {
-                  keyboardType: 'numeric',
-                  placeholder: t('productDetail.fields.retailPricePlaceholder'),
-                  rules: numericOptionalRule('retailPrice'),
-                })
-                : <Text className="mt-1 text-base font-medium text-gray-900">{product?.retailPrice != null ? `${product.retailPrice.toFixed(2)}€` : '-'}</Text>}
-            </View>
+                <View>
+                  <Text className="text-sm text-gray-500">{t('productDetail.fields.ean')}</Text>
+                  {editMode ? renderInput('ean') : <Text className="mt-1 text-base font-medium text-gray-900">{product?.ean || '-'}</Text>}
+                </View>
+              </View>
+            </Accordion>
 
-            <View>
-              <Text className="text-sm text-gray-500">{t('productDetail.fields.unitPrice')}</Text>
-              {editMode
-                ? renderInput('unitPrice', {
-                  keyboardType: 'numeric',
-                  placeholder: t('productDetail.fields.unitPricePlaceholder'),
-                  rules: numericOptionalRule('unitPrice'),
-                })
-                : <Text className="mt-1 text-base font-medium text-gray-900">{product?.unitPrice != null ? `${product.unitPrice.toFixed(2)}€/kg` : '-'}</Text>}
-            </View>
+            <Accordion
+              title={t('productDetail.sections.price')}
+              isOpen={openSections.price}
+              onToggle={() => toggleSection('price')}
+            >
+              <View className="space-y-4">
+                <View>
+                  <Text className="text-sm text-gray-500">{t('productDetail.fields.price')}</Text>
+                  {editMode ? renderInput('price', { keyboardType: 'numeric', rules: numericRequiredRule('priceInvalid') }) : <Text className="mt-1 text-base font-medium text-gray-900">{product?.price.toFixed(2)}€</Text>}
+                </View>
 
-            <View>
-              <Text className="text-sm text-gray-500">{t('productDetail.fields.energyJoule')}</Text>
-              {editMode ? renderInput('energyJoule', { keyboardType: 'numeric', placeholder: t('productDetail.fields.energyJoulePlaceholder'), rules: numericOptionalRule('energyJoule') }) : <Text className="mt-1 text-base font-medium text-gray-900">{product?.energyJoule ?? '-'}</Text>}
-            </View>
+                <View>
+                  <Text className="text-sm text-gray-500">{t('productDetail.fields.retailPrice')}</Text>
+                  {editMode
+                    ? renderInput('retailPrice', {
+                      keyboardType: 'numeric',
+                      placeholder: t('productDetail.fields.retailPricePlaceholder'),
+                      rules: numericOptionalRule('retailPrice'),
+                    })
+                    : <Text className="mt-1 text-base font-medium text-gray-900">{product?.retailPrice != null ? `${product.retailPrice.toFixed(2)}€` : '-'}</Text>}
+                </View>
 
-            <View>
-              <Text className="text-sm text-gray-500">{t('productDetail.fields.energyCalory')}</Text>
-              {editMode ? renderInput('energyCalory', { keyboardType: 'numeric', placeholder: t('productDetail.fields.energyCaloryPlaceholder'), rules: numericOptionalRule('energyCalory') }) : <Text className="mt-1 text-base font-medium text-gray-900">{product?.energyCalory ?? '-'}</Text>}
-            </View>
+                <View>
+                  <Text className="text-sm text-gray-500">{t('productDetail.fields.unitPrice')}</Text>
+                  {editMode
+                    ? renderInput('unitPrice', {
+                      keyboardType: 'numeric',
+                      placeholder: t('productDetail.fields.unitPricePlaceholder'),
+                      rules: numericOptionalRule('unitPrice'),
+                    })
+                    : <Text className="mt-1 text-base font-medium text-gray-900">{product?.unitPrice != null ? `${product.unitPrice.toFixed(2)}€/kg` : '-'}</Text>}
+                </View>
+              </View>
+            </Accordion>
 
-            <View>
-              <Text className="text-sm text-gray-500">{t('productDetail.fields.fat')}</Text>
-              {editMode ? renderInput('fat', { keyboardType: 'numeric', placeholder: t('productDetail.fields.fatPlaceholder'), rules: numericOptionalRule('fat') }) : <Text className="mt-1 text-base font-medium text-gray-900">{product?.fat ?? '-'}</Text>}
-            </View>
-
-            <View>
-              <Text className="text-sm text-gray-500">{t('productDetail.fields.saturatedFat')}</Text>
-              {editMode ? renderInput('saturatedFat', { keyboardType: 'numeric', placeholder: t('productDetail.fields.saturatedFatPlaceholder'), rules: numericOptionalRule('saturatedFat') }) : <Text className="mt-1 text-base font-medium text-gray-900">{product?.saturatedFat ?? '-'}</Text>}
-            </View>
-
-            <View>
-              <Text className="text-sm text-gray-500">{t('productDetail.fields.carbohydrate')}</Text>
-              {editMode ? renderInput('carbohydrate', { keyboardType: 'numeric', placeholder: t('productDetail.fields.carbohydratePlaceholder'), rules: numericOptionalRule('carbohydrate') }) : <Text className="mt-1 text-base font-medium text-gray-900">{product?.carbohydrate ?? '-'}</Text>}
-            </View>
-
-            <View>
-              <Text className="text-sm text-gray-500">{t('productDetail.fields.saturatedCarbohydrate')}</Text>
-              {editMode ? renderInput('saturatedCarbohydrate', { keyboardType: 'numeric', placeholder: t('productDetail.fields.saturatedCarbohydratePlaceholder'), rules: numericOptionalRule('saturatedCarbohydrate') }) : <Text className="mt-1 text-base font-medium text-gray-900">{product?.saturatedCarbohydrate ?? '-'}</Text>}
-            </View>
-
-            <View>
-              <Text className="text-sm text-gray-500">{t('productDetail.fields.protein')}</Text>
-              {editMode ? renderInput('protein', { keyboardType: 'numeric', placeholder: t('productDetail.fields.proteinPlaceholder'), rules: numericOptionalRule('protein') }) : <Text className="mt-1 text-base font-medium text-gray-900">{product?.protein ?? '-'}</Text>}
-            </View>
-
-            <View>
-              <Text className="text-sm text-gray-500">{t('productDetail.fields.salt')}</Text>
-              {editMode ? renderInput('salt', { keyboardType: 'numeric', placeholder: t('productDetail.fields.saltPlaceholder'), rules: numericOptionalRule('salt') }) : <Text className="mt-1 text-base font-medium text-gray-900">{product?.salt ?? '-'}</Text>}
-            </View>
-
-            <View>
-              <Text className="text-sm text-gray-500">{t('productDetail.fields.fiber')}</Text>
-              {editMode ? renderInput('fiber', { keyboardType: 'numeric', placeholder: t('productDetail.fields.fiberPlaceholder'), rules: numericOptionalRule('fiber') }) : <Text className="mt-1 text-base font-medium text-gray-900">{product?.fiber ?? '-'}</Text>}
-            </View>
-
-            <View>
-              <Text className="text-sm text-gray-500">{t('productDetail.fields.amount')}</Text>
-              {editMode ? renderInput('amount', { keyboardType: 'numeric', rules: numericRequiredRule('amountInvalid') }) : <Text className="mt-1 text-base font-medium text-gray-900">{product?.amount}</Text>}
-            </View>
-
-            <View>
-              <Text className="text-sm text-gray-500">{t('productDetail.fields.ean')}</Text>
-              {editMode ? renderInput('ean') : <Text className="mt-1 text-base font-medium text-gray-900">{product?.ean || '-'}</Text>}
-            </View>
+            <Accordion
+              title={t('productDetail.sections.nutritions')}
+              isOpen={openSections.nutritions}
+              onToggle={() => toggleSection('nutritions')}
+            >
+              <View className="space-y-4">
+                <View>
+                  <Text className="text-sm text-gray-500">{t('productDetail.fields.energyJoule')}</Text>
+                  {renderNumericNutritionInput('energyJoule', 'productDetail.fields.energyJoulePlaceholder')}
+                </View>
+                <View>
+                  <Text className="text-sm text-gray-500">{t('productDetail.fields.energyCalory')}</Text>
+                  {renderNumericNutritionInput('energyCalory', 'productDetail.fields.energyCaloryPlaceholder')}
+                </View>
+                <View>
+                  <Text className="text-sm text-gray-500">{t('productDetail.fields.fat')}</Text>
+                  {renderNumericNutritionInput('fat', 'productDetail.fields.fatPlaceholder')}
+                </View>
+                <View>
+                  <Text className="text-sm text-gray-500">{t('productDetail.fields.saturatedFat')}</Text>
+                  {renderNumericNutritionInput('saturatedFat', 'productDetail.fields.saturatedFatPlaceholder')}
+                </View>
+                <View>
+                  <Text className="text-sm text-gray-500">{t('productDetail.fields.carbohydrate')}</Text>
+                  {renderNumericNutritionInput('carbohydrate', 'productDetail.fields.carbohydratePlaceholder')}
+                </View>
+                <View>
+                  <Text className="text-sm text-gray-500">{t('productDetail.fields.saturatedCarbohydrate')}</Text>
+                  {renderNumericNutritionInput('saturatedCarbohydrate', 'productDetail.fields.saturatedCarbohydratePlaceholder')}
+                </View>
+                <View>
+                  <Text className="text-sm text-gray-500">{t('productDetail.fields.protein')}</Text>
+                  {renderNumericNutritionInput('protein', 'productDetail.fields.proteinPlaceholder')}
+                </View>
+                <View>
+                  <Text className="text-sm text-gray-500">{t('productDetail.fields.salt')}</Text>
+                  {renderNumericNutritionInput('salt', 'productDetail.fields.saltPlaceholder')}
+                </View>
+                <View>
+                  <Text className="text-sm text-gray-500">{t('productDetail.fields.fiber')}</Text>
+                  {renderNumericNutritionInput('fiber', 'productDetail.fields.fiberPlaceholder')}
+                </View>
+              </View>
+            </Accordion>
           </View>
 
           {displayedError ? <Text className="mt-4 text-sm text-secondary-600">{displayedError}</Text> : null}

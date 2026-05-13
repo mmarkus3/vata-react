@@ -139,6 +139,11 @@
       "saveFailed": "Saving failed.",
       "resetAmountFailed": "Failed to reset amount.",
       "deleteFailed": "Deleting failed."
+    },
+    "sections": {
+      "basic": "Basic",
+      "price": "Price",
+      "nutritions": "Nutritions"
     }
   }
 }

@@ -139,6 +139,11 @@
       "saveFailed": "Tallennus epäonnistui.",
       "resetAmountFailed": "Määrän nollaus epäonnistui.",
       "deleteFailed": "Poisto epäonnistui."
+    },
+    "sections": {
+      "basic": "Perustiedot",
+      "price": "Hinnoittelu",
+      "nutritions": "Ravintosisältö"
     }
   }
 }
