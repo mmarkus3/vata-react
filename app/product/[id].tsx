@@ -1,9 +1,20 @@
 import { themeColors } from '@/constants/colors';
+import {
+  buildNutritionValues,
+  defaultProductDetailFormValues,
+  isNonNegativeNumber,
+  isRequiredNonNegativeNumber,
+  nutritionFieldKeys,
+  parseOptionalDecimal,
+  ProductDetailFormValues,
+  toProductDetailFormValues,
+} from '@/app/product/productDetailForm';
 import { deleteProduct, getProductById, updateProduct } from '@/services/product';
 import type { Product } from '@/types/product';
 import * as ImagePicker from 'expo-image-picker';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
+import { Controller, FieldErrors, Path, RegisterOptions, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Alert, Image, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
@@ -13,26 +24,22 @@ export default function ProductDetailPage() {
   const router = useRouter();
   const productId = typeof id === 'string' ? id : undefined;
 
+  const {
+    control,
+    handleSubmit,
+    reset,
+    getValues,
+    formState: { errors },
+  } = useForm<ProductDetailFormValues>({
+    defaultValues: defaultProductDetailFormValues,
+    mode: 'onSubmit',
+  });
+
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [editMode, setEditMode] = useState(false);
-  const [name, setName] = useState('');
-  const [price, setPrice] = useState('');
-  const [retailPrice, setRetailPrice] = useState('');
-  const [unitPrice, setUnitPrice] = useState('');
-  const [energyJoule, setEnergyJoule] = useState('');
-  const [energyCalory, setEnergyCalory] = useState('');
-  const [fat, setFat] = useState('');
-  const [saturatedFat, setSaturatedFat] = useState('');
-  const [carbohydrate, setCarbohydrate] = useState('');
-  const [saturatedCarbohydrate, setSaturatedCarbohydrate] = useState('');
-  const [protein, setProtein] = useState('');
-  const [salt, setSalt] = useState('');
-  const [fiber, setFiber] = useState('');
-  const [amount, setAmount] = useState('');
-  const [barcode, setBarcode] = useState('');
   const [barcodeImageUrl, setBarcodeImageUrl] = useState<string | null>(null);
   const [newBarcodeImageUri, setNewBarcodeImageUri] = useState<string | null>(null);
   const [originalBarcodeImageUrl, setOriginalBarcodeImageUrl] = useState<string | null>(null);
@@ -41,10 +48,28 @@ export default function ProductDetailPage() {
   const [newProductImageUris, setNewProductImageUris] = useState<string[]>([]);
   const [imageUrlInput, setImageUrlInput] = useState('');
   const [imageUrls, setImageUrls] = useState<string[]>([]);
-  const [ean, setEan] = useState('');
   const [error, setError] = useState<string | null>(null);
   const previewBarcodeImageUri = newBarcodeImageUri ?? barcodeImageUrl;
   const previewProductImages = [...productImages, ...newProductImageUris];
+
+  const fieldErrorOrder: Path<ProductDetailFormValues>[] = [
+    'name',
+    'price',
+    'amount',
+    'retailPrice',
+    'unitPrice',
+    ...nutritionFieldKeys,
+  ];
+
+  const firstFieldError = (fieldErrors: FieldErrors<ProductDetailFormValues>): string | null => {
+    for (const key of fieldErrorOrder) {
+      const message = fieldErrors[key]?.message;
+      if (typeof message === 'string' && message.length > 0) {
+        return message;
+      }
+    }
+    return null;
+  };
 
   useEffect(() => {
     const load = async () => {
@@ -63,29 +88,13 @@ export default function ProductDetailPage() {
           setError(t('productDetail.errors.notFound'));
         } else {
           setProduct(result);
-          setName(result.name);
-          setPrice(String(result.price));
-          setRetailPrice(result.retailPrice !== undefined ? String(result.retailPrice) : '');
-          setUnitPrice(result.unitPrice !== undefined ? String(result.unitPrice) : '');
-          setEnergyJoule(result.energyJoule !== undefined ? String(result.energyJoule) : '');
-          setEnergyCalory(result.energyCalory !== undefined ? String(result.energyCalory) : '');
-          setFat(result.fat !== undefined ? String(result.fat) : '');
-          setSaturatedFat(result.saturatedFat !== undefined ? String(result.saturatedFat) : '');
-          setCarbohydrate(result.carbohydrate !== undefined ? String(result.carbohydrate) : '');
-          setSaturatedCarbohydrate(result.saturatedCarbohydrate !== undefined ? String(result.saturatedCarbohydrate) : '');
-          setProtein(result.protein !== undefined ? String(result.protein) : '');
-          setSalt(result.salt !== undefined ? String(result.salt) : '');
-          setFiber(result.fiber !== undefined ? String(result.fiber) : '');
-          setAmount(String(result.amount));
-          setEan(result.ean);
+          reset(toProductDetailFormValues(result));
           setProductImages(Array.isArray(result.images) ? result.images : []);
 
           if (/^https?:\/\//i.test(result.barcode)) {
             setBarcodeImageUrl(result.barcode);
             setOriginalBarcodeImageUrl(result.barcode);
-            setBarcode('');
           } else {
-            setBarcode(result.barcode);
             setBarcodeImageUrl(null);
             setOriginalBarcodeImageUrl(null);
           }
@@ -99,7 +108,25 @@ export default function ProductDetailPage() {
     };
 
     load();
-  }, [productId, t]);
+  }, [productId, reset, t]);
+
+  const resetEditAssets = () => {
+    setNewBarcodeImageUri(null);
+    setNewProductImageUris([]);
+    setImageUrlInput('');
+    setImageUrls([]);
+    setBarcodeUploadProgress(null);
+  };
+
+  const handleToggleEdit = () => {
+    if (!editMode && product) {
+      reset(toProductDetailFormValues(product));
+      setError(null);
+      resetEditAssets();
+    }
+
+    setEditMode((prev) => !prev);
+  };
 
   const handleSelectBarcodeImage = async () => {
     try {
@@ -197,73 +224,29 @@ export default function ProductDetailPage() {
     setImageUrls((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleSave = async () => {
-    if (!productId) return;
-    if (!name.trim()) {
-      setError(t('productDetail.errors.nameRequired'));
-      return;
-    }
-
-    const amountValue = Number(amount);
-    const priceValue = Number(price);
-    const retailPriceInput = retailPrice.trim();
-    const unitPriceInput = unitPrice.trim();
-    const retailPriceValue = retailPriceInput ? Number(retailPriceInput.replace(',', '.')) : undefined;
-    const unitPriceValue = unitPriceInput ? Number(unitPriceInput.replace(',', '.')) : undefined;
-    const nutritionEntries = [
-      ['energyJoule', energyJoule],
-      ['energyCalory', energyCalory],
-      ['fat', fat],
-      ['saturatedFat', saturatedFat],
-      ['carbohydrate', carbohydrate],
-      ['saturatedCarbohydrate', saturatedCarbohydrate],
-      ['protein', protein],
-      ['salt', salt],
-      ['fiber', fiber],
-    ] as const;
-    const nutritionValues = Object.fromEntries(
-      nutritionEntries.map(([key, raw]) => {
-        const trimmed = raw.trim();
-        return [key, trimmed ? Number(trimmed.replace(',', '.')) : undefined];
-      })
-    ) as Partial<
-      Pick<
-        Product,
-        | 'energyJoule'
-        | 'energyCalory'
-        | 'fat'
-        | 'saturatedFat'
-        | 'carbohydrate'
-        | 'saturatedCarbohydrate'
-        | 'protein'
-        | 'salt'
-        | 'fiber'
-      >
-    >;
-
-    if (Number.isNaN(amountValue) || amountValue < 0) {
-      setError(t('productDetail.errors.amountInvalid'));
-      return;
-    }
-
-    if (Number.isNaN(priceValue) || priceValue < 0) {
-      setError(t('productDetail.errors.priceInvalid'));
-      return;
-    }
-    if (retailPriceValue !== undefined && (Number.isNaN(retailPriceValue) || retailPriceValue < 0)) {
-      setError(t('productDetail.errors.retailPriceInvalid'));
-      return;
-    }
-    if (unitPriceValue !== undefined && (Number.isNaN(unitPriceValue) || unitPriceValue < 0)) {
-      setError(t('productDetail.errors.unitPriceInvalid'));
-      return;
-    }
-    for (const [key, value] of Object.entries(nutritionValues)) {
-      if (value !== undefined && (Number.isNaN(value) || value < 0)) {
-        setError(t(`productDetail.errors.${key}Invalid`));
-        return;
+  const numericOptionalRule = (key: (typeof nutritionFieldKeys)[number] | 'retailPrice' | 'unitPrice') => ({
+    validate: (value: string) => {
+      if (!value.trim()) {
+        return true;
       }
-    }
+      return isNonNegativeNumber(value) || t(`productDetail.errors.${key}Invalid`);
+    },
+  });
+
+  const numericRequiredRule = (errorKey: 'amountInvalid' | 'priceInvalid'): RegisterOptions<ProductDetailFormValues> => ({
+    validate: (value: string) => {
+      return isRequiredNonNegativeNumber(value) || t(`productDetail.errors.${errorKey}`);
+    },
+  });
+
+  const onSubmit = async (values: ProductDetailFormValues) => {
+    if (!productId) return;
+
+    const amountValue = Number(values.amount.trim().replace(',', '.'));
+    const priceValue = Number(values.price.trim().replace(',', '.'));
+    const retailPriceValue = parseOptionalDecimal(values.retailPrice);
+    const unitPriceValue = parseOptionalDecimal(values.unitPrice);
+    const nutritionValues = buildNutritionValues(values);
 
     setIsSaving(true);
     setBarcodeUploadProgress(null);
@@ -271,13 +254,13 @@ export default function ProductDetailPage() {
 
     try {
       const data: Partial<Omit<Product, 'id' | 'company'>> = {
-        name: name.trim(),
+        name: values.name.trim(),
         price: priceValue,
         retailPrice: retailPriceValue,
         unitPrice: unitPriceValue,
         ...nutritionValues,
         amount: amountValue,
-        ean: ean.trim(),
+        ean: values.ean.trim(),
         images: [...productImages, ...imageUrls],
       };
 
@@ -286,50 +269,33 @@ export default function ProductDetailPage() {
       } else if (previewBarcodeImageUri) {
         data.barcode = previewBarcodeImageUri;
       } else {
-        data.barcode = barcode.trim();
+        data.barcode = values.barcode.trim();
       }
 
-      await updateProduct(
-        productId,
-        data,
-        {
-          companyId: product?.company,
-          oldBarcodeImageUrl: originalBarcodeImageUrl ?? undefined,
-          newBarcodeImageUri: newBarcodeImageUri ?? undefined,
-          productImageUris: newProductImageUris,
-          onUploadProgress: (progress) => setBarcodeUploadProgress(progress),
-        }
-      );
+      await updateProduct(productId, data, {
+        companyId: product?.company,
+        oldBarcodeImageUrl: originalBarcodeImageUrl ?? undefined,
+        newBarcodeImageUri: newBarcodeImageUri ?? undefined,
+        productImageUris: newProductImageUris,
+        onUploadProgress: (progress) => setBarcodeUploadProgress(progress),
+      });
 
       const updated = await getProductById(productId);
       if (updated) {
         setProduct(updated);
-        setRetailPrice(updated.retailPrice !== undefined ? String(updated.retailPrice) : '');
-        setUnitPrice(updated.unitPrice !== undefined ? String(updated.unitPrice) : '');
-        setEnergyJoule(updated.energyJoule !== undefined ? String(updated.energyJoule) : '');
-        setEnergyCalory(updated.energyCalory !== undefined ? String(updated.energyCalory) : '');
-        setFat(updated.fat !== undefined ? String(updated.fat) : '');
-        setSaturatedFat(updated.saturatedFat !== undefined ? String(updated.saturatedFat) : '');
-        setCarbohydrate(updated.carbohydrate !== undefined ? String(updated.carbohydrate) : '');
-        setSaturatedCarbohydrate(updated.saturatedCarbohydrate !== undefined ? String(updated.saturatedCarbohydrate) : '');
-        setProtein(updated.protein !== undefined ? String(updated.protein) : '');
-        setSalt(updated.salt !== undefined ? String(updated.salt) : '');
-        setFiber(updated.fiber !== undefined ? String(updated.fiber) : '');
+        reset(toProductDetailFormValues(updated));
         setProductImages(Array.isArray(updated.images) ? updated.images : []);
+
         if (/^https?:\/\//i.test(updated.barcode)) {
           setBarcodeImageUrl(updated.barcode);
           setOriginalBarcodeImageUrl(updated.barcode);
-          setBarcode('');
         } else {
-          setBarcode(updated.barcode);
           setBarcodeImageUrl(null);
           setOriginalBarcodeImageUrl(null);
         }
       }
 
-      setNewBarcodeImageUri(null);
-      setNewProductImageUris([]);
-      setImageUrls([]);
+      resetEditAssets();
       setEditMode(false);
     } catch (err) {
       const message = err instanceof Error ? err.message : t('productDetail.errors.saveFailed');
@@ -346,9 +312,12 @@ export default function ProductDetailPage() {
 
     try {
       await updateProduct(productId, { amount: 0 });
-      setAmount('0');
+      reset({ ...getValues(), amount: '0' });
       const updated = await getProductById(productId);
-      setProduct(updated);
+      if (updated) {
+        setProduct(updated);
+        reset(toProductDetailFormValues(updated));
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : t('productDetail.errors.resetAmountFailed');
       setError(message);
@@ -391,6 +360,37 @@ export default function ProductDetailPage() {
     );
   }
 
+  const displayedError = error ?? firstFieldError(errors);
+
+  const renderInput = (
+    name: Path<ProductDetailFormValues>,
+    options?: {
+      keyboardType?: 'default' | 'numeric';
+      placeholder?: string;
+      rules?: RegisterOptions<ProductDetailFormValues>;
+    }
+  ) => (
+    <Controller
+      key={name}
+      control={control}
+      name={name}
+      rules={options?.rules}
+      render={({ field: { onChange, onBlur, value } }) => (
+        <TextInput
+          value={value}
+          onBlur={onBlur}
+          onChangeText={(nextValue) => {
+            setError(null);
+            onChange(nextValue);
+          }}
+          placeholder={options?.placeholder}
+          keyboardType={options?.keyboardType ?? 'default'}
+          className="mt-1 rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
+        />
+      )}
+    />
+  );
+
   return (
     <View className="flex-1 bg-slate-50">
       <Stack.Screen options={{ title: product?.name ?? t('productDetail.title') }} />
@@ -407,23 +407,13 @@ export default function ProductDetailPage() {
               <Text className="text-sm text-gray-500">{t('productDetail.fields.barcode')}</Text>
               {previewBarcodeImageUri ? (
                 <View className="mt-3 space-y-3">
-                  <Image
-                    source={{ uri: previewBarcodeImageUri }}
-                    className="h-48 w-full rounded-2xl bg-gray-100"
-                    resizeMode="contain"
-                  />
+                  <Image source={{ uri: previewBarcodeImageUri }} className="h-48 w-full rounded-2xl bg-gray-100" resizeMode="contain" />
                   {editMode ? (
                     <View className="flex-row flex-wrap gap-3">
-                      <TouchableOpacity
-                        onPress={handleRemoveBarcodeImage}
-                        className="rounded-2xl bg-secondary-600 px-4 py-3"
-                      >
+                      <TouchableOpacity onPress={handleRemoveBarcodeImage} className="rounded-2xl bg-secondary-600 px-4 py-3">
                         <Text className="text-center text-sm font-semibold text-white">Poista kuva</Text>
                       </TouchableOpacity>
-                      <TouchableOpacity
-                        onPress={handleSelectBarcodeImage}
-                        className="rounded-2xl bg-primary-600 px-4 py-3"
-                      >
+                      <TouchableOpacity onPress={handleSelectBarcodeImage} className="rounded-2xl bg-primary-600 px-4 py-3">
                         <Text className="text-center text-sm font-semibold text-white">Valitse uusi kuva</Text>
                       </TouchableOpacity>
                     </View>
@@ -436,16 +426,8 @@ export default function ProductDetailPage() {
                 </View>
               ) : editMode ? (
                 <View className="space-y-3">
-                  <TextInput
-                    value={barcode}
-                    onChangeText={setBarcode}
-                    placeholder={t('productDetail.barcode.inputPlaceholder')}
-                    className="mt-1 rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
-                  />
-                  <TouchableOpacity
-                    onPress={handleSelectBarcodeImage}
-                    className="rounded-2xl bg-primary-600 px-4 py-3"
-                  >
+                  {renderInput('barcode', { placeholder: t('productDetail.barcode.inputPlaceholder') })}
+                  <TouchableOpacity onPress={handleSelectBarcodeImage} className="rounded-2xl bg-primary-600 px-4 py-3">
                     <Text className="text-center text-sm font-semibold text-white">{t('productDetail.barcode.addImage')}</Text>
                   </TouchableOpacity>
                 </View>
@@ -536,266 +518,110 @@ export default function ProductDetailPage() {
 
             <View>
               <Text className="text-sm text-gray-500">{t('productDetail.fields.name')}</Text>
-              {editMode ? (
-                <TextInput
-                  value={name}
-                  onChangeText={setName}
-                  className="mt-1 rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
-                />
-              ) : (
-                <Text className="mt-1 text-base font-medium text-gray-900">{product?.name}</Text>
-              )}
+              {editMode ? renderInput('name', { rules: { validate: (value) => (value.trim() ? true : t('productDetail.errors.nameRequired')) } }) : <Text className="mt-1 text-base font-medium text-gray-900">{product?.name}</Text>}
             </View>
 
             <View>
               <Text className="text-sm text-gray-500">{t('productDetail.fields.price')}</Text>
-              {editMode ? (
-                <TextInput
-                  value={price}
-                  onChangeText={setPrice}
-                  keyboardType="numeric"
-                  className="mt-1 rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
-                />
-              ) : (
-                <Text className="mt-1 text-base font-medium text-gray-900">{product?.price.toFixed(2)}€</Text>
-              )}
+              {editMode ? renderInput('price', { keyboardType: 'numeric', rules: numericRequiredRule('priceInvalid') }) : <Text className="mt-1 text-base font-medium text-gray-900">{product?.price.toFixed(2)}€</Text>}
             </View>
 
             <View>
               <Text className="text-sm text-gray-500">{t('productDetail.fields.retailPrice')}</Text>
-              {editMode ? (
-                <TextInput
-                  value={retailPrice}
-                  onChangeText={setRetailPrice}
-                  keyboardType="numeric"
-                  placeholder={t('productDetail.fields.retailPricePlaceholder')}
-                  className="mt-1 rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
-                />
-              ) : (
-                <Text className="mt-1 text-base font-medium text-gray-900">
-                  {product?.retailPrice !== undefined ? `${product.retailPrice.toFixed(2)}€` : '-'}
-                </Text>
-              )}
+              {editMode
+                ? renderInput('retailPrice', {
+                    keyboardType: 'numeric',
+                    placeholder: t('productDetail.fields.retailPricePlaceholder'),
+                    rules: numericOptionalRule('retailPrice'),
+                  })
+                : <Text className="mt-1 text-base font-medium text-gray-900">{product?.retailPrice !== undefined ? `${product.retailPrice.toFixed(2)}€` : '-'}</Text>}
             </View>
 
             <View>
               <Text className="text-sm text-gray-500">{t('productDetail.fields.unitPrice')}</Text>
-              {editMode ? (
-                <TextInput
-                  value={unitPrice}
-                  onChangeText={setUnitPrice}
-                  keyboardType="numeric"
-                  placeholder={t('productDetail.fields.unitPricePlaceholder')}
-                  className="mt-1 rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
-                />
-              ) : (
-                <Text className="mt-1 text-base font-medium text-gray-900">
-                  {product?.unitPrice !== undefined ? `${product.unitPrice.toFixed(2)}€/kg` : '-'}
-                </Text>
-              )}
+              {editMode
+                ? renderInput('unitPrice', {
+                    keyboardType: 'numeric',
+                    placeholder: t('productDetail.fields.unitPricePlaceholder'),
+                    rules: numericOptionalRule('unitPrice'),
+                  })
+                : <Text className="mt-1 text-base font-medium text-gray-900">{product?.unitPrice !== undefined ? `${product.unitPrice.toFixed(2)}€/kg` : '-'}</Text>}
             </View>
 
             <View>
               <Text className="text-sm text-gray-500">{t('productDetail.fields.energyJoule')}</Text>
-              {editMode ? (
-                <TextInput
-                  value={energyJoule}
-                  onChangeText={setEnergyJoule}
-                  keyboardType="numeric"
-                  placeholder={t('productDetail.fields.energyJoulePlaceholder')}
-                  className="mt-1 rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
-                />
-              ) : (
-                <Text className="mt-1 text-base font-medium text-gray-900">{product?.energyJoule ?? '-'}</Text>
-              )}
+              {editMode ? renderInput('energyJoule', { keyboardType: 'numeric', placeholder: t('productDetail.fields.energyJoulePlaceholder'), rules: numericOptionalRule('energyJoule') }) : <Text className="mt-1 text-base font-medium text-gray-900">{product?.energyJoule ?? '-'}</Text>}
             </View>
 
             <View>
               <Text className="text-sm text-gray-500">{t('productDetail.fields.energyCalory')}</Text>
-              {editMode ? (
-                <TextInput
-                  value={energyCalory}
-                  onChangeText={setEnergyCalory}
-                  keyboardType="numeric"
-                  placeholder={t('productDetail.fields.energyCaloryPlaceholder')}
-                  className="mt-1 rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
-                />
-              ) : (
-                <Text className="mt-1 text-base font-medium text-gray-900">{product?.energyCalory ?? '-'}</Text>
-              )}
+              {editMode ? renderInput('energyCalory', { keyboardType: 'numeric', placeholder: t('productDetail.fields.energyCaloryPlaceholder'), rules: numericOptionalRule('energyCalory') }) : <Text className="mt-1 text-base font-medium text-gray-900">{product?.energyCalory ?? '-'}</Text>}
             </View>
 
             <View>
               <Text className="text-sm text-gray-500">{t('productDetail.fields.fat')}</Text>
-              {editMode ? (
-                <TextInput
-                  value={fat}
-                  onChangeText={setFat}
-                  keyboardType="numeric"
-                  placeholder={t('productDetail.fields.fatPlaceholder')}
-                  className="mt-1 rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
-                />
-              ) : (
-                <Text className="mt-1 text-base font-medium text-gray-900">{product?.fat ?? '-'}</Text>
-              )}
+              {editMode ? renderInput('fat', { keyboardType: 'numeric', placeholder: t('productDetail.fields.fatPlaceholder'), rules: numericOptionalRule('fat') }) : <Text className="mt-1 text-base font-medium text-gray-900">{product?.fat ?? '-'}</Text>}
             </View>
 
             <View>
               <Text className="text-sm text-gray-500">{t('productDetail.fields.saturatedFat')}</Text>
-              {editMode ? (
-                <TextInput
-                  value={saturatedFat}
-                  onChangeText={setSaturatedFat}
-                  keyboardType="numeric"
-                  placeholder={t('productDetail.fields.saturatedFatPlaceholder')}
-                  className="mt-1 rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
-                />
-              ) : (
-                <Text className="mt-1 text-base font-medium text-gray-900">{product?.saturatedFat ?? '-'}</Text>
-              )}
+              {editMode ? renderInput('saturatedFat', { keyboardType: 'numeric', placeholder: t('productDetail.fields.saturatedFatPlaceholder'), rules: numericOptionalRule('saturatedFat') }) : <Text className="mt-1 text-base font-medium text-gray-900">{product?.saturatedFat ?? '-'}</Text>}
             </View>
 
             <View>
               <Text className="text-sm text-gray-500">{t('productDetail.fields.carbohydrate')}</Text>
-              {editMode ? (
-                <TextInput
-                  value={carbohydrate}
-                  onChangeText={setCarbohydrate}
-                  keyboardType="numeric"
-                  placeholder={t('productDetail.fields.carbohydratePlaceholder')}
-                  className="mt-1 rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
-                />
-              ) : (
-                <Text className="mt-1 text-base font-medium text-gray-900">{product?.carbohydrate ?? '-'}</Text>
-              )}
+              {editMode ? renderInput('carbohydrate', { keyboardType: 'numeric', placeholder: t('productDetail.fields.carbohydratePlaceholder'), rules: numericOptionalRule('carbohydrate') }) : <Text className="mt-1 text-base font-medium text-gray-900">{product?.carbohydrate ?? '-'}</Text>}
             </View>
 
             <View>
               <Text className="text-sm text-gray-500">{t('productDetail.fields.saturatedCarbohydrate')}</Text>
-              {editMode ? (
-                <TextInput
-                  value={saturatedCarbohydrate}
-                  onChangeText={setSaturatedCarbohydrate}
-                  keyboardType="numeric"
-                  placeholder={t('productDetail.fields.saturatedCarbohydratePlaceholder')}
-                  className="mt-1 rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
-                />
-              ) : (
-                <Text className="mt-1 text-base font-medium text-gray-900">{product?.saturatedCarbohydrate ?? '-'}</Text>
-              )}
+              {editMode ? renderInput('saturatedCarbohydrate', { keyboardType: 'numeric', placeholder: t('productDetail.fields.saturatedCarbohydratePlaceholder'), rules: numericOptionalRule('saturatedCarbohydrate') }) : <Text className="mt-1 text-base font-medium text-gray-900">{product?.saturatedCarbohydrate ?? '-'}</Text>}
             </View>
 
             <View>
               <Text className="text-sm text-gray-500">{t('productDetail.fields.protein')}</Text>
-              {editMode ? (
-                <TextInput
-                  value={protein}
-                  onChangeText={setProtein}
-                  keyboardType="numeric"
-                  placeholder={t('productDetail.fields.proteinPlaceholder')}
-                  className="mt-1 rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
-                />
-              ) : (
-                <Text className="mt-1 text-base font-medium text-gray-900">{product?.protein ?? '-'}</Text>
-              )}
+              {editMode ? renderInput('protein', { keyboardType: 'numeric', placeholder: t('productDetail.fields.proteinPlaceholder'), rules: numericOptionalRule('protein') }) : <Text className="mt-1 text-base font-medium text-gray-900">{product?.protein ?? '-'}</Text>}
             </View>
 
             <View>
               <Text className="text-sm text-gray-500">{t('productDetail.fields.salt')}</Text>
-              {editMode ? (
-                <TextInput
-                  value={salt}
-                  onChangeText={setSalt}
-                  keyboardType="numeric"
-                  placeholder={t('productDetail.fields.saltPlaceholder')}
-                  className="mt-1 rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
-                />
-              ) : (
-                <Text className="mt-1 text-base font-medium text-gray-900">{product?.salt ?? '-'}</Text>
-              )}
+              {editMode ? renderInput('salt', { keyboardType: 'numeric', placeholder: t('productDetail.fields.saltPlaceholder'), rules: numericOptionalRule('salt') }) : <Text className="mt-1 text-base font-medium text-gray-900">{product?.salt ?? '-'}</Text>}
             </View>
 
             <View>
               <Text className="text-sm text-gray-500">{t('productDetail.fields.fiber')}</Text>
-              {editMode ? (
-                <TextInput
-                  value={fiber}
-                  onChangeText={setFiber}
-                  keyboardType="numeric"
-                  placeholder={t('productDetail.fields.fiberPlaceholder')}
-                  className="mt-1 rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
-                />
-              ) : (
-                <Text className="mt-1 text-base font-medium text-gray-900">{product?.fiber ?? '-'}</Text>
-              )}
+              {editMode ? renderInput('fiber', { keyboardType: 'numeric', placeholder: t('productDetail.fields.fiberPlaceholder'), rules: numericOptionalRule('fiber') }) : <Text className="mt-1 text-base font-medium text-gray-900">{product?.fiber ?? '-'}</Text>}
             </View>
 
             <View>
               <Text className="text-sm text-gray-500">{t('productDetail.fields.amount')}</Text>
-              {editMode ? (
-                <TextInput
-                  value={amount}
-                  onChangeText={setAmount}
-                  keyboardType="numeric"
-                  className="mt-1 rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
-                />
-              ) : (
-                <Text className="mt-1 text-base font-medium text-gray-900">{product?.amount}</Text>
-              )}
+              {editMode ? renderInput('amount', { keyboardType: 'numeric', rules: numericRequiredRule('amountInvalid') }) : <Text className="mt-1 text-base font-medium text-gray-900">{product?.amount}</Text>}
             </View>
 
             <View>
               <Text className="text-sm text-gray-500">{t('productDetail.fields.ean')}</Text>
-              {editMode ? (
-                <TextInput
-                  value={ean}
-                  onChangeText={setEan}
-                  className="mt-1 rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
-                />
-              ) : (
-                <Text className="mt-1 text-base font-medium text-gray-900">{product?.ean || '-'}</Text>
-              )}
+              {editMode ? renderInput('ean') : <Text className="mt-1 text-base font-medium text-gray-900">{product?.ean || '-'}</Text>}
             </View>
-
           </View>
 
-          {error ? <Text className="mt-4 text-sm text-secondary-600">{error}</Text> : null}
+          {displayedError ? <Text className="mt-4 text-sm text-secondary-600">{displayedError}</Text> : null}
 
           <View className="mt-6 space-y-3">
-            <TouchableOpacity
-              onPress={() => setEditMode((prev) => !prev)}
-              className="rounded-2xl bg-primary-600 px-4 py-3"
-            >
+            <TouchableOpacity onPress={handleToggleEdit} className="rounded-2xl bg-primary-600 px-4 py-3">
               <Text className="text-center text-sm font-semibold text-white">{editMode ? t('productDetail.actions.cancelEdit') : t('productDetail.actions.editProduct')}</Text>
             </TouchableOpacity>
 
             {editMode ? (
-              <TouchableOpacity
-                onPress={handleSave}
-                className="rounded-2xl bg-primary-700 px-4 py-3"
-                disabled={isSaving}
-              >
-                {isSaving ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <Text className="text-center text-sm font-semibold text-white">Tallenna muutokset</Text>
-                )}
+              <TouchableOpacity onPress={handleSubmit(onSubmit)} className="rounded-2xl bg-primary-700 px-4 py-3" disabled={isSaving}>
+                {isSaving ? <ActivityIndicator size="small" color="#fff" /> : <Text className="text-center text-sm font-semibold text-white">Tallenna muutokset</Text>}
               </TouchableOpacity>
             ) : null}
 
-            <TouchableOpacity
-              onPress={handleResetAmount}
-              className="rounded-2xl bg-gray-100 px-4 py-3"
-              disabled={isSaving}
-            >
+            <TouchableOpacity onPress={handleResetAmount} className="rounded-2xl bg-gray-100 px-4 py-3" disabled={isSaving}>
               <Text className="text-center text-sm font-semibold text-gray-700">Nollaa määrä</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              onPress={handleDelete}
-              className="rounded-2xl bg-secondary-600 px-4 py-3"
-              disabled={isDeleting}
-            >
+            <TouchableOpacity onPress={handleDelete} className="rounded-2xl bg-secondary-600 px-4 py-3" disabled={isDeleting}>
               <Text className="text-center text-sm font-semibold text-white">Poista tuote</Text>
             </TouchableOpacity>
           </View>
