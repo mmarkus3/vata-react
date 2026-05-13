@@ -25,8 +25,8 @@ describe('addProductForm helpers', () => {
   });
 
   it('parses optional decimals with comma and empty values', () => {
-    expect(parseOptionalDecimal('')).toBeUndefined();
-    expect(parseOptionalDecimal('  ')).toBeUndefined();
+    expect(parseOptionalDecimal('')).toBeNull();
+    expect(parseOptionalDecimal('  ')).toBeNull();
     expect(parseOptionalDecimal('12,4')).toBe(12.4);
     expect(parseOptionalDecimal('12.4')).toBe(12.4);
   });

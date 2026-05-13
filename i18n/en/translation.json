@@ -48,6 +48,11 @@
       "imageUrlInvalid": "Enter a valid URL starting with http:// or https://.",
       "companyMissing": "No company is linked to the user.",
       "saveFailed": "Product save failed"
+    },
+    "sections": {
+      "basic": "Basic",
+      "price": "Price",
+      "nutritions": "Nutritions"
     }
   },
   "productDetail": {

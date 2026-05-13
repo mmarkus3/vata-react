@@ -78,7 +78,7 @@ export const isRequiredNonNegativeNumber = (raw: string): boolean => {
 
 export const buildNutritionValues = (
   values: AddProductFormValues
-): Partial<
+):
   Pick<
     Product,
     | 'energyJoule'
@@ -90,11 +90,10 @@ export const buildNutritionValues = (
     | 'protein'
     | 'salt'
     | 'fiber'
-  >
-> => {
+  > => {
   return Object.fromEntries(
     nutritionFieldKeys.map((key) => [key, parseOptionalDecimal(values[key])])
-  ) as Partial<
+  ) as
     Pick<
       Product,
       | 'energyJoule'
@@ -106,6 +105,5 @@ export const buildNutritionValues = (
       | 'protein'
       | 'salt'
       | 'fiber'
-    >
-  >;
+    >;
 };

@@ -3,6 +3,7 @@ schema: spec-driven
 context: |
   Tech stack: TypeScript, React-Native, Expo, Node.js, i18next
   We use conventional commits
+  Database style: Firestore, do NOT send 'undefined' to Firestore
   Domain: storage management and fullfilment to client's stores platform
   Style: Keep features modular and accessibility-friendly. Keep modals and buttons styles consistant
   Localization: use i18next to translate hard-coded texts

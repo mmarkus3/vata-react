@@ -9,7 +9,7 @@ import {
 
 describe('productDetailForm helpers', () => {
   it('parses optional decimal values', () => {
-    expect(parseOptionalDecimal('')).toBeUndefined();
+    expect(parseOptionalDecimal('')).toBeNull();
     expect(parseOptionalDecimal('12,5')).toBe(12.5);
     expect(parseOptionalDecimal('12.5')).toBe(12.5);
   });

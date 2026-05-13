@@ -48,6 +48,11 @@
       "imageUrlInvalid": "Anna kelvollinen URL-osoite, joka alkaa http:// tai https://.",
       "companyMissing": "Käyttäjällä ei ole yritystä liitettynä",
       "saveFailed": "Tuotteen tallennus epäonnistui"
+    },
+    "sections": {
+      "basic": "Perustiedot",
+      "price": "Hinnoittelu",
+      "nutritions": "Ravintosisältö"
     }
   },
   "productDetail": {
