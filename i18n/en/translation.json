@@ -26,7 +26,14 @@
       "categoryLabel": "Category",
       "noCategory": "No category",
       "categoryLoading": "Loading categories...",
-      "noCategoriesAvailable": "No categories available."
+      "noCategoriesAvailable": "No categories available.",
+      "countryOfOriginPlaceholder": "Country of origin (optional)",
+      "ingredientsFiPlaceholder": "Ingredients (Finnish) (optional)",
+      "ingredientsSvPlaceholder": "Ingredients (Swedish) (optional)",
+      "ingredientsEnPlaceholder": "Ingredients (English) (optional)",
+      "descriptionFiPlaceholder": "Description (Finnish) (optional)",
+      "descriptionSvPlaceholder": "Description (Swedish) (optional)",
+      "descriptionEnPlaceholder": "Description (English) (optional)"
     },
     "errors": {
       "nameRequired": "Enter product name.",
@@ -51,6 +58,7 @@
     },
     "sections": {
       "basic": "Basic",
+      "additionalInfo": "Additional info",
       "price": "Price",
       "nutritions": "Nutritions"
     }
@@ -89,7 +97,21 @@
       "noCategory": "No category",
       "categoryLoading": "Loading categories...",
       "noCategoriesAvailable": "No categories available.",
-      "categoryFallback": "deleted"
+      "categoryFallback": "deleted",
+      "countryOfOrigin": "Country of origin",
+      "countryOfOriginPlaceholder": "Enter country of origin",
+      "ingredientsFi": "Ingredients (Finnish)",
+      "ingredientsFiPlaceholder": "Enter ingredients in Finnish",
+      "ingredientsSv": "Ingredients (Swedish)",
+      "ingredientsSvPlaceholder": "Enter ingredients in Swedish",
+      "ingredientsEn": "Ingredients (English)",
+      "ingredientsEnPlaceholder": "Enter ingredients in English",
+      "descriptionFi": "Description (Finnish)",
+      "descriptionFiPlaceholder": "Enter description in Finnish",
+      "descriptionSv": "Description (Swedish)",
+      "descriptionSvPlaceholder": "Enter description in Swedish",
+      "descriptionEn": "Description (English)",
+      "descriptionEnPlaceholder": "Enter description in English"
     },
     "actions": {
       "cancelEdit": "Cancel editing",
@@ -142,6 +164,7 @@
     },
     "sections": {
       "basic": "Basic",
+      "additionalInfo": "Additional info",
       "price": "Price",
       "nutritions": "Nutritions"
     }

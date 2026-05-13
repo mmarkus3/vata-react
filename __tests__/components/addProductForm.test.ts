@@ -54,7 +54,17 @@ describe('addProductForm helpers', () => {
       saturatedCarbohydrate: 10,
       protein: 3,
       salt: 0.9,
-      fiber: undefined,
+      fiber: null,
     });
+  });
+
+  it('includes multilingual content fields in defaults', () => {
+    expect(defaultAddProductFormValues.countryOfOrigin).toBe('');
+    expect(defaultAddProductFormValues.ingredients_fi).toBe('');
+    expect(defaultAddProductFormValues.ingredients_sv).toBe('');
+    expect(defaultAddProductFormValues.ingredients_en).toBe('');
+    expect(defaultAddProductFormValues.description_fi).toBe('');
+    expect(defaultAddProductFormValues.description_sv).toBe('');
+    expect(defaultAddProductFormValues.description_en).toBe('');
   });
 });

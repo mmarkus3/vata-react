@@ -3,6 +3,13 @@ import type { Product } from '@/types/product';
 export interface ProductDetailFormValues {
   category: string;
   name: string;
+  countryOfOrigin: string;
+  ingredients_fi: string;
+  ingredients_sv: string;
+  ingredients_en: string;
+  description_fi: string;
+  description_sv: string;
+  description_en: string;
   price: string;
   retailPrice: string;
   unitPrice: string;
@@ -37,6 +44,13 @@ export type NutritionFieldKey = (typeof nutritionFieldKeys)[number];
 export const defaultProductDetailFormValues: ProductDetailFormValues = {
   category: '',
   name: '',
+  countryOfOrigin: '',
+  ingredients_fi: '',
+  ingredients_sv: '',
+  ingredients_en: '',
+  description_fi: '',
+  description_sv: '',
+  description_en: '',
   price: '',
   retailPrice: '',
   unitPrice: '',
@@ -76,6 +90,13 @@ export const toProductDetailFormValues = (product: Product): ProductDetailFormVa
   return {
     category: product.category ?? '',
     name: product.name,
+    countryOfOrigin: product.countryOfOrigin ?? '',
+    ingredients_fi: product.ingredients_fi ?? '',
+    ingredients_sv: product.ingredients_sv ?? '',
+    ingredients_en: product.ingredients_en ?? '',
+    description_fi: product.description_fi ?? '',
+    description_sv: product.description_sv ?? '',
+    description_en: product.description_en ?? '',
     price: String(product.price),
     retailPrice: product.retailPrice != null ? String(product.retailPrice) : '',
     unitPrice: product.unitPrice != null ? String(product.unitPrice) : '',

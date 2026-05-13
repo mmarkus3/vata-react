@@ -1,15 +1,15 @@
 import sendGrid from '@sendgrid/mail';
 
 export const sender = {
-  email: 'tilaukset@finnut.fi',
-  name: 'Finnut Tilaukset',
+  email: process.env.SENDER,
+  name: process.env.SENDER_NAME,
 };
 
 export function sendEmail(to: string, subject: string, html: string, from: { email: string; name: string }, replyToEmail?: string) {
   const apiKey = process.env.SENDGRID_KEY;
   if (apiKey) {
     sendGrid.setApiKey(apiKey);
-    const replyTo = replyToEmail ? { email: replyToEmail, name: 'Finnut Tilaukset' } : undefined;
+    const replyTo = replyToEmail ? { email: replyToEmail, name: sender.name } : undefined;
     const msg: sendGrid.MailDataRequired = {
       to,
       replyTo,

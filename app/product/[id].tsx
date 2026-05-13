@@ -26,6 +26,13 @@ import { ActivityIndicator, Alert, Image, ScrollView, Text, TextInput, Touchable
 const fieldErrorOrder: Path<ProductDetailFormValues>[] = [
   'category',
   'name',
+  'countryOfOrigin',
+  'ingredients_fi',
+  'ingredients_sv',
+  'ingredients_en',
+  'description_fi',
+  'description_sv',
+  'description_en',
   'price',
   'amount',
   'retailPrice',
@@ -67,6 +74,7 @@ export default function ProductDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [openSections, setOpenSections] = useState<Record<ProductDetailSectionKey, boolean>>({
     basic: true,
+    additionalInfo: false,
     price: false,
     nutritions: false,
   });
@@ -155,7 +163,7 @@ export default function ProductDetailPage() {
       reset(toProductDetailFormValues(product));
       setError(null);
       resetEditAssets();
-      setOpenSections({ basic: true, price: false, nutritions: false });
+      setOpenSections({ basic: true, additionalInfo: false, price: false, nutritions: false });
     }
 
     setEditMode((prev) => !prev);
@@ -284,6 +292,13 @@ export default function ProductDetailPage() {
     const retailPriceValue = parseOptionalDecimal(values.retailPrice);
     const unitPriceValue = parseOptionalDecimal(values.unitPrice);
     const nutritionValues = buildNutritionValues(values);
+    const countryOfOrigin = values.countryOfOrigin.trim();
+    const ingredientsFi = values.ingredients_fi.trim();
+    const ingredientsSv = values.ingredients_sv.trim();
+    const ingredientsEn = values.ingredients_en.trim();
+    const descriptionFi = values.description_fi.trim();
+    const descriptionSv = values.description_sv.trim();
+    const descriptionEn = values.description_en.trim();
 
     setIsSaving(true);
     setBarcodeUploadProgress(null);
@@ -296,6 +311,13 @@ export default function ProductDetailPage() {
         price: priceValue,
         retailPrice: retailPriceValue,
         unitPrice: unitPriceValue,
+        countryOfOrigin: countryOfOrigin || undefined,
+        ingredients_fi: ingredientsFi || undefined,
+        ingredients_sv: ingredientsSv || undefined,
+        ingredients_en: ingredientsEn || undefined,
+        description_fi: descriptionFi || undefined,
+        description_sv: descriptionSv || undefined,
+        description_en: descriptionEn || undefined,
         ...nutritionValues,
         amount: amountValue,
         ean: values.ean.trim(),
@@ -624,6 +646,11 @@ export default function ProductDetailPage() {
                 </View>
 
                 <View>
+                  <Text className="text-sm text-gray-500">{t('productDetail.fields.countryOfOrigin')}</Text>
+                  {editMode ? renderInput('countryOfOrigin', { placeholder: t('productDetail.fields.countryOfOriginPlaceholder') }) : <Text className="mt-1 text-base font-medium text-gray-900">{product?.countryOfOrigin || '-'}</Text>}
+                </View>
+
+                <View>
                   <Text className="text-sm text-gray-500">{t('productDetail.fields.amount')}</Text>
                   {editMode ? renderInput('amount', { keyboardType: 'numeric', rules: numericRequiredRule('amountInvalid') }) : <Text className="mt-1 text-base font-medium text-gray-900">{product?.amount}</Text>}
                 </View>
@@ -631,6 +658,44 @@ export default function ProductDetailPage() {
                 <View>
                   <Text className="text-sm text-gray-500">{t('productDetail.fields.ean')}</Text>
                   {editMode ? renderInput('ean') : <Text className="mt-1 text-base font-medium text-gray-900">{product?.ean || '-'}</Text>}
+                </View>
+              </View>
+            </Accordion>
+
+            <Accordion
+              title={t('productDetail.sections.additionalInfo')}
+              isOpen={openSections.additionalInfo}
+              onToggle={() => toggleSection('additionalInfo')}
+            >
+              <View className="space-y-4">
+                <View>
+                  <Text className="text-sm text-gray-500">{t('productDetail.fields.ingredientsFi')}</Text>
+                  {editMode ? renderInput('ingredients_fi', { placeholder: t('productDetail.fields.ingredientsFiPlaceholder') }) : <Text className="mt-1 text-base font-medium text-gray-900">{product?.ingredients_fi || '-'}</Text>}
+                </View>
+
+                <View>
+                  <Text className="text-sm text-gray-500">{t('productDetail.fields.ingredientsSv')}</Text>
+                  {editMode ? renderInput('ingredients_sv', { placeholder: t('productDetail.fields.ingredientsSvPlaceholder') }) : <Text className="mt-1 text-base font-medium text-gray-900">{product?.ingredients_sv || '-'}</Text>}
+                </View>
+
+                <View>
+                  <Text className="text-sm text-gray-500">{t('productDetail.fields.ingredientsEn')}</Text>
+                  {editMode ? renderInput('ingredients_en', { placeholder: t('productDetail.fields.ingredientsEnPlaceholder') }) : <Text className="mt-1 text-base font-medium text-gray-900">{product?.ingredients_en || '-'}</Text>}
+                </View>
+
+                <View>
+                  <Text className="text-sm text-gray-500">{t('productDetail.fields.descriptionFi')}</Text>
+                  {editMode ? renderInput('description_fi', { placeholder: t('productDetail.fields.descriptionFiPlaceholder') }) : <Text className="mt-1 text-base font-medium text-gray-900">{product?.description_fi || '-'}</Text>}
+                </View>
+
+                <View>
+                  <Text className="text-sm text-gray-500">{t('productDetail.fields.descriptionSv')}</Text>
+                  {editMode ? renderInput('description_sv', { placeholder: t('productDetail.fields.descriptionSvPlaceholder') }) : <Text className="mt-1 text-base font-medium text-gray-900">{product?.description_sv || '-'}</Text>}
+                </View>
+
+                <View>
+                  <Text className="text-sm text-gray-500">{t('productDetail.fields.descriptionEn')}</Text>
+                  {editMode ? renderInput('description_en', { placeholder: t('productDetail.fields.descriptionEnPlaceholder') }) : <Text className="mt-1 text-base font-medium text-gray-900">{product?.description_en || '-'}</Text>}
                 </View>
               </View>
             </Accordion>

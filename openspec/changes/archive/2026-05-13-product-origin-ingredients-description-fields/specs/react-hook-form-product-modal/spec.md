@@ -1,10 +1,7 @@
-# react-hook-form-product-modal Specification
+## MODIFIED Requirements
 
-## Purpose
-TBD - created by archiving change use-react-hook-form-add-product-modal. Update Purpose after archive.
-## Requirements
 ### Requirement: Product create modal uses declarative form state and validation
-The system SHALL manage `AddProductModal` form fields, including optional category selection, optional origin field, optional multilingual ingredient fields, and optional multilingual description fields, through a declarative form model that centralizes field values, validation rules, submit handling, and accordion-grouped field presentation across `basic`, `additionalInfo`, `price`, and `nutritions` sections.
+The system SHALL manage `AddProductModal` form fields, including optional category selection, optional origin field, optional multilingual ingredient fields, and optional multilingual description fields, through a declarative form model that centralizes field values, validation rules, submit handling, and accordion-grouped field presentation.
 
 #### Scenario: Required product fields block submission when empty
 - **WHEN** a user attempts to submit the product create modal without a product name, amount, or price
@@ -27,6 +24,5 @@ The system SHALL manage `AddProductModal` form fields, including optional catego
 - **THEN** the create payload includes the corresponding normalized field values
 
 #### Scenario: Accordion layout preserves form behavior
-- **WHEN** a user expands or collapses `basic`, `additionalInfo`, `price`, or `nutritions` sections while editing values
+- **WHEN** a user expands or collapses `basic`, `price`, or `nutritions` sections while editing values
 - **THEN** entered values and validation behavior remain intact
-

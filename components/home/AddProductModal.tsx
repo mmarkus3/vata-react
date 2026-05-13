@@ -29,6 +29,13 @@ interface AddProductModalProps {
 const fieldErrorOrder: Path<AddProductFormValues>[] = [
   'category',
   'name',
+  'countryOfOrigin',
+  'ingredients_fi',
+  'ingredients_sv',
+  'ingredients_en',
+  'description_fi',
+  'description_sv',
+  'description_en',
   'amount',
   'price',
   'retailPrice',
@@ -58,6 +65,7 @@ const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProduct
   const [error, setError] = useState<string | null>(null);
   const [openSections, setOpenSections] = useState<Record<AddProductSectionKey, boolean>>({
     basic: true,
+    additionalInfo: false,
     price: false,
     nutritions: false,
   });
@@ -89,7 +97,7 @@ const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProduct
 
   const clearFormAndAssets = () => {
     reset(defaultAddProductFormValues);
-    setOpenSections({ basic: true, price: false, nutritions: false });
+    setOpenSections({ basic: true, additionalInfo: false, price: false, nutritions: false });
     setImageUrl('');
     setImageUrls([]);
     setSelectedProductImageUris([]);
@@ -175,6 +183,13 @@ const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProduct
     const retailPriceValue = parseOptionalDecimal(values.retailPrice);
     const unitPriceValue = parseOptionalDecimal(values.unitPrice);
     const nutritionValues = buildNutritionValues(values);
+    const countryOfOrigin = values.countryOfOrigin.trim();
+    const ingredientsFi = values.ingredients_fi.trim();
+    const ingredientsSv = values.ingredients_sv.trim();
+    const ingredientsEn = values.ingredients_en.trim();
+    const descriptionFi = values.description_fi.trim();
+    const descriptionSv = values.description_sv.trim();
+    const descriptionEn = values.description_en.trim();
 
     try {
       setIsLoading(true);
@@ -186,6 +201,13 @@ const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProduct
           price: priceValue,
           retailPrice: retailPriceValue,
           unitPrice: unitPriceValue,
+          countryOfOrigin: countryOfOrigin || undefined,
+          ingredients_fi: ingredientsFi || undefined,
+          ingredients_sv: ingredientsSv || undefined,
+          ingredients_en: ingredientsEn || undefined,
+          description_fi: descriptionFi || undefined,
+          description_sv: descriptionSv || undefined,
+          description_en: descriptionEn || undefined,
           ...nutritionValues,
           barcode: values.barcode.trim(),
           ean: values.ean.trim(),
@@ -327,11 +349,27 @@ const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProduct
                     validate: (value) => (value.trim() ? true : t('addProduct.errors.nameRequired')),
                   },
                 })}
+                {renderInput('countryOfOrigin', t('addProduct.fields.countryOfOriginPlaceholder'))}
                 {renderInput('amount', 'Varastosaldo', {
                   keyboardType: 'numeric',
                   rules: numericRequiredRule('amountInvalid'),
                 })}
                 {renderInput('ean', 'EAN')}
+              </View>
+            </Accordion>
+
+            <Accordion
+              title={t('addProduct.sections.additionalInfo')}
+              isOpen={openSections.additionalInfo}
+              onToggle={() => toggleSection('additionalInfo')}
+            >
+              <View className="space-y-3">
+                {renderInput('ingredients_fi', t('addProduct.fields.ingredientsFiPlaceholder'))}
+                {renderInput('ingredients_sv', t('addProduct.fields.ingredientsSvPlaceholder'))}
+                {renderInput('ingredients_en', t('addProduct.fields.ingredientsEnPlaceholder'))}
+                {renderInput('description_fi', t('addProduct.fields.descriptionFiPlaceholder'))}
+                {renderInput('description_sv', t('addProduct.fields.descriptionSvPlaceholder'))}
+                {renderInput('description_en', t('addProduct.fields.descriptionEnPlaceholder'))}
               </View>
             </Accordion>
 

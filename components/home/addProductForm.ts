@@ -3,6 +3,13 @@ import { Product } from '@/types/product';
 export interface AddProductFormValues {
   category: string;
   name: string;
+  countryOfOrigin: string;
+  ingredients_fi: string;
+  ingredients_sv: string;
+  ingredients_en: string;
+  description_fi: string;
+  description_sv: string;
+  description_en: string;
   amount: string;
   price: string;
   retailPrice: string;
@@ -37,6 +44,13 @@ export type NutritionFieldKey = (typeof nutritionFieldKeys)[number];
 export const defaultAddProductFormValues: AddProductFormValues = {
   category: '',
   name: '',
+  countryOfOrigin: '',
+  ingredients_fi: '',
+  ingredients_sv: '',
+  ingredients_en: '',
+  description_fi: '',
+  description_sv: '',
+  description_en: '',
   amount: '',
   price: '',
   retailPrice: '',

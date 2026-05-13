@@ -26,7 +26,14 @@
       "categoryLabel": "Kategoria",
       "noCategory": "Ei kategoriaa",
       "categoryLoading": "Ladataan kategorioita...",
-      "noCategoriesAvailable": "Ei kategorioita saatavilla."
+      "noCategoriesAvailable": "Ei kategorioita saatavilla.",
+      "countryOfOriginPlaceholder": "Valmistusmaa (valinnainen)",
+      "ingredientsFiPlaceholder": "Ainesosalista (suomi) (valinnainen)",
+      "ingredientsSvPlaceholder": "Ainesosalista (ruotsi) (valinnainen)",
+      "ingredientsEnPlaceholder": "Ainesosalista (englanti) (valinnainen)",
+      "descriptionFiPlaceholder": "Tuotekuvaus (suomi) (valinnainen)",
+      "descriptionSvPlaceholder": "Tuotekuvaus (ruotsi) (valinnainen)",
+      "descriptionEnPlaceholder": "Tuotekuvaus (englanti) (valinnainen)"
     },
     "errors": {
       "nameRequired": "Anna tuotteen nimi.",
@@ -51,6 +58,7 @@
     },
     "sections": {
       "basic": "Perustiedot",
+      "additionalInfo": "Lisätiedot",
       "price": "Hinnoittelu",
       "nutritions": "Ravintosisältö"
     }
@@ -89,7 +97,21 @@
       "noCategory": "Ei kategoriaa",
       "categoryLoading": "Ladataan kategorioita...",
       "noCategoriesAvailable": "Ei kategorioita saatavilla.",
-      "categoryFallback": "poistettu"
+      "categoryFallback": "poistettu",
+      "countryOfOrigin": "Valmistusmaa",
+      "countryOfOriginPlaceholder": "Anna valmistusmaa",
+      "ingredientsFi": "Ainesosalista (suomi)",
+      "ingredientsFiPlaceholder": "Anna ainesosalista suomeksi",
+      "ingredientsSv": "Ainesosalista (ruotsi)",
+      "ingredientsSvPlaceholder": "Anna ainesosalista ruotsiksi",
+      "ingredientsEn": "Ainesosalista (englanti)",
+      "ingredientsEnPlaceholder": "Anna ainesosalista englanniksi",
+      "descriptionFi": "Tuotekuvaus (suomi)",
+      "descriptionFiPlaceholder": "Anna tuotekuvaus suomeksi",
+      "descriptionSv": "Tuotekuvaus (ruotsi)",
+      "descriptionSvPlaceholder": "Anna tuotekuvaus ruotsiksi",
+      "descriptionEn": "Tuotekuvaus (englanti)",
+      "descriptionEnPlaceholder": "Anna tuotekuvaus englanniksi"
     },
     "actions": {
       "cancelEdit": "Keskeytä muokkaus",
@@ -142,6 +164,7 @@
     },
     "sections": {
       "basic": "Perustiedot",
+      "additionalInfo": "Lisätiedot",
       "price": "Hinnoittelu",
       "nutritions": "Ravintosisältö"
     }

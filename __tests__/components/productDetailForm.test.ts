@@ -47,7 +47,7 @@ describe('productDetailForm helpers', () => {
       saturatedCarbohydrate: 11,
       protein: 4,
       salt: 0.7,
-      fiber: undefined,
+      fiber: null,
     });
   });
 
@@ -72,6 +72,13 @@ describe('productDetailForm helpers', () => {
       protein: 3,
       salt: 0.5,
       fiber: 0.1,
+      countryOfOrigin: 'Finland',
+      ingredients_fi: 'maito, suola',
+      ingredients_sv: 'mjolk, salt',
+      ingredients_en: 'milk, salt',
+      description_fi: 'Kotimainen maito',
+      description_sv: 'Inhemsk mjolk',
+      description_en: 'Domestic milk',
     });
 
     expect(values.name).toBe('Milk');
@@ -81,5 +88,12 @@ describe('productDetailForm helpers', () => {
     expect(values.barcode).toBe('');
     expect(values.retailPrice).toBe('2.5');
     expect(values.energyJoule).toBe('100');
+    expect(values.countryOfOrigin).toBe('Finland');
+    expect(values.ingredients_fi).toBe('maito, suola');
+    expect(values.ingredients_sv).toBe('mjolk, salt');
+    expect(values.ingredients_en).toBe('milk, salt');
+    expect(values.description_fi).toBe('Kotimainen maito');
+    expect(values.description_sv).toBe('Inhemsk mjolk');
+    expect(values.description_en).toBe('Domestic milk');
   });
 });

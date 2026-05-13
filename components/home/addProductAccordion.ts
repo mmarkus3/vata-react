@@ -2,10 +2,25 @@ import type { Path } from 'react-hook-form';
 
 import type { AddProductFormValues } from '@/components/home/addProductForm';
 
-export type AddProductSectionKey = 'basic' | 'price' | 'nutritions';
+export type AddProductSectionKey = 'basic' | 'additionalInfo' | 'price' | 'nutritions';
 
 export const sectionFields: Record<AddProductSectionKey, Path<AddProductFormValues>[]> = {
-  basic: ['category', 'name', 'amount', 'ean', 'barcode'],
+  basic: [
+    'category',
+    'name',
+    'countryOfOrigin',
+    'amount',
+    'ean',
+    'barcode',
+  ],
+  additionalInfo: [
+    'ingredients_fi',
+    'ingredients_sv',
+    'ingredients_en',
+    'description_fi',
+    'description_sv',
+    'description_en',
+  ],
   price: ['price', 'retailPrice', 'unitPrice'],
   nutritions: [
     'energyJoule',
