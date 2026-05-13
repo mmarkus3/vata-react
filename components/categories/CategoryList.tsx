@@ -7,8 +7,7 @@ interface CategoryListProps {
   categories: Category[];
   isLoading: boolean;
   error: string | null;
-  onEdit: (category: Category) => void;
-  onDelete: (category: Category) => void;
+  onPressCategory: (category: Category) => void;
   onRetry: () => void;
 }
 
@@ -16,8 +15,7 @@ const CategoryList: FC<CategoryListProps> = ({
   categories,
   isLoading,
   error,
-  onEdit,
-  onDelete,
+  onPressCategory,
   onRetry,
 }) => {
   if (isLoading) {
@@ -63,8 +61,7 @@ const CategoryList: FC<CategoryListProps> = ({
       renderItem={({ item }) => (
         <CategoryListItem
           category={item}
-          onEdit={onEdit}
-          onDelete={onDelete}
+          onPress={onPressCategory}
         />
       )}
       keyExtractor={(item) => item.id || ''}

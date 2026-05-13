@@ -1,8 +1,5 @@
-# product-category-assignment Specification
+## MODIFIED Requirements
 
-## Purpose
-TBD - created by archiving change product-category-selection-create-update. Update Purpose after archive.
-## Requirements
 ### Requirement: User can assign category during product create and edit
 The system SHALL allow users to select an optional product category when creating a new product and when editing an existing product, and categories with assigned products SHALL be inspectable from a category detail page.
 
@@ -25,4 +22,3 @@ The system SHALL preserve usability when an existing product category value does
 - **WHEN** a product has a saved category value that is not present in current category options
 - **THEN** the category selector still renders the saved value as a selectable fallback
 - **AND** the user can keep it or replace it with a listed category
-

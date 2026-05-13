@@ -1,4 +1,5 @@
-import { createCategory, deleteCategory, getAllCategories, updateCategory } from '@/services/category';
+import { createCategory, deleteCategory, getAllCategories, getCategoryById, updateCategory } from '@/services/category';
+import { CATEGORY_VALIDATION } from '@/constants/category';
 
 // Mock Firebase
 jest.mock('@/services/firebase', () => ({
@@ -13,6 +14,7 @@ jest.mock('firebase/firestore', () => ({
   onSnapshot: jest.fn(),
   query: jest.fn(),
   updateDoc: jest.fn(),
+  where: jest.fn(),
 }));
 
 describe('Category Service', () => {
@@ -22,15 +24,15 @@ describe('Category Service', () => {
 
   describe('createCategory', () => {
     it('should throw error when name is empty', async () => {
-      await expect(createCategory('', 'description')).rejects.toThrow(
-        'Category name is required'
+      await expect(createCategory('', 'description', 'company-1')).rejects.toThrow(
+        CATEGORY_VALIDATION.ERRORS.NAME_REQUIRED
       );
     });
 
     it('should throw error when name is too long', async () => {
       const longName = 'a'.repeat(256);
-      await expect(createCategory(longName, 'description')).rejects.toThrow(
-        'Category name cannot exceed 255 characters'
+      await expect(createCategory(longName, 'description', 'company-1')).rejects.toThrow(
+        CATEGORY_VALIDATION.ERRORS.NAME_TOO_LONG
       );
     });
 
@@ -41,7 +43,7 @@ describe('Category Service', () => {
       const name = '  Test Category  ';
       const description = '  Test Description  ';
 
-      const result = await createCategory(name, description);
+      const result = await createCategory(name, description, 'company-1');
 
       expect(result).toBe('test-id');
       expect(addDoc).toHaveBeenCalled();
@@ -57,14 +59,14 @@ describe('Category Service', () => {
 
     it('should throw error when name is empty', async () => {
       await expect(updateCategory('id', '', 'description')).rejects.toThrow(
-        'Category name is required'
+        CATEGORY_VALIDATION.ERRORS.NAME_REQUIRED
       );
     });
 
     it('should throw error when name is too long', async () => {
       const longName = 'a'.repeat(256);
       await expect(updateCategory('id', longName, 'description')).rejects.toThrow(
-        'Category name cannot exceed 255 characters'
+        CATEGORY_VALIDATION.ERRORS.NAME_TOO_LONG
       );
     });
   });
@@ -83,14 +85,20 @@ describe('Category Service', () => {
       const mockCallback = jest.fn();
 
       onSnapshot.mockImplementation((query: any, onNext: any) => {
-        onNext({ forEach: () => { } });
+        onNext({ docs: [] });
         return jest.fn();
       });
 
-      const unsubscribe = getAllCategories(mockCallback);
+      const unsubscribe = getAllCategories('company-1', mockCallback);
 
       expect(mockCallback).toHaveBeenCalledWith([]);
       expect(unsubscribe).toBeDefined();
+    });
+  });
+
+  describe('getCategoryById', () => {
+    it('should throw when id is missing', async () => {
+      await expect(getCategoryById('')).rejects.toThrow('Category ID is required');
     });
   });
 });

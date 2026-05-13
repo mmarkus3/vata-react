@@ -1,6 +1,6 @@
 import { CATEGORY_VALIDATION } from '@/constants/category';
 import type { Category } from '@/types/category';
-import { deleteItem, getSnapshotItems, saveItem, updateItem, whereEqual } from './firestore';
+import { deleteItem, getItem, getSnapshotItems, saveItem, updateItem, whereEqual } from './firestore';
 
 const CATEGORIES_COLLECTION = 'categories';
 
@@ -18,6 +18,19 @@ export function getAllCategories(companyId: string, cb: (results: Category[]) =>
     return () => { };
   }
 };
+
+export async function getCategoryById(id: string): Promise<Category | null> {
+  if (!id) {
+    throw new Error('Category ID is required');
+  }
+
+  try {
+    return await getItem<Category>(CATEGORIES_COLLECTION, id);
+  } catch (error) {
+    console.error('Error fetching category by id:', error);
+    throw new Error('Failed to fetch category');
+  }
+}
 
 /**
  * Create a new category

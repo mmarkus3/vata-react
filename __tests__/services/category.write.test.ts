@@ -1,13 +1,15 @@
-import { createCategory, updateCategory } from '@/services/category';
+import { createCategory, getCategoryById, updateCategory } from '@/services/category';
 
 const mockSaveItem = jest.fn();
 const mockUpdateItem = jest.fn();
+const mockGetItem = jest.fn();
 
 jest.mock('@/services/firestore', () => ({
   getSnapshotItems: jest.fn(),
   whereEqual: jest.fn(),
   saveItem: (...args: unknown[]) => mockSaveItem(...args),
   updateItem: (...args: unknown[]) => mockUpdateItem(...args),
+  getItem: (...args: unknown[]) => mockGetItem(...args),
   deleteItem: jest.fn(),
 }));
 
@@ -45,5 +47,14 @@ describe('category write flows', () => {
         description: 'Beverages',
       })
     );
+  });
+
+  it('gets category by id', async () => {
+    mockGetItem.mockResolvedValue({ id: 'cat-1', name: 'Snacks', description: '', company: 'co-1' });
+
+    const result = await getCategoryById('cat-1');
+
+    expect(result).toEqual({ id: 'cat-1', name: 'Snacks', description: '', company: 'co-1' });
+    expect(mockGetItem).toHaveBeenCalledWith('categories', 'cat-1');
   });
 });
