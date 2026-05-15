@@ -4,7 +4,7 @@
 TBD - created by archiving change category-detail-page-with-products. Update Purpose after archive.
 ## Requirements
 ### Requirement: Category detail page shows category metadata and products
-The system SHALL provide a category detail page that displays category name, description, products assigned to the category, and an action to add products into the current category through a dedicated assignment module.
+The system SHALL provide a category detail page that displays category name, description, products assigned to the category, and an action to add products into the current category through a dedicated assignment module, where product-category association is matched by category id.
 
 #### Scenario: Open category detail from categories list
 - **WHEN** a user taps a category item in the categories list
@@ -13,7 +13,7 @@ The system SHALL provide a category detail page that displays category name, des
 #### Scenario: Category detail shows assigned products
 - **WHEN** a category detail page loads successfully
 - **THEN** the page shows the category name and description
-- **AND** lists products whose category matches the selected category
+- **AND** lists products whose category reference matches the selected category id
 
 #### Scenario: Category with no products shows empty state
 - **WHEN** a category has no assigned products
@@ -25,7 +25,7 @@ The system SHALL provide a category detail page that displays category name, des
 
 #### Scenario: Add products to category from category detail
 - **WHEN** a user starts the add-products flow on category detail, selects products, and confirms
-- **THEN** selected products are updated to use the current category
+- **THEN** selected products are updated to use the current category id
 - **AND** the category product list reflects the new assignments
 
 ### Requirement: Category edit and delete actions live in category detail page
@@ -44,4 +44,3 @@ The system SHALL expose category edit and delete actions in the category detail 
 - **WHEN** a user views categories list screen
 - **THEN** each list item provides navigation to detail
 - **AND** list items do not present inline edit/delete controls
-

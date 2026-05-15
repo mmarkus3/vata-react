@@ -10,6 +10,7 @@ import {
   ProductDetailFormValues,
   toProductDetailFormValues,
 } from '@/app/product/productDetailForm';
+import { DESCRIPTION_DEFAULT_LINES, getDescriptionHeight, getDescriptionMinHeight, isDescriptionField } from '@/app/product/descriptionInputSizing';
 import Accordion from '@/components/ui/accordion';
 import { themeColors } from '@/constants/colors';
 import { useCategories } from '@/hooks/useCategories';
@@ -74,6 +75,7 @@ export default function ProductDetailPage() {
   const [newProductImageUris, setNewProductImageUris] = useState<string[]>([]);
   const [imageUrlInput, setImageUrlInput] = useState('');
   const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [descriptionHeights, setDescriptionHeights] = useState<Record<string, number>>({});
   const [error, setError] = useState<string | null>(null);
   const [openSections, setOpenSections] = useState<Record<ProductDetailSectionKey, boolean>>({
     basic: true,
@@ -458,6 +460,22 @@ export default function ProductDetailPage() {
           }}
           placeholder={options?.placeholder}
           keyboardType={options?.keyboardType ?? 'default'}
+          multiline={isDescriptionField(name)}
+          numberOfLines={isDescriptionField(name) ? DESCRIPTION_DEFAULT_LINES : undefined}
+          onContentSizeChange={
+            isDescriptionField(name)
+              ? (event) => {
+                const nextHeight = getDescriptionHeight(event.nativeEvent.contentSize.height);
+                setDescriptionHeights((prev) => {
+                  if (prev[name] === nextHeight) {
+                    return prev;
+                  }
+                  return { ...prev, [name]: nextHeight };
+                });
+              }
+              : undefined
+          }
+          style={isDescriptionField(name) ? { height: descriptionHeights[name] ?? getDescriptionMinHeight() } : undefined}
           className="mt-1 rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
         />
       )}

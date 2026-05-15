@@ -1,8 +1,5 @@
-# product-origin-and-multilingual-content Specification
+## MODIFIED Requirements
 
-## Purpose
-TBD - created by archiving change product-origin-ingredients-description-fields. Update Purpose after archive.
-## Requirements
 ### Requirement: Product supports multilingual origin and content fields in create and edit flows
 The system SHALL allow users to provide optional product origin and localized textual content fields (`countryOfOrigin`, `ingredients_fi`, `ingredients_sv`, `ingredients_en`, `description_fi`, `description_sv`, `description_en`) when creating and editing products. The system SHALL render each product description edit input (`description_fi`, `description_sv`, `description_en`) with a default visible height of three lines and SHALL automatically expand the input height as users enter additional lines.
 
