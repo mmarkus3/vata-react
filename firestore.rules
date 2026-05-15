@@ -63,6 +63,10 @@ service cloud.firestore {
       allow create: if isUser();
     }
 
+    match /options/{document} {
+      allow read: if isUser();
+    }
+
     match /products/{document} {
       allow read: if isMyCompanys();
       allow create: if isUser();

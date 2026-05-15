@@ -9,4 +9,9 @@ export class ProductsController {
   getProducts(@Param('company') companyId: string) {
     return this.productsService.getProductsByCompany(companyId);
   }
+
+  @Get('company/:company/:id')
+  getProduct(@Param('company') companyId: string, @Param('id') productId: string) {
+    return this.productsService.getProductByIdAndCompany(companyId, productId);
+  }
 }
