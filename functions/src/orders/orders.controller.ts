@@ -28,4 +28,9 @@ export class OrdersController {
   getDeliveryPoints(@Param('company') companyId: string, @Query('postalCode') postalCode: string) {
     return this.ordersService.getPoints(companyId, postalCode);
   }
+
+  @Get('company/:company/prices')
+  getPrices(@Param('company') companyId: string) {
+    return this.ordersService.getPrices(companyId);
+  }
 }

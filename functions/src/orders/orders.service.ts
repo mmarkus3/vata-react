@@ -32,6 +32,12 @@ export class OrdersService {
     return data;
   }
 
+  async getPrices(companyId: string) {
+    const doc = await firestore().doc(`options/${companyId}`).get();
+    const item = doc.data();
+    return { over: item.over as number, delivery: item.delivery as number };
+  }
+
   async createOrder(order: Order) {
     order.created = Timestamp.now();
     const doc = await firestore().collection('orders').add(order);
