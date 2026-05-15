@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Param, Post, Put } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { Order } from './order.interface';
 import { OrdersService } from './orders.service';
 
@@ -22,5 +22,10 @@ export class OrdersController {
     }
 
     return this.ordersService.updateOrder(companyId, order);
+  }
+
+  @Get('company/:company/points')
+  getDeliveryPoints(@Param('company') companyId: string, @Query('postalCode') postalCode: string) {
+    return this.ordersService.getPoints(companyId, postalCode);
   }
 }

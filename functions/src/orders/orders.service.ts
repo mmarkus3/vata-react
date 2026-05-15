@@ -1,10 +1,36 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { firestore } from 'firebase-admin';
 import { Timestamp } from 'firebase-admin/firestore';
 import { Order } from './order.interface';
 
+const bringHeaders = {
+  Accept: 'application/json',
+  'X-Mybring-API-Uid': process.env.BRING_UID,
+  'X-Mybring-API-Key': process.env.BRING_API_KEY,
+}
+
 @Injectable()
 export class OrdersService {
+
+  async getPoints(companyId: string, postalCode: string) {
+    const companyDoc = await firestore().doc(`companies/${companyId}`).get();
+    if (!companyDoc.exists) {
+      throw new NotFoundException('Company not found');
+    }
+    const response = await fetch(`https://api.bring.com/pickuppoint/api/pickuppoint/FI/postalCode/${postalCode}`, {
+      headers: bringHeaders,
+    });
+    const data = await response.json();
+    return data;
+  }
+
+  async getPoint(id: string) {
+    const response = await fetch(`https://api.bring.com/pickuppoint/api/pickuppoint/FI/id/${id}`, {
+      headers: bringHeaders,
+    });
+    const data = await response.json();
+    return data;
+  }
 
   async createOrder(order: Order) {
     order.created = Timestamp.now();
