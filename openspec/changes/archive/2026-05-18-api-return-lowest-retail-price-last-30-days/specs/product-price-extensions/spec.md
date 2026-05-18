@@ -1,8 +1,5 @@
-# product-price-extensions Specification
+## MODIFIED Requirements
 
-## Purpose
-Define requirements for managing retail price and unit price fields across product create and edit flows.
-## Requirements
 ### Requirement: User can set retail and unit prices when creating a product
 The system SHALL allow a user to enter retail price (vähittäismyyntihinta) and unit price per kilogram (kilohinta) when creating a product, validate those values as optional non-negative numbers, and persist valid values with the product.
 
@@ -30,18 +27,18 @@ The system SHALL allow a user to update retail price and unit price for an exist
 - **THEN** the system blocks save and shows localized validation errors for invalid pricing fields
 
 ### Requirement: Retail and unit prices are returned in subsequent product reads
-The system SHALL return persisted retail and unit prices in subsequent product read responses. The backend API implementation in `functions/src/products/products.service.ts` SHALL return `lowestRetailPriceLast30Days` for both product list and product detail responses, using the same 30-day lowest-price calculation behavior as the React-side pricing utility.
+The system SHALL return persisted retail and unit prices in product fetches used by product detail and storage list consumers. The system SHALL return `lowestRetailPriceLast30Days` in backend/API product responses for both detail and list retrieval paths.
 
 #### Scenario: Re-open product after pricing update
 - **WHEN** a product is fetched after retail/unit price values are saved
 - **THEN** the fetched product includes the saved retail and unit price values
 
-#### Scenario: Backend product responses include lowest retail price for previous 30 days
-- **WHEN** backend product list or detail endpoints return a product with current/historical retail price data
-- **THEN** response includes `lowestRetailPriceLast30Days` computed from current retail price and dated history entries in the previous 30 days
+#### Scenario: Product read includes lowest retail price for previous 30 days
+- **WHEN** a product with retail price history is fetched for product detail or listing views
+- **THEN** the response includes a computed lowest retail price from the preceding 30-day window
+- **AND** the computation uses dated retail price history entries relevant to that window
 
-#### Scenario: Backend product responses include null fallback when not computable
-- **WHEN** backend product list or detail endpoints return a product without valid current/historical candidates
-- **THEN** response still includes `lowestRetailPriceLast30Days`
-- **AND** its value is `null`
-
+#### Scenario: Product read fallback with missing history
+- **WHEN** a product is fetched and there is insufficient current/history data to compute the 30-day lowest retail price
+- **THEN** backend/API response still includes `lowestRetailPriceLast30Days`
+- **AND** the field value is `null`

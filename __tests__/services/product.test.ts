@@ -1,8 +1,9 @@
-import { createProduct, getProductById, updateProduct } from '@/services/product';
+import { createProduct, getProductById, getProductsByCompany, updateProduct } from '@/services/product';
 
 const mockGetItem = jest.fn();
 const mockSaveItem = jest.fn();
 const mockUpdateItem = jest.fn();
+const mockGetSnapshotItems = jest.fn();
 const mockUploadProductImage = jest.fn();
 const mockUploadBarcodeImage = jest.fn();
 const mockDeleteBarcodeImage = jest.fn();
@@ -16,7 +17,7 @@ jest.mock('@/services/firestore', () => ({
   updateItem: (...args: unknown[]) => mockUpdateItem(...args),
   saveItem: (...args: unknown[]) => mockSaveItem(...args),
   deleteItem: jest.fn(),
-  getSnapshotItems: jest.fn(),
+  getSnapshotItems: (...args: unknown[]) => mockGetSnapshotItems(...args),
 }));
 
 jest.mock('@/services/storage', () => ({
@@ -334,5 +335,64 @@ describe('product service', () => {
     expect(product?.protein).toBe(1.9);
     expect(product?.salt).toBe(0.4);
     expect(product?.fiber).toBe(0.9);
+  });
+
+  it('returns lowestRetailPriceLast30Days as null when product has no computable pricing history', async () => {
+    const firestoreProduct = {
+      ...existingProductFixture,
+      retailPrice: null,
+      retailPriceHistory: [],
+    };
+
+    mockGetItem.mockImplementation((_collection: unknown, _id: unknown, converter: { fromFirestore: (snapshot: { data: () => unknown }) => unknown }) => {
+      return converter.fromFirestore({
+        data: () => firestoreProduct,
+      });
+    });
+
+    const product = await getProductById('p1');
+    expect(product?.lowestRetailPriceLast30Days).toBeNull();
+  });
+
+  it('includes lowestRetailPriceLast30Days in list response mapping', () => {
+    mockGetSnapshotItems.mockImplementation(
+      (
+        _collection: unknown,
+        cb: (results: unknown[]) => void,
+        _where: unknown,
+        converter: { fromFirestore: (snapshot: { data: () => unknown }) => unknown }
+      ) => {
+        const rawProducts = [
+          {
+            ...existingProductFixture,
+            retailPrice: 7.5,
+            retailPriceHistory: [{ price: 6.2, changedAt: '2026-05-01T12:00:00.000Z' }],
+          },
+          {
+            ...existingProductFixture,
+            id: 'p2',
+            retailPrice: null,
+            retailPriceHistory: [],
+          },
+        ];
+
+        cb(
+          rawProducts.map((item) =>
+            converter.fromFirestore({
+              data: () => item,
+            })
+          )
+        );
+        return jest.fn();
+      }
+    );
+
+    const callback = jest.fn();
+    getProductsByCompany('co1', callback);
+
+    expect(callback).toHaveBeenCalledTimes(1);
+    const products = callback.mock.calls[0][0];
+    expect(products[0].lowestRetailPriceLast30Days).toBe(6.2);
+    expect(products[1].lowestRetailPriceLast30Days).toBeNull();
   });
 });

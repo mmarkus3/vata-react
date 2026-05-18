@@ -6,8 +6,10 @@ export interface Product {
   ean: string;
   barcode: string;
   price: number;
-  retailPrice?: number;
-  unitPrice?: number;
+  retailPrice: number;
+  retailPriceHistory?: { price: number; changedAt: string }[];
+  lowestRetailPriceLast30Days?: number | null;
+  unitPrice: number;
   images: string[];
   category?: string;
   energyJoule?: number;
