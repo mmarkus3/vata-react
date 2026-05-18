@@ -440,7 +440,7 @@ export default function ProductDetailPage() {
   const renderInput = (
     name: Path<ProductDetailFormValues>,
     options?: {
-      keyboardType?: 'default' | 'numeric' | 'numbers-and-punctuation';
+      keyboardType?: 'default' | 'numeric' | 'decimal-pad';
       placeholder?: string;
       rules?: RegisterOptions<ProductDetailFormValues>;
     }
@@ -485,7 +485,7 @@ export default function ProductDetailPage() {
   const renderNumericNutritionInput = (name: NutritionFieldKey, placeholderKey: string) =>
     editMode
       ? renderInput(name, {
-        keyboardType: 'numeric',
+        keyboardType: 'decimal-pad',
         placeholder: t(placeholderKey),
         rules: numericOptionalRule(name),
       })
@@ -774,14 +774,14 @@ export default function ProductDetailPage() {
               <View className="space-y-4">
                 <View>
                   <Text className="text-sm text-gray-500">{t('productDetail.fields.price')}</Text>
-                  {editMode ? renderInput('price', { keyboardType: 'numbers-and-punctuation', rules: numericRequiredRule('priceInvalid') }) : <Text className="mt-1 text-base font-medium text-gray-900">{product?.price.toFixed(2)}€</Text>}
+                  {editMode ? renderInput('price', { keyboardType: 'decimal-pad', rules: numericRequiredRule('priceInvalid') }) : <Text className="mt-1 text-base font-medium text-gray-900">{product?.price.toFixed(2)}€</Text>}
                 </View>
 
                 <View>
                   <Text className="text-sm text-gray-500">{t('productDetail.fields.retailPrice')}</Text>
                   {editMode
                     ? renderInput('retailPrice', {
-                      keyboardType: 'numbers-and-punctuation',
+                      keyboardType: 'decimal-pad',
                       placeholder: t('productDetail.fields.retailPricePlaceholder'),
                       rules: numericOptionalRule('retailPrice'),
                     })
@@ -801,7 +801,7 @@ export default function ProductDetailPage() {
                   <Text className="text-sm text-gray-500">{t('productDetail.fields.unitPrice')}</Text>
                   {editMode
                     ? renderInput('unitPrice', {
-                      keyboardType: 'numbers-and-punctuation',
+                      keyboardType: 'decimal-pad',
                       placeholder: t('productDetail.fields.unitPricePlaceholder'),
                       rules: numericOptionalRule('unitPrice'),
                     })

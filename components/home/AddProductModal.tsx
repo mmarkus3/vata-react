@@ -267,7 +267,7 @@ const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProduct
     name: Path<AddProductFormValues>,
     placeholder: string,
     options?: {
-      keyboardType?: 'default' | 'numeric' | 'numbers-and-punctuation';
+      keyboardType?: 'default' | 'numeric' | 'decimal-pad';
       rules?: RegisterOptions<AddProductFormValues>;
     }
   ) => (
@@ -414,15 +414,15 @@ const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProduct
             >
               <View className="space-y-3">
                 {renderInput('price', 'Hinta', {
-                  keyboardType: 'numbers-and-punctuation',
+                  keyboardType: 'decimal-pad',
                   rules: numericRequiredRule('priceInvalid'),
                 })}
                 {renderInput('retailPrice', t('addProduct.fields.retailPricePlaceholder'), {
-                  keyboardType: 'numbers-and-punctuation',
+                  keyboardType: 'decimal-pad',
                   rules: numericOptionalRule('retailPrice'),
                 })}
                 {renderInput('unitPrice', t('addProduct.fields.unitPricePlaceholder'), {
-                  keyboardType: 'numbers-and-punctuation',
+                  keyboardType: 'decimal-pad',
                   rules: numericOptionalRule('unitPrice'),
                 })}
               </View>
@@ -435,39 +435,39 @@ const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProduct
             >
               <View className="space-y-3">
                 {renderInput('energyJoule', t('addProduct.fields.energyJoulePlaceholder'), {
-                  keyboardType: 'numbers-and-punctuation',
+                  keyboardType: 'decimal-pad',
                   rules: numericOptionalRule('energyJoule'),
                 })}
                 {renderInput('energyCalory', t('addProduct.fields.energyCaloryPlaceholder'), {
-                  keyboardType: 'numbers-and-punctuation',
+                  keyboardType: 'decimal-pad',
                   rules: numericOptionalRule('energyCalory'),
                 })}
                 {renderInput('fat', t('addProduct.fields.fatPlaceholder'), {
-                  keyboardType: 'numbers-and-punctuation',
+                  keyboardType: 'decimal-pad',
                   rules: numericOptionalRule('fat'),
                 })}
                 {renderInput('saturatedFat', t('addProduct.fields.saturatedFatPlaceholder'), {
-                  keyboardType: 'numbers-and-punctuation',
+                  keyboardType: 'decimal-pad',
                   rules: numericOptionalRule('saturatedFat'),
                 })}
                 {renderInput('carbohydrate', t('addProduct.fields.carbohydratePlaceholder'), {
-                  keyboardType: 'numbers-and-punctuation',
+                  keyboardType: 'decimal-pad',
                   rules: numericOptionalRule('carbohydrate'),
                 })}
                 {renderInput('saturatedCarbohydrate', t('addProduct.fields.saturatedCarbohydratePlaceholder'), {
-                  keyboardType: 'numbers-and-punctuation',
+                  keyboardType: 'decimal-pad',
                   rules: numericOptionalRule('saturatedCarbohydrate'),
                 })}
                 {renderInput('protein', t('addProduct.fields.proteinPlaceholder'), {
-                  keyboardType: 'numbers-and-punctuation',
+                  keyboardType: 'decimal-pad',
                   rules: numericOptionalRule('protein'),
                 })}
                 {renderInput('salt', t('addProduct.fields.saltPlaceholder'), {
-                  keyboardType: 'numbers-and-punctuation',
+                  keyboardType: 'decimal-pad',
                   rules: numericOptionalRule('salt'),
                 })}
                 {renderInput('fiber', t('addProduct.fields.fiberPlaceholder'), {
-                  keyboardType: 'numbers-and-punctuation',
+                  keyboardType: 'decimal-pad',
                   rules: numericOptionalRule('fiber'),
                 })}
               </View>
