@@ -12,6 +12,11 @@ export class OrdersController {
     return this.ordersService.createOrder(order);
   }
 
+  @Post('company/:company/:orderId/place')
+  placeOrder(@Param('company') companyId: string, @Param('orderId') orderId, @Body() order: Order) {
+    return this.ordersService.placeOrder(companyId, order);
+  }
+
   @Put('company/:company/:orderId')
   updateOrder(@Param('company') companyId: string, @Param('orderId') orderId: string, @Body() order: Order) {
     if (orderId !== order.id) {

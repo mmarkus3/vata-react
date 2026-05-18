@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, InternalServerErrorException, NotFound
 import { firestore } from 'firebase-admin';
 import { Timestamp } from 'firebase-admin/firestore';
 import vismaPay from 'visma-pay';
+import { Product } from '../products/product.interface';
 import { Order } from './order.interface';
 
 const bringHeaders = {
@@ -54,6 +55,54 @@ export class OrdersService {
     const doc = await firestore().doc(`options/${companyId}`).get();
     const item = doc.data();
     return { over: item.over as number, delivery: item.delivery as number };
+  }
+
+  async placeOrder(companyId: string, order: Order) {
+    if (!order.id) {
+      throw new BadRequestException('Order id is required');
+    }
+
+    const orderDoc = await firestore().doc(`orders/${order.id}`).get();
+    if (!orderDoc.exists) {
+      throw new NotFoundException('Order not found');
+    }
+    const dbOrder = orderDoc.data() as Order;
+    if (dbOrder.company !== companyId) {
+      throw new BadRequestException('Company mismatch');
+    }
+
+    const orderProducts = Array.isArray(dbOrder.products) ? dbOrder.products : [];
+
+    for (const line of orderProducts) {
+      if (!line?.id) {
+        throw new BadRequestException('Order contains invalid product reference');
+      }
+      if (typeof line.amount !== 'number' || line.amount <= 0) {
+        throw new BadRequestException(`Invalid amount for product ${line.id}`);
+      }
+
+      const productDoc = await firestore().doc(`products/${line.id}`).get();
+      if (!productDoc.exists) {
+        throw new BadRequestException(`Product not found: ${line.id}`);
+      }
+
+      const product = productDoc.data() as Product;
+      const stockAmount = typeof product.amount === 'number' ? product.amount : Number(product.amount);
+      if (!Number.isFinite(stockAmount)) {
+        throw new BadRequestException(`Invalid stock amount for product ${line.id}`);
+      }
+      if (stockAmount < line.amount) {
+        throw new BadRequestException(`Insufficient stock for product ${line.id}`);
+      }
+    }
+
+    /*const updated = {
+      ...dbOrder,
+      status: 'placed' as const,
+      updated: Timestamp.now(),
+    };
+    await firestore().doc(`orders/${order.id}`).set(updated);
+    return updated;*/
   }
 
   async createOrder(order: Order) {

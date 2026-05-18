@@ -9,6 +9,7 @@ export interface Order {
   updated?: Timestamp;
   customer?: OrderCustomer;
   deliveryMethod?: string;
+  paymentMethod?: string;
   discount?: string;
   returnUrl?: string;
 }
