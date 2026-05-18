@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Param, Patch, Post, Put, Query } from '@nestjs/common';
 import { Order } from './order.interface';
 import { OrdersService } from './orders.service';
 
@@ -22,6 +22,16 @@ export class OrdersController {
     }
 
     return this.ordersService.updateOrder(companyId, order);
+  }
+
+  @Patch('company/:company/:orderId')
+  patchOrder(@Param('company') companyId: string, @Param('orderId') orderId: string, @Body() order: Order) {
+    if (['sent'].includes(order.status)) {
+      throw new BadRequestException("Order can't be updated");
+    }
+    order.id = orderId;
+
+    return this.ordersService.updateOnlyOrder(companyId, order);
   }
 
   @Get('company/:company/points')

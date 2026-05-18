@@ -55,4 +55,15 @@ export class OrdersService {
     const doc = await firestore().doc(`orders/${updatedOrder.id!}`).set(updatedOrder);
     return { ...order, updated: doc.writeTime };
   }
+
+  async updateOnlyOrder(companyId: string, order: Partial<Order>) {
+    const orderDoc = await firestore().doc(`orders/${order.id!}`).get();
+    const dbOrder = orderDoc.data() as Order;
+    if (dbOrder.company !== companyId) {
+      throw new BadRequestException('Company mismatch');
+    }
+    order.updated = Timestamp.now();
+    const doc = await firestore().doc(`orders/${order.id!}`).update(order);
+    return { ...order, updated: doc.writeTime };
+  }
 }
