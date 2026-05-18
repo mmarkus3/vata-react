@@ -1,6 +1,7 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { firestore } from 'firebase-admin';
 import { Timestamp } from 'firebase-admin/firestore';
+import vismaPay from 'visma-pay';
 import { Order } from './order.interface';
 
 const bringHeaders = {
@@ -11,6 +12,23 @@ const bringHeaders = {
 
 @Injectable()
 export class OrdersService {
+
+  private async setupVismaPay(companyId: string) {
+    const doc = await firestore().doc(`options/${companyId}`).get();
+    const item = doc.data();
+    vismaPay.setPrivateKey(item.vismapay.privateKey ?? '');
+    vismaPay.setApiKey(item.vismapay.apiKey ?? '');
+  }
+
+  async getPaymentMethods(companyId: string) {
+    await this.setupVismaPay(companyId);
+    try {
+      const result = await vismaPay.getMerchantPaymentMethods('EUR');
+      return result.payment_methods;
+    } catch (err) {
+      throw new InternalServerErrorException(err);
+    }
+  }
 
   async getPoints(companyId: string, postalCode: string) {
     const companyDoc = await firestore().doc(`companies/${companyId}`).get();

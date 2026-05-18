@@ -43,4 +43,9 @@ export class OrdersController {
   getPrices(@Param('company') companyId: string) {
     return this.ordersService.getPrices(companyId);
   }
+
+  @Get('company/:company/paymentMethods')
+  getPaymnentMethods(@Param('company') companyId: string) {
+    return this.ordersService.getPaymentMethods(companyId);
+  }
 }
