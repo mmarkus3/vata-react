@@ -76,6 +76,7 @@
       "name": "Name",
       "price": "Price",
       "retailPrice": "Retail price",
+      "lowestRetailPriceLast30Days": "Lowest price in previous 30 days: {{value}}€",
       "retailPricePlaceholder": "Enter retail price",
       "unitPrice": "Unit price",
       "unitPricePlaceholder": "Enter unit price €/kg",

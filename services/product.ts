@@ -1,6 +1,7 @@
 import type { Product } from '@/types/product';
 import { DocumentData, QueryDocumentSnapshot, SnapshotOptions, where } from 'firebase/firestore';
 import { deleteItem, getItem, getSnapshotItems, saveItem, updateItem } from './firestore';
+import { getLowestRetailPriceLast30Days, sanitizeRetailPriceHistory, trimRetailPriceHistory } from './productPricing';
 import { deleteBarcodeImage, uploadBarcodeImage, uploadProductImage } from './storage';
 
 const converter = {
@@ -13,11 +14,15 @@ const converter = {
       return Number.isNaN(parsed) ? undefined : parsed;
     };
     const price = product.price ? +product.price : 0;
+    const retailPriceHistory = sanitizeRetailPriceHistory((product as { retailPriceHistory?: unknown }).retailPriceHistory);
+    const normalizedRetailPrice = normalizeOptionalNumber(product.retailPrice);
     return {
       ...product,
       price,
       showInWebshop: product.showInWebshop ?? false,
-      retailPrice: normalizeOptionalNumber(product.retailPrice),
+      retailPrice: normalizedRetailPrice,
+      retailPriceHistory,
+      lowestRetailPriceLast30Days: getLowestRetailPriceLast30Days(normalizedRetailPrice, retailPriceHistory),
       unitPrice: normalizeOptionalNumber(product.unitPrice),
       energyJoule: normalizeOptionalNumber(product.energyJoule),
       energyCalory: normalizeOptionalNumber(product.energyCalory),
@@ -82,9 +87,16 @@ interface CreateProductOptions {
 
 export async function createProduct(product: Omit<Product, 'id'>, options: CreateProductOptions = {}) {
   try {
+    const nowIso = new Date().toISOString();
+    const retailPriceHistory =
+      typeof product.retailPrice === 'number'
+        ? [{ price: product.retailPrice, changedAt: nowIso }]
+        : [];
+
     const productToSave = {
       ...product,
       showInWebshop: product.showInWebshop ?? false,
+      retailPriceHistory,
       images: options.imageLinks ?? [],
     };
 
@@ -145,10 +157,31 @@ export async function updateProduct(
   options: UpdateProductOptions = {}
 ) {
   try {
+    const existingProduct = await getItem<Product>('products', productId, converter);
+    if (!existingProduct) {
+      throw new Error(`Product not found: ${productId}`);
+    }
+
     data = {
       ...data,
       showInWebshop: data.showInWebshop ?? false,
     };
+
+    if (Object.prototype.hasOwnProperty.call(data, 'retailPrice')) {
+      const previousRetailPrice = typeof existingProduct.retailPrice === 'number' ? existingProduct.retailPrice : null;
+      const nextRetailPrice = typeof data.retailPrice === 'number' ? data.retailPrice : null;
+
+      if (previousRetailPrice !== nextRetailPrice) {
+        const history = sanitizeRetailPriceHistory(existingProduct.retailPriceHistory ?? []);
+        if (previousRetailPrice !== null) {
+          history.push({
+            price: previousRetailPrice,
+            changedAt: new Date().toISOString(),
+          });
+        }
+        data.retailPriceHistory = trimRetailPriceHistory(history);
+      }
+    }
 
     if (options.newBarcodeImageUri) {
       if (!options.companyId) {

@@ -7,6 +7,8 @@ export interface Product {
   barcode: string;
   price: number;
   retailPrice: number | null;
+  retailPriceHistory?: { price: number; changedAt: string }[];
+  lowestRetailPriceLast30Days?: number | null;
   unitPrice: number | null;
   images: string[];
   category: string;

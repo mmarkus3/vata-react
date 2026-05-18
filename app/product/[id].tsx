@@ -785,7 +785,16 @@ export default function ProductDetailPage() {
                       placeholder: t('productDetail.fields.retailPricePlaceholder'),
                       rules: numericOptionalRule('retailPrice'),
                     })
-                    : <Text className="mt-1 text-base font-medium text-gray-900">{product?.retailPrice != null ? `${product.retailPrice.toFixed(2)}€` : '-'}</Text>}
+                    : (
+                      <View className="mt-1">
+                        <Text className="text-base font-medium text-gray-900">{product?.retailPrice != null ? `${product.retailPrice.toFixed(2)}€` : '-'}</Text>
+                        {product?.lowestRetailPriceLast30Days != null ? (
+                          <Text className="mt-1 text-sm text-gray-500">
+                            {t('productDetail.fields.lowestRetailPriceLast30Days', { value: product.lowestRetailPriceLast30Days.toFixed(2) })}
+                          </Text>
+                        ) : null}
+                      </View>
+                    )}
                 </View>
 
                 <View>

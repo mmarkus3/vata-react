@@ -26,9 +26,24 @@ jest.mock('@/services/storage', () => ({
 }));
 
 describe('product service', () => {
+  const existingProductFixture = {
+    id: 'p1',
+    name: 'Coffee',
+    amount: 10,
+    company: 'co1',
+    ean: '123',
+    barcode: 'barcode',
+    price: 5,
+    retailPrice: 7.5,
+    unitPrice: 11.9,
+    showInWebshop: false,
+    images: [],
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
     jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    mockGetItem.mockResolvedValue(existingProductFixture);
   });
 
   afterEach(() => {
@@ -94,12 +109,17 @@ describe('product service', () => {
     expect(mockSaveItem).toHaveBeenNthCalledWith(
       1,
       'products',
-      expect.objectContaining({ retailPrice: 6.9, unitPrice: 10.2, showInWebshop: false })
+      expect.objectContaining({
+        retailPrice: 6.9,
+        unitPrice: 10.2,
+        showInWebshop: false,
+        retailPriceHistory: [{ price: 6.9, changedAt: expect.any(String) }],
+      })
     );
     expect(mockSaveItem).toHaveBeenNthCalledWith(
       2,
       'products',
-      expect.objectContaining({ showInWebshop: false })
+      expect.objectContaining({ showInWebshop: false, retailPriceHistory: [] })
     );
   });
 
@@ -184,6 +204,11 @@ describe('product service', () => {
 
   it('updates existing product retail and unit prices', async () => {
     mockUpdateItem.mockResolvedValue(undefined);
+    mockGetItem.mockResolvedValue({
+      ...existingProductFixture,
+      retailPrice: 6.9,
+      retailPriceHistory: [{ price: 5.9, changedAt: '2026-05-01T12:00:00.000Z' }],
+    });
 
     await updateProduct('p1', {
       retailPrice: 7.5,
@@ -194,6 +219,28 @@ describe('product service', () => {
       showInWebshop: false,
       retailPrice: 7.5,
       unitPrice: 11.9,
+      retailPriceHistory: [
+        { price: 5.9, changedAt: '2026-05-01T12:00:00.000Z' },
+        { price: 6.9, changedAt: expect.any(String) },
+      ],
+    });
+  });
+
+  it('does not append history when retail price remains unchanged', async () => {
+    mockUpdateItem.mockResolvedValue(undefined);
+    mockGetItem.mockResolvedValue({
+      ...existingProductFixture,
+      retailPrice: 7.5,
+      retailPriceHistory: [{ price: 6.9, changedAt: '2026-05-01T12:00:00.000Z' }],
+    });
+
+    await updateProduct('p1', {
+      retailPrice: 7.5,
+    });
+
+    expect(mockUpdateItem).toHaveBeenCalledWith('products', 'p1', {
+      showInWebshop: false,
+      retailPrice: 7.5,
     });
   });
 
@@ -239,7 +286,7 @@ describe('product service', () => {
   });
 
   it('returns product with image array on subsequent read after edit', async () => {
-    mockGetItem.mockResolvedValue({
+    const firestoreProduct = {
       id: 'p1',
       name: 'Coffee',
       amount: 10,
@@ -248,6 +295,10 @@ describe('product service', () => {
       barcode: 'barcode',
       price: 5,
       retailPrice: 7.5,
+      retailPriceHistory: [
+        { price: 8.2, changedAt: '2026-05-10T12:00:00.000Z' },
+        { price: 6.8, changedAt: '2026-05-01T12:00:00.000Z' },
+      ],
       unitPrice: 11.9,
       energyJoule: 180,
       energyCalory: 43,
@@ -259,6 +310,12 @@ describe('product service', () => {
       salt: 0.4,
       fiber: 0.9,
       images: ['https://cdn.example.com/new-image.jpg'],
+    };
+
+    mockGetItem.mockImplementation((_collection: unknown, _id: unknown, converter: { fromFirestore: (snapshot: { data: () => unknown }) => unknown }) => {
+      return converter.fromFirestore({
+        data: () => firestoreProduct,
+      });
     });
 
     const product = await getProductById('p1');
@@ -266,6 +323,7 @@ describe('product service', () => {
     expect(mockGetItem).toHaveBeenCalledWith('products', 'p1', expect.any(Object));
     expect(product?.images).toEqual(['https://cdn.example.com/new-image.jpg']);
     expect(product?.retailPrice).toBe(7.5);
+    expect(product?.lowestRetailPriceLast30Days).toBe(6.8);
     expect(product?.unitPrice).toBe(11.9);
     expect(product?.energyJoule).toBe(180);
     expect(product?.energyCalory).toBe(43);

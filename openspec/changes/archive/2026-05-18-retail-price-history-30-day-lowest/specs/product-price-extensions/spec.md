@@ -1,8 +1,5 @@
-# product-price-extensions Specification
+## MODIFIED Requirements
 
-## Purpose
-Define requirements for managing retail price and unit price fields across product create and edit flows.
-## Requirements
 ### Requirement: User can set retail and unit prices when creating a product
 The system SHALL allow a user to enter retail price (vähittäismyyntihinta) and unit price per kilogram (kilohinta) when creating a product, validate those values as optional non-negative numbers, and persist valid values with the product. When a retail price is provided on create, the system SHALL initialize retail price history metadata so subsequent lowest-price-in-30-days calculations are possible.
 
@@ -46,4 +43,3 @@ The system SHALL return persisted retail and unit prices in product fetches used
 - **WHEN** a product with retail price history is fetched for product detail or listing views
 - **THEN** the response includes a computed lowest retail price from the preceding 30-day window
 - **AND** the computation uses dated retail price history entries relevant to that window
-

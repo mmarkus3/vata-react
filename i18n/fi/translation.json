@@ -76,6 +76,7 @@
       "name": "Nimi",
       "price": "Hinta",
       "retailPrice": "Vähittäismyyntihinta",
+      "lowestRetailPriceLast30Days": "Alin hinta viimeisen 30 päivän aikana: {{value}}€",
       "retailPricePlaceholder": "Anna vähittäismyyntihinta",
       "unitPrice": "Kilohinta",
       "unitPricePlaceholder": "Anna kilohinta €/kg",
