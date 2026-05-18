@@ -1,3 +1,4 @@
+import { AddProductSectionKey, getSectionForField } from '@/components/home/addProductAccordion';
 import {
   AddProductFormValues,
   buildNutritionValues,
@@ -7,11 +8,10 @@ import {
   nutritionFieldKeys,
   parseOptionalDecimal,
 } from '@/components/home/addProductForm';
-import { AddProductSectionKey, getSectionForField } from '@/components/home/addProductAccordion';
+import Accordion from '@/components/ui/accordion';
 import { useAuth } from '@/hooks/useAuth';
 import { useCategories } from '@/hooks/useCategories';
 import { createProduct } from '@/services/product';
-import Accordion from '@/components/ui/accordion';
 import { resolveCategoryIdFromReference } from '@/utils/categoryReference';
 import { buildProductCategoryOptions } from '@/utils/productCategoryOptions';
 import * as ImagePicker from 'expo-image-picker';
@@ -267,7 +267,7 @@ const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProduct
     name: Path<AddProductFormValues>,
     placeholder: string,
     options?: {
-      keyboardType?: 'default' | 'numeric';
+      keyboardType?: 'default' | 'numeric' | 'numbers-and-punctuation';
       rules?: RegisterOptions<AddProductFormValues>;
     }
   ) => (
@@ -414,15 +414,15 @@ const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProduct
             >
               <View className="space-y-3">
                 {renderInput('price', 'Hinta', {
-                  keyboardType: 'numeric',
+                  keyboardType: 'numbers-and-punctuation',
                   rules: numericRequiredRule('priceInvalid'),
                 })}
                 {renderInput('retailPrice', t('addProduct.fields.retailPricePlaceholder'), {
-                  keyboardType: 'numeric',
+                  keyboardType: 'numbers-and-punctuation',
                   rules: numericOptionalRule('retailPrice'),
                 })}
                 {renderInput('unitPrice', t('addProduct.fields.unitPricePlaceholder'), {
-                  keyboardType: 'numeric',
+                  keyboardType: 'numbers-and-punctuation',
                   rules: numericOptionalRule('unitPrice'),
                 })}
               </View>
@@ -435,39 +435,39 @@ const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProduct
             >
               <View className="space-y-3">
                 {renderInput('energyJoule', t('addProduct.fields.energyJoulePlaceholder'), {
-                  keyboardType: 'numeric',
+                  keyboardType: 'numbers-and-punctuation',
                   rules: numericOptionalRule('energyJoule'),
                 })}
                 {renderInput('energyCalory', t('addProduct.fields.energyCaloryPlaceholder'), {
-                  keyboardType: 'numeric',
+                  keyboardType: 'numbers-and-punctuation',
                   rules: numericOptionalRule('energyCalory'),
                 })}
                 {renderInput('fat', t('addProduct.fields.fatPlaceholder'), {
-                  keyboardType: 'numeric',
+                  keyboardType: 'numbers-and-punctuation',
                   rules: numericOptionalRule('fat'),
                 })}
                 {renderInput('saturatedFat', t('addProduct.fields.saturatedFatPlaceholder'), {
-                  keyboardType: 'numeric',
+                  keyboardType: 'numbers-and-punctuation',
                   rules: numericOptionalRule('saturatedFat'),
                 })}
                 {renderInput('carbohydrate', t('addProduct.fields.carbohydratePlaceholder'), {
-                  keyboardType: 'numeric',
+                  keyboardType: 'numbers-and-punctuation',
                   rules: numericOptionalRule('carbohydrate'),
                 })}
                 {renderInput('saturatedCarbohydrate', t('addProduct.fields.saturatedCarbohydratePlaceholder'), {
-                  keyboardType: 'numeric',
+                  keyboardType: 'numbers-and-punctuation',
                   rules: numericOptionalRule('saturatedCarbohydrate'),
                 })}
                 {renderInput('protein', t('addProduct.fields.proteinPlaceholder'), {
-                  keyboardType: 'numeric',
+                  keyboardType: 'numbers-and-punctuation',
                   rules: numericOptionalRule('protein'),
                 })}
                 {renderInput('salt', t('addProduct.fields.saltPlaceholder'), {
-                  keyboardType: 'numeric',
+                  keyboardType: 'numbers-and-punctuation',
                   rules: numericOptionalRule('salt'),
                 })}
                 {renderInput('fiber', t('addProduct.fields.fiberPlaceholder'), {
-                  keyboardType: 'numeric',
+                  keyboardType: 'numbers-and-punctuation',
                   rules: numericOptionalRule('fiber'),
                 })}
               </View>
