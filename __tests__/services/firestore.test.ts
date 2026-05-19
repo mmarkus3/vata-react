@@ -60,6 +60,23 @@ describe('firestore service normalization', () => {
     });
   });
 
+  it('preserves Date and timestamp-like values instead of converting them to empty objects', () => {
+    const date = new Date('2026-05-19T10:00:00.000Z');
+    const timestampLike = { toDate: () => date };
+
+    const normalized = normalizeFirestoreData({
+      start: date,
+      end: timestampLike,
+      nested: { scheduledAt: date },
+    });
+
+    expect(normalized).toEqual({
+      start: date,
+      end: timestampLike,
+      nested: { scheduledAt: date },
+    });
+  });
+
   it('sanitizes payload in saveItem', async () => {
     mockAddDoc.mockResolvedValue({ id: 'new-id' });
 

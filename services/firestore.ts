@@ -6,6 +6,19 @@ export function normalizeFirestoreData<T>(value: T): T {
     return null as T;
   }
 
+  if (value instanceof Date) {
+    return value;
+  }
+
+  if (
+    value &&
+    typeof value === 'object' &&
+    'toDate' in (value as Record<string, unknown>) &&
+    typeof (value as { toDate?: unknown }).toDate === 'function'
+  ) {
+    return value;
+  }
+
   if (Array.isArray(value)) {
     return value.map((item) => normalizeFirestoreData(item)) as T;
   }

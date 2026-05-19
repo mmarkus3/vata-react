@@ -1,4 +1,3 @@
-import CampaignCreateModal from '@/components/campaigns/CampaignCreateModal';
 import {
   buildCampaignCreatePayload,
   defaultCampaignCreateFormValues,
@@ -12,6 +11,7 @@ import {
   getCampaignName,
   getCampaignStatus,
 } from '@/app/campaign/campaignListState';
+import CampaignCreateModal from '@/components/campaigns/CampaignCreateModal';
 import { themeColors } from '@/constants/colors';
 import { useAuth } from '@/hooks/useAuth';
 import { useCampaigns } from '@/hooks/useCampaigns';
