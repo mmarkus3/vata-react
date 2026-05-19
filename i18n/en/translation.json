@@ -48,6 +48,17 @@
       "sent": "Sent"
     }
   },
+  "campaigns": {
+    "errorTitle": "Campaigns fetch failed",
+    "emptyTitle": "No campaigns yet",
+    "emptyDescription": "Campaigns will appear here once they are created.",
+    "period": "Period: {{start}} - {{end}}",
+    "statuses": {
+      "active": "Active",
+      "upcoming": "Upcoming",
+      "ended": "Ended"
+    }
+  },
   "addProduct": {
     "fields": {
       "showInWebshopLabel": "Show in webshop",

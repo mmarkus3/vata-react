@@ -7,6 +7,6 @@ export interface Campaign {
   code?: string;
   products: { id: string; name: string; discountPrice?: number; discountPercentage?: number }[];
   discountType: 'percentage' | 'price';
-  start: Timestamp;
-  end: Timestamp;
+  start: Timestamp | Date;
+  end: Timestamp | Date;
 }

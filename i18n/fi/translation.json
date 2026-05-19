@@ -48,6 +48,17 @@
       "sent": "Lähetetty"
     }
   },
+  "campaigns": {
+    "errorTitle": "Kampanjoiden haku epäonnistui",
+    "emptyTitle": "Ei vielä kampanjoita",
+    "emptyDescription": "Kampanjat näkyvät täällä, kun niitä on luotu.",
+    "period": "Ajanjakso: {{start}} - {{end}}",
+    "statuses": {
+      "active": "Aktiivinen",
+      "upcoming": "Tulossa",
+      "ended": "Päättynyt"
+    }
+  },
   "addProduct": {
     "fields": {
       "showInWebshopLabel": "Näytetään verkkokaupassa",
