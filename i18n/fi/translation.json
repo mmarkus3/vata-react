@@ -57,6 +57,50 @@
       "active": "Aktiivinen",
       "upcoming": "Tulossa",
       "ended": "Päättynyt"
+    },
+    "create": {
+      "open": "Luo kampanja",
+      "title": "Luo kampanja",
+      "save": "Tallenna kampanja",
+      "fields": {
+        "name": "Kampanjan nimi",
+        "code": "Kampanjakoodi (valinnainen)",
+        "start": "Alkupäivämäärä",
+        "end": "Loppupäivämäärä",
+        "targetingMode": "Kohdistus",
+        "products": "Tuotteet",
+        "category": "Kategoria",
+        "discountType": "Alennustyyppi",
+        "discountValue": "Alennusarvo"
+      },
+      "targeting": {
+        "selected": "Valitut tuotteet",
+        "all_products": "Kaikki tuotteet",
+        "category": "Kaikki kategoriassa"
+      },
+      "discountTypes": {
+        "percentage": "Prosentti",
+        "fixed": "Kiinteä hinta"
+      },
+      "errors": {
+        "nameRequired": "Anna kampanjan nimi.",
+        "datesRequired": "Anna kelvollinen alku- ja loppupäivä.",
+        "invalidDateRange": "Loppuajan tulee olla alkua myöhemmin.",
+        "productsRequired": "Valitse vähintään yksi tuote.",
+        "categoryRequired": "Valitse kategoria kategoriakohdistukseen.",
+        "discountInvalid": "Anna kelvollinen alennusarvo.",
+        "discountPercentageRange": "Prosentin tulee olla välillä 0-100.",
+        "companyMissing": "Käyttäjällä ei ole yritystä liitettynä.",
+        "saveFailed": "Kampanjan tallennus epäonnistui."
+      }
+    },
+    "modes": {
+      "code": "Käytetään kassalla koodilla",
+      "auto": "Kohdistuu automaattisesti valittuihin tuotteisiin"
+    },
+    "discount": {
+      "percentage": "Alennus: {{value}}%",
+      "fixed": "Hinta: {{value}}€"
     }
   },
   "addProduct": {

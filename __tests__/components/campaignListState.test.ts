@@ -1,4 +1,10 @@
-import { getCampaignListState, getCampaignName, getCampaignStatus } from '@/app/campaign/campaignListState';
+import {
+  getCampaignDiscountValue,
+  getCampaignListState,
+  getCampaignMode,
+  getCampaignName,
+  getCampaignStatus,
+} from '@/app/campaign/campaignListState';
 import type { Campaign } from '@/types/campaign';
 
 const baseCampaign = {
@@ -34,5 +40,12 @@ describe('campaignListState', () => {
     expect(
       getCampaignStatus({ ...baseCampaign, start: new Date(now - 2 * oneHour), end: new Date(now - oneHour) }),
     ).toBe('ended');
+  });
+
+  it('resolves campaign mode and discount value', () => {
+    expect(getCampaignMode({ ...baseCampaign, code: 'SAVE10' })).toBe('code');
+    expect(getCampaignMode({ ...baseCampaign, code: '' })).toBe('auto');
+    expect(getCampaignDiscountValue({ ...baseCampaign, discountType: 'percentage', products: [{ id: 'p1', name: 'Milk', discountPercentage: 20 }] } as Campaign)).toBe(20);
+    expect(getCampaignDiscountValue({ ...baseCampaign, discountType: 'fixed', discountValue: 4.5 })).toBe(4.5);
   });
 });

@@ -57,6 +57,50 @@
       "active": "Active",
       "upcoming": "Upcoming",
       "ended": "Ended"
+    },
+    "create": {
+      "open": "Create campaign",
+      "title": "Create campaign",
+      "save": "Save campaign",
+      "fields": {
+        "name": "Campaign name",
+        "code": "Campaign code (optional)",
+        "start": "Start date",
+        "end": "End date",
+        "targetingMode": "Targeting",
+        "products": "Products",
+        "category": "Category",
+        "discountType": "Discount type",
+        "discountValue": "Discount value"
+      },
+      "targeting": {
+        "selected": "Selected products",
+        "all_products": "All products",
+        "category": "All in category"
+      },
+      "discountTypes": {
+        "percentage": "Percentage",
+        "fixed": "Fixed price"
+      },
+      "errors": {
+        "nameRequired": "Enter campaign name.",
+        "datesRequired": "Enter valid start and end dates.",
+        "invalidDateRange": "End must be later than start.",
+        "productsRequired": "Select at least one product.",
+        "categoryRequired": "Select category for category targeting.",
+        "discountInvalid": "Enter valid discount value.",
+        "discountPercentageRange": "Percentage must be between 0 and 100.",
+        "companyMissing": "No company is linked to the user.",
+        "saveFailed": "Campaign save failed."
+      }
+    },
+    "modes": {
+      "code": "Applied with code at checkout",
+      "auto": "Applied automatically to targeted products"
+    },
+    "discount": {
+      "percentage": "Discount: {{value}}%",
+      "fixed": "Price: {{value}}€"
     }
   },
   "addProduct": {

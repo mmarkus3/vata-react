@@ -1,12 +1,22 @@
 import { Timestamp } from 'firebase/firestore';
 
+export type CampaignDiscountType = 'percentage' | 'fixed';
+export type CampaignTargetingMode = 'selected' | 'all_products' | 'category';
+export type CampaignMode = 'code' | 'auto';
+
 export interface Campaign {
   id?: string;
+  created?: Timestamp | Date;
   company: string;
   name: string;
   code?: string;
-  products: { id: string; name: string; discountPrice?: number; discountPercentage?: number }[];
-  discountType: 'percentage' | 'price';
+  mode?: CampaignMode;
+  targetingMode?: CampaignTargetingMode;
+  categoryId?: string;
+  selectedProductIds?: string[];
+  products: { id: string; name: string; discountFixed?: number; discountPercentage?: number }[];
+  discountType: CampaignDiscountType;
+  discountValue?: number;
   start: Timestamp | Date;
   end: Timestamp | Date;
 }
