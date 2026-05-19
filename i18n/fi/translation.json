@@ -39,7 +39,13 @@
       "errors": {
         "notSelected": "Tilausta ei ole valittu.",
         "loadFailed": "Tilauksen lataus epäonnistui."
-      }
+      },
+      "deliveryMethodSection": "Toimitustapa",
+      "deliveryMethodValue": "Tapa: {{value}}",
+      "selectedPointSection": "Valittu piste",
+      "pointLoading": "Ladataan valittua pistettä...",
+      "pointLoadFailed": "Valitun pisteen tietoja ei voitu ladata.",
+      "pointNotSelected": "Tilauksella ei ole valittua pistettä."
     },
     "statuses": {
       "draft": "Luonnos",

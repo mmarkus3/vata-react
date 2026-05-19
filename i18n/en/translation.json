@@ -39,7 +39,13 @@
       "errors": {
         "notSelected": "Order not selected.",
         "loadFailed": "Order load failed."
-      }
+      },
+      "deliveryMethodSection": "Delivery method",
+      "deliveryMethodValue": "Method: {{value}}",
+      "selectedPointSection": "Selected point",
+      "pointLoading": "Loading selected point...",
+      "pointLoadFailed": "Selected point information is unavailable.",
+      "pointNotSelected": "No selected point for this order."
     },
     "statuses": {
       "draft": "Draft",
