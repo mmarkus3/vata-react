@@ -5,10 +5,17 @@
   },
   "nav": {
     "storage": "Storage",
+    "orders": "Orders",
     "clients": "Clients",
     "report": "Report",
     "profile": "Profile",
     "categories": "Categories"
+  },
+  "orders": {
+    "errorTitle": "Orders fetch failed",
+    "emptyTitle": "No orders yet",
+    "emptyDescription": "Orders will appear here once they are created.",
+    "productCount": "{{count}} products"
   },
   "addProduct": {
     "fields": {

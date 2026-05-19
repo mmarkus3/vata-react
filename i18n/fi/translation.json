@@ -5,10 +5,17 @@
   },
   "nav": {
     "storage": "Varasto",
+    "orders": "Tilaukset",
     "clients": "Asiakkaat",
     "report": "Raportti",
     "profile": "Profiili",
     "categories": "Kategoriat"
+  },
+  "orders": {
+    "errorTitle": "Tilausten haku epäonnistui",
+    "emptyTitle": "Ei vielä tilauksia",
+    "emptyDescription": "Tilaukset näkyvät täällä, kun niitä on luotu.",
+    "productCount": "{{count}} tuotetta"
   },
   "addProduct": {
     "fields": {

@@ -71,9 +71,13 @@ export class OrdersService {
       throw new BadRequestException('Company mismatch');
     }
 
+    const optionsDoc = await firestore().doc(`options/${companyId}`).get();
+    const vat = optionsDoc.data().vat as number;
+    const overFree = optionsDoc.data().over as number;
+    const deliveryFee = optionsDoc.data().delivery as number;
     const orderProducts = Array.isArray(dbOrder.products) ? dbOrder.products : [];
 
-    for (const line of orderProducts) {
+    const productsPromise = orderProducts.map(async (line) => {
       if (!line?.id) {
         throw new BadRequestException('Order contains invalid product reference');
       }
@@ -94,8 +98,43 @@ export class OrdersService {
       if (stockAmount < line.amount) {
         throw new BadRequestException(`Insufficient stock for product ${line.id}`);
       }
+      return { ...product, orderAmount: line.amount, pretaxPrice: product.retailPrice - (product.retailPrice * vat) };
+    });
+
+    const products = await Promise.all(productsPromise);
+    const amount = products.reduce((prev, curr) => prev + curr.retailPrice, 0);
+
+    const chargeObj = {
+      amount,
+      order_number: order.id,
+      currency: 'EUR',
+      email: order.customer.email,
+      payment_method: {
+        type: 'e-payment',
+        return_url: order.returnUrl,
+        notify_url: 'https://api-a5kgud3tvq-lz.a.run.app/e-payment-notify',
+        lang: 'fi',
+        selected: [order.paymentMethod]
+      },
+      customer: { ...order.customer },
+      products: products.map((p) => ({
+        id: p.id,
+        title: p.name,
+        amount: p.orderAmount,
+        pretax_price: p.pretaxPrice,
+        tax: vat * 100,
+        price: p.retailPrice,
+        type: 1
+      })),
     }
 
+    // Add shipment cost
+    if (amount < overFree) {
+      const pretaxPrice = deliveryFee - (deliveryFee * vat);
+      chargeObj.products = [...chargeObj.products, { id: order.deliveryMethod, title: order.deliveryMethod, amount: 1, pretax_price: pretaxPrice, tax: vat * 100, price: deliveryFee, type: 2 }]
+    }
+
+    const chargeResult = await vismaPay.createCharge(chargeObj);
     /*const updated = {
       ...dbOrder,
       status: 'placed' as const,
