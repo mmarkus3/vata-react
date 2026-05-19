@@ -24,6 +24,7 @@ export interface OrderCustomer {
   firstname: string;
   lastname: string;
   email: string;
+  phone: string;
   address_street: string;
   address_city: string;
   address_zip: string;

@@ -1,3 +1,8 @@
+import {
+  getCustomerAddressLine,
+  getCustomerFullName,
+  hasOrderCustomer,
+} from '@/app/order/orderDetailCustomerState';
 import { hasOrderProductLines } from '@/app/order/orderDetailProductsState';
 import Back from '@/components/ui/back';
 import { themeColors } from '@/constants/colors';
@@ -49,6 +54,9 @@ export default function OrderDetailPage() {
     return t('orders.statuses.' + status);
   }
 
+  const customerName = getCustomerFullName(order?.customer);
+  const customerAddress = getCustomerAddressLine(order?.customer);
+
   if (isLoading) {
     return (
       <View className="flex-1 items-center justify-center bg-slate-50">
@@ -75,6 +83,29 @@ export default function OrderDetailPage() {
       <View className="rounded-2xl bg-white p-4">
         <Text className="text-base font-semibold text-gray-900">{t('orders.detail.title', { id: order?.id ?? '-' })}</Text>
         <Text className="mt-2 text-sm text-gray-600">{order?.status && getOrderStatus(order.status)}</Text>
+        <Text className="mt-4 text-sm font-semibold text-gray-800">{t('orders.detail.customerSection')}</Text>
+        {hasOrderCustomer(order?.customer) ? (
+          <View className="mt-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2">
+            <Text className="text-sm text-gray-600">
+              {t('orders.detail.customerName', { value: customerName ?? t('orders.detail.customerMissingField') })}
+            </Text>
+            <Text className="mt-1 text-sm text-gray-600">
+              {t('orders.detail.customerEmail', {
+                value: order?.customer?.email?.trim() || t('orders.detail.customerMissingField'),
+              })}
+            </Text>
+            <Text className="mt-1 text-sm text-gray-600">
+              {t('orders.detail.customerPhone', {
+                value: order?.customer?.phone?.trim() || t('orders.detail.customerMissingField'),
+              })}
+            </Text>
+            <Text className="mt-1 text-sm text-gray-600">
+              {t('orders.detail.customerAddress', { value: customerAddress ?? t('orders.detail.customerMissingField') })}
+            </Text>
+          </View>
+        ) : (
+          <Text className="mt-2 text-sm text-gray-500">{t('orders.detail.emptyCustomer')}</Text>
+        )}
         <Text className="mt-3 text-sm font-semibold text-gray-800">{t('orders.detail.productsSection')}</Text>
         {hasOrderProductLines(order?.products) ? (
           <View className="mt-2 space-y-2">

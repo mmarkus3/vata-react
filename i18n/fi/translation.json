@@ -28,6 +28,13 @@
       "productsSection": "Tuotteet",
       "productAmount": "Määrä: {{amount}}",
       "emptyProducts": "Tilauksessa ei ole tuoterivejä.",
+      "customerSection": "Asiakas",
+      "customerName": "Nimi: {{value}}",
+      "customerEmail": "Sähköposti: {{value}}",
+      "customerPhone": "Puhelin: {{value}}",
+      "customerAddress": "Osoite: {{value}}",
+      "customerMissingField": "-",
+      "emptyCustomer": "Tilauksessa ei ole asiakastietoja.",
       "errors": {
         "notSelected": "Tilausta ei ole valittu.",
         "loadFailed": "Tilauksen lataus epäonnistui."

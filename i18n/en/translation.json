@@ -28,6 +28,13 @@
       "productsSection": "Products",
       "productAmount": "Amount: {{amount}}",
       "emptyProducts": "No product lines in this order.",
+      "customerSection": "Customer",
+      "customerName": "Name: {{value}}",
+      "customerEmail": "Email: {{value}}",
+      "customerPhone": "Phone: {{value}}",
+      "customerAddress": "Address: {{value}}",
+      "customerMissingField": "-",
+      "emptyCustomer": "No customer information in this order.",
       "errors": {
         "notSelected": "Order not selected.",
         "loadFailed": "Order load failed."
