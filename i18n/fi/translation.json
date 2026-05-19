@@ -1,7 +1,8 @@
 {
   "common": {
     "cancel": "Peruuta",
-    "delete": "Poista"
+    "delete": "Poista",
+    "back": "Palaa"
   },
   "nav": {
     "storage": "Varasto",
@@ -31,6 +32,12 @@
         "notSelected": "Tilausta ei ole valittu.",
         "loadFailed": "Tilauksen lataus epäonnistui."
       }
+    },
+    "statuses": {
+      "draft": "Luonnos",
+      "pending": "Odottaa maksua",
+      "placed": "Odottaa keräilyä",
+      "sent": "Lähetetty"
     }
   },
   "addProduct": {

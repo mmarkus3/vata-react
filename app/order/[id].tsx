@@ -1,16 +1,16 @@
-import { themeColors } from '@/constants/colors';
 import { hasOrderProductLines } from '@/app/order/orderDetailProductsState';
+import Back from '@/components/ui/back';
+import { themeColors } from '@/constants/colors';
 import { getOrderById } from '@/services/order';
 import type { Order } from '@/types/order';
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { ActivityIndicator, Text, View } from 'react-native';
 
 export default function OrderDetailPage() {
   const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const router = useRouter();
   const [order, setOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -45,6 +45,10 @@ export default function OrderDetailPage() {
     };
   }, [id, t]);
 
+  const getOrderStatus = (status: string) => {
+    return t('orders.statuses.' + status);
+  }
+
   if (isLoading) {
     return (
       <View className="flex-1 items-center justify-center bg-slate-50">
@@ -56,9 +60,7 @@ export default function OrderDetailPage() {
   if (error) {
     return (
       <View className="flex-1 bg-slate-50 px-6 py-6">
-        <TouchableOpacity onPress={() => router.back()} className="mb-4 rounded-full bg-white px-4 py-3 shadow-sm">
-          <Text className="text-sm font-semibold text-primary-600">← Palaa</Text>
-        </TouchableOpacity>
+        <Back />
         <View className="rounded-2xl border border-red-300 bg-red-50 p-4">
           <Text className="text-base text-secondary-600">{error}</Text>
         </View>
@@ -68,13 +70,11 @@ export default function OrderDetailPage() {
 
   return (
     <View className="flex-1 bg-slate-50 px-6 py-6">
-      <TouchableOpacity onPress={() => router.back()} className="mb-4 rounded-full bg-white px-4 py-3 shadow-sm">
-        <Text className="text-sm font-semibold text-primary-600">← Palaa</Text>
-      </TouchableOpacity>
+      <Back />
       <Stack.Screen options={{ title: order?.id ? `Order #${order.id}` : 'Tilaus' }} />
       <View className="rounded-2xl bg-white p-4">
         <Text className="text-base font-semibold text-gray-900">{t('orders.detail.title', { id: order?.id ?? '-' })}</Text>
-        <Text className="mt-2 text-sm text-gray-600">{t('orders.detail.status', { status: order?.status ?? '-' })}</Text>
+        <Text className="mt-2 text-sm text-gray-600">{order?.status && getOrderStatus(order.status)}</Text>
         <Text className="mt-3 text-sm font-semibold text-gray-800">{t('orders.detail.productsSection')}</Text>
         {hasOrderProductLines(order?.products) ? (
           <View className="mt-2 space-y-2">

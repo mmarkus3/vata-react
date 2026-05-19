@@ -1,6 +1,7 @@
 import CategoryProductAssignmentModal from '@/app/category/CategoryProductAssignmentModal';
 import { getCategoryDetailProductsState } from '@/app/category/categoryDetailState';
 import EditCategoryModal from '@/components/categories/EditCategoryModal';
+import Back from '@/components/ui/back';
 import { themeColors } from '@/constants/colors';
 import { useAuth } from '@/hooks/useAuth';
 import { useCategories } from '@/hooks/useCategories';
@@ -130,9 +131,7 @@ export default function CategoryDetailPage() {
   if (error && !category) {
     return (
       <View className="flex-1 bg-slate-50 px-6 py-6">
-        <TouchableOpacity onPress={() => router.back()} className="mb-4 rounded-full bg-white px-4 py-3 shadow-sm">
-          <Text className="text-sm font-semibold text-primary-600">← Palaa</Text>
-        </TouchableOpacity>
+        <Back />
         <View className="rounded-2xl border border-red-300 bg-red-50 p-4">
           <Text className="text-sm font-semibold text-red-700">{error}</Text>
         </View>
@@ -144,9 +143,7 @@ export default function CategoryDetailPage() {
     <View className="flex-1 bg-slate-50">
       <Stack.Screen options={{ title: category?.name ?? 'Kategoria' }} />
       <ScrollView className="px-6 py-6">
-        <TouchableOpacity onPress={() => router.back()} className="mb-4 rounded-full bg-white px-4 py-3 shadow-sm">
-          <Text className="text-sm font-semibold text-primary-600">← Palaa</Text>
-        </TouchableOpacity>
+        <Back />
 
         <View className="rounded-3xl bg-white p-6 shadow-sm">
           <Text className="text-2xl font-bold text-gray-900">{category?.name}</Text>

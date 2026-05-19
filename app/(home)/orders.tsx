@@ -14,6 +14,10 @@ export default function OrdersScreen() {
 
   const state = getOrderListState({ isLoading, error, orders });
 
+  const getOrderStatus = (status: string) => {
+    return t('orders.statuses.' + status);
+  }
+
   if (state === 'loading') {
     return (
       <View className="flex-1 items-center justify-center bg-slate-50">
@@ -60,7 +64,7 @@ export default function OrdersScreen() {
           >
             <View className="flex-row items-center justify-between">
               <Text className="text-base font-semibold text-gray-900">#{item.id ?? '-'}</Text>
-              <Text className="text-sm font-medium text-primary-600">{item.status}</Text>
+              <Text className="text-sm font-medium text-primary-600">{getOrderStatus(item.status)}</Text>
             </View>
             <View className="flex-row items-center justify-between">
               <Text className="mt-2 text-sm text-gray-600">

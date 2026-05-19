@@ -1,7 +1,8 @@
 {
   "common": {
     "cancel": "Cancel",
-    "delete": "Delete"
+    "delete": "Delete",
+    "back": "Back"
   },
   "nav": {
     "storage": "Storage",
@@ -31,6 +32,12 @@
         "notSelected": "Order not selected.",
         "loadFailed": "Order load failed."
       }
+    },
+    "statuses": {
+      "draft": "Draft",
+      "pending": "Pending payment",
+      "placed": "Ready to be sent",
+      "sent": "Sent"
     }
   },
   "addProduct": {

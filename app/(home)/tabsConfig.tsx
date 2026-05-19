@@ -27,6 +27,17 @@ export const getHomeTabsConfig = (t: TranslateFn) => [
     },
   },
   {
+    name: 'clients',
+    options: {
+      title: t('nav.clients'),
+      tabBarLabel: t('nav.clients'),
+      tabBarIcon: ({ color, size }: { color: string; size: number }) => (
+        <Ionicons name="business-outline" size={size} color={color} />
+      ),
+      headerTitle: t('nav.clients'),
+    },
+  },
+  {
     name: 'reports',
     options: {
       title: t('nav.report'),
@@ -46,14 +57,6 @@ export const getHomeTabsConfig = (t: TranslateFn) => [
         <Ionicons name="menu-outline" size={size} color={color} />
       ),
       headerTitle: t('menu.title'),
-    },
-  },
-  {
-    name: 'clients',
-    options: {
-      href: null,
-      title: t('nav.clients'),
-      headerTitle: t('nav.clients'),
     },
   },
   {

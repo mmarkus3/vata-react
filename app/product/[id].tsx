@@ -12,6 +12,7 @@ import {
   toProductDetailFormValues,
 } from '@/app/product/productDetailForm';
 import Accordion from '@/components/ui/accordion';
+import Back from '@/components/ui/back';
 import { themeColors } from '@/constants/colors';
 import { useCategories } from '@/hooks/useCategories';
 import { deleteProduct, getProductById, updateProduct } from '@/services/product';
@@ -495,9 +496,7 @@ export default function ProductDetailPage() {
     <View className="flex-1 bg-slate-50">
       <Stack.Screen options={{ title: product?.name ?? t('productDetail.title') }} />
       <ScrollView className="px-6 py-6">
-        <TouchableOpacity onPress={() => router.back()} className="mb-4 rounded-full bg-white px-4 py-3 shadow-sm">
-          <Text className="text-sm font-semibold text-primary-600">← Palaa</Text>
-        </TouchableOpacity>
+        <Back />
 
         <View className="rounded-3xl bg-white p-6 shadow-sm">
           <Text className="text-2xl font-bold text-gray-900">{t('productDetail.title')}</Text>

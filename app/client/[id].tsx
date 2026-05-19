@@ -2,6 +2,7 @@ import AddFullfilmentModal from '@/components/clients/AddFullfilmentModal';
 import EditClientModal from '@/components/clients/EditClientModal';
 import EditFullfilmentModal from '@/components/clients/EditFullfilmentModal';
 import SegmentControl from '@/components/common/SegmentControl';
+import Back from '@/components/ui/back';
 import { themeColors } from '@/constants/colors';
 import { deleteClient, getClientById } from '@/services/client';
 import { getClientFullfilments } from '@/services/fullfliment';
@@ -89,10 +90,6 @@ export default function ClientDetailPage() {
     loadFullfilments();
   }, [loadFullfilments]);
 
-  const handleBackPress = () => {
-    router.back();
-  };
-
   const handleFullfilmentCreated = async () => {
     await loadFullfilments();
     setIsAddModalVisible(false);
@@ -144,11 +141,9 @@ export default function ClientDetailPage() {
   if (clientError) {
     return (
       <View className="flex-1 items-center justify-center bg-white p-4">
+        <Back />
         <Text className="mb-4 text-lg font-bold text-red-600">Virhe</Text>
         <Text className="mb-6 text-center text-red-700">{clientError}</Text>
-        <TouchableOpacity className="rounded-lg bg-primary-600 px-4 py-3" onPress={handleBackPress}>
-          <Text className="text-center font-semibold text-white">Takaisin</Text>
-        </TouchableOpacity>
       </View>
     );
   }
@@ -156,10 +151,8 @@ export default function ClientDetailPage() {
   if (!client) {
     return (
       <View className="flex-1 items-center justify-center bg-white p-4">
+        <Back />
         <Text className="text-gray-600">Asiakasta ei löytynyt</Text>
-        <TouchableOpacity className="mt-4 rounded-lg bg-primary-600 px-4 py-3" onPress={handleBackPress}>
-          <Text className="text-center font-semibold text-white">Takaisin</Text>
-        </TouchableOpacity>
       </View>
     );
   }
@@ -168,9 +161,7 @@ export default function ClientDetailPage() {
     <View className="flex-1 bg-slate-50">
       <Stack.Screen options={{ title: client.name }} />
       <ScrollView className="px-6 py-6">
-        <TouchableOpacity onPress={handleBackPress} className="mb-4 rounded-full bg-white px-4 py-3 shadow-sm">
-          <Text className="text-sm font-semibold text-primary-600">← Palaa</Text>
-        </TouchableOpacity>
+        <Back />
 
         <View className="rounded-3xl bg-white p-6 shadow-sm">
           <View className="mb-4 flex-row items-start justify-between gap-3">
