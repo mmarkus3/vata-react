@@ -47,8 +47,8 @@ export class OrdersService {
     const response = await fetch(`https://api.bring.com/pickuppoint/api/pickuppoint/FI/id/${id}`, {
       headers: bringHeaders,
     });
-    const data = await response.json();
-    return data;
+    const data = await response.json() as { pickupPoint: any[] };
+    return data.pickupPoint.length > 0 ? data.pickupPoint[0] : null;
   }
 
   async getPrices(companyId: string) {

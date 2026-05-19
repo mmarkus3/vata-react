@@ -45,7 +45,7 @@ export class OrdersController {
   }
 
   @Get('company/:company/point/:id')
-  getDeliveryPoint(@Param('company') _companyId: string, @Query('id') id: string) {
+  getDeliveryPoint(@Param('company') _companyId: string, @Param('id') id: string) {
     return this.ordersService.getPoint(id);
   }
 

@@ -136,10 +136,6 @@ export default function OrderDetailPage() {
         <Text className="mt-2 text-sm text-gray-600">{order?.status && getOrderStatus(order.status)}</Text>
 
         <Text className="mt-4 text-sm font-semibold text-gray-800">{t('orders.detail.deliveryMethodSection')}</Text>
-        <Text className="mt-1 text-sm text-gray-600">
-          {t('orders.detail.deliveryMethodValue', { value: deliveryMethod ?? t('orders.detail.customerMissingField') })}
-        </Text>
-
         <Text className="mt-3 text-sm font-semibold text-gray-800">{t('orders.detail.selectedPointSection')}</Text>
         {selectedPointState === 'loading' ? (
           <Text className="mt-1 text-sm text-gray-600">{t('orders.detail.pointLoading')}</Text>
