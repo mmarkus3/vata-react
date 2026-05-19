@@ -13,7 +13,8 @@
     "categories": "Categories"
   },
   "menu": {
-    "title": "More"
+    "title": "More",
+    "close": "Close menu"
   },
   "orders": {
     "errorTitle": "Orders fetch failed",

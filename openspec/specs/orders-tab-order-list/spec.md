@@ -4,7 +4,7 @@
 TBD - created by archiving change orders-tab-with-order-list. Update Purpose after archive.
 ## Requirements
 ### Requirement: User can open orders from a dedicated tab
-The system SHALL provide an Orders tab in primary app navigation so users can access order browsing directly.
+The system SHALL provide an Orders (`Tilaukset`) tab in primary app navigation so users can access order browsing directly. In the redesigned tab layout, this Orders tab SHALL remain directly visible alongside `Varasto` and `Raportti`.
 
 #### Scenario: Navigate to orders tab
 - **WHEN** user selects Orders tab from the main tab bar

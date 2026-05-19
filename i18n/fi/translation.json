@@ -13,7 +13,8 @@
     "categories": "Kategoriat"
   },
   "menu": {
-    "title": "Lisää"
+    "title": "Lisää",
+    "close": "Sulje valikko"
   },
   "orders": {
     "errorTitle": "Tilausten haku epäonnistui",
