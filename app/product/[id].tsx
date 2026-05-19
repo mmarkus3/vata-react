@@ -547,10 +547,10 @@ export default function ProductDetailPage() {
                 <View>
                   <Text className="text-sm text-gray-500">{t('productDetail.productImages.title')}</Text>
                   {previewProductImages.length > 0 ? (
-                    <View className="mt-3 space-y-3">
+                    <View className="flex-row gap-2 mt-3">
                       {previewProductImages.map((uri, index) => (
                         <View key={`${uri}-${index}`} className="rounded-2xl bg-gray-50 p-3">
-                          <Image source={{ uri }} className="h-10 w-10 rounded-2xl bg-gray-100" resizeMode="contain" />
+                          <Image source={{ uri }} className="h-10 w-10 rounded-2xl bg-gray-100" resizeMode="contain" height={20} />
                           {editMode ? (
                             <TouchableOpacity
                               onPress={() => {

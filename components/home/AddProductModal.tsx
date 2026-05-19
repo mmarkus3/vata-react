@@ -475,7 +475,7 @@ const AddProductModal: FC<AddProductModalProps> = ({ visible, onClose, onProduct
           </View>
 
           <View className="mt-5 space-y-3">
-            <Text className="text-sm font-medium text-gray-700">Tuotekuvat</Text>
+            <Text className="text-sm font-medium text-gray-700">{t('productDetail.productImages.title')}</Text>
             <TextInput
               value={imageUrl}
               onChangeText={setImageUrl}
