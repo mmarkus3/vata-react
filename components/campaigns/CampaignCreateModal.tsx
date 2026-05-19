@@ -1,5 +1,6 @@
 import type { CampaignCreateFormValues } from '@/app/campaign/campaignCreateForm';
 import { htmlDateToIso, isoToHtmlDate } from '@/app/campaign/campaignCreateModalState';
+import SelectProduct from '@/components/clients/SelectProduct';
 import type { Category } from '@/types/category';
 import type { Product } from '@/types/product';
 import { useTranslation } from 'react-i18next';
@@ -106,22 +107,15 @@ export default function CampaignCreateModal({
 
             {values.targetingMode === 'selected' ? (
               <View>
-                <Text className="mb-2 text-sm font-semibold text-gray-900">{t('campaigns.create.fields.products')}</Text>
-                <ScrollView className="max-h-40 space-y-2">
-                  {products.map((product) => {
-                    if (!product.id) return null;
-                    const isSelected = values.selectedProductIds.includes(product.id);
-                    return (
-                      <TouchableOpacity
-                        key={product.id}
-                        onPress={() => onToggleProduct(product.id!)}
-                        className={`rounded-2xl mt-2 border px-3 py-2 ${isSelected ? 'border-primary-600 bg-primary-50' : 'border-gray-300 bg-gray-50'}`}
-                      >
-                        <Text className={`text-sm ${isSelected ? 'text-primary-700' : 'text-gray-700'}`}>{product.name}</Text>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </ScrollView>
+                <SelectProduct
+                  visible={visible}
+                  products={products}
+                  isLoading={false}
+                  mode="multi"
+                  selectedIds={values.selectedProductIds}
+                  enableSourceFilter={false}
+                  onToggleSelect={onToggleProduct}
+                />
               </View>
             ) : null}
 
