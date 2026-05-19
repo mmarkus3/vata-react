@@ -1,15 +1,30 @@
 
+export interface Order {
+  id?: string;
+  company: string;
+  created: Date;
+  status: 'draft' | 'pending' | 'placed' | 'sent';
+  products: OrderProduct[];
+  updated?: Date;
+  customer?: OrderCustomer;
+  deliveryMethod?: string;
+  paymentMethod?: string;
+  discount?: string;
+  returnUrl?: string;
+  amount?: number;
+}
+
 export interface OrderProduct {
   id: string;
   name: string;
   amount: number;
 }
 
-export interface Order {
-  id?: string;
-  company: string;
-  status: 'draft' | 'pending' | 'placed' | 'sent';
-  products: OrderProduct[];
-  created: Date;
-  updated?: Date;
+export interface OrderCustomer {
+  firstname: string;
+  lastname: string;
+  email: string;
+  address_street: string;
+  address_city: string;
+  address_zip: string;
 }

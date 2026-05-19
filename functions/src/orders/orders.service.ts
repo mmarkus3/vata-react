@@ -135,12 +135,13 @@ export class OrdersService {
     }
 
     const chargeResult = await vismaPay.createCharge(chargeObj);
-    /*const updated = {
+    const updated = {
       ...dbOrder,
       status: 'placed' as const,
       updated: Timestamp.now(),
+      amount,
     };
-    await firestore().doc(`orders/${order.id}`).set(updated);
+    /*await firestore().doc(`orders/${order.id}`).set(updated);
     return updated;*/
   }
 

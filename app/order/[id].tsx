@@ -1,11 +1,14 @@
 import { themeColors } from '@/constants/colors';
+import { hasOrderProductLines } from '@/app/order/orderDetailProductsState';
 import { getOrderById } from '@/services/order';
 import type { Order } from '@/types/order';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 export default function OrderDetailPage() {
+  const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [order, setOrder] = useState<Order | null>(null);
@@ -17,7 +20,7 @@ export default function OrderDetailPage() {
 
     const load = async () => {
       if (!id) {
-        setError('Order not selected');
+        setError(t('orders.detail.errors.notSelected'));
         setIsLoading(false);
         return;
       }
@@ -28,7 +31,7 @@ export default function OrderDetailPage() {
         setOrder(result);
       } catch (err) {
         if (!isMounted) return;
-        setError(err instanceof Error ? err.message : 'Order load failed');
+        setError(err instanceof Error ? err.message : t('orders.detail.errors.loadFailed'));
       } finally {
         if (isMounted) {
           setIsLoading(false);
@@ -40,7 +43,7 @@ export default function OrderDetailPage() {
     return () => {
       isMounted = false;
     };
-  }, [id]);
+  }, [id, t]);
 
   if (isLoading) {
     return (
@@ -70,9 +73,21 @@ export default function OrderDetailPage() {
       </TouchableOpacity>
       <Stack.Screen options={{ title: order?.id ? `Order #${order.id}` : 'Tilaus' }} />
       <View className="rounded-2xl bg-white p-4">
-        <Text className="text-base font-semibold text-gray-900">Tilaus #{order?.id ?? '-'}</Text>
-        <Text className="mt-2 text-sm text-gray-600">Status: {order?.status ?? '-'}</Text>
-        <Text className="mt-2 text-sm text-gray-600">Tuotteet: {order?.products?.length ?? 0}</Text>
+        <Text className="text-base font-semibold text-gray-900">{t('orders.detail.title', { id: order?.id ?? '-' })}</Text>
+        <Text className="mt-2 text-sm text-gray-600">{t('orders.detail.status', { status: order?.status ?? '-' })}</Text>
+        <Text className="mt-3 text-sm font-semibold text-gray-800">{t('orders.detail.productsSection')}</Text>
+        {hasOrderProductLines(order?.products) ? (
+          <View className="mt-2 space-y-2">
+            {order?.products.map((product) => (
+              <View key={`${product.id}-${product.name}`} className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2">
+                <Text className="text-sm font-medium text-gray-900">{product.name || '-'}</Text>
+                <Text className="mt-1 text-sm text-gray-600">{t('orders.detail.productAmount', { amount: product.amount ?? 0 })}</Text>
+              </View>
+            ))}
+          </View>
+        ) : (
+          <Text className="mt-2 text-sm text-gray-500">{t('orders.detail.emptyProducts')}</Text>
+        )}
       </View>
     </View>
   );

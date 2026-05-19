@@ -20,7 +20,18 @@
     "errorTitle": "Orders fetch failed",
     "emptyTitle": "No orders yet",
     "emptyDescription": "Orders will appear here once they are created.",
-    "productCount": "{{count}} products"
+    "productCount": "{{count}} products",
+    "detail": {
+      "title": "Order #{{id}}",
+      "status": "Status: {{status}}",
+      "productsSection": "Products",
+      "productAmount": "Amount: {{amount}}",
+      "emptyProducts": "No product lines in this order.",
+      "errors": {
+        "notSelected": "Order not selected.",
+        "loadFailed": "Order load failed."
+      }
+    }
   },
   "addProduct": {
     "fields": {

@@ -20,7 +20,18 @@
     "errorTitle": "Tilausten haku epäonnistui",
     "emptyTitle": "Ei vielä tilauksia",
     "emptyDescription": "Tilaukset näkyvät täällä, kun niitä on luotu.",
-    "productCount": "{{count}} tuotetta"
+    "productCount": "{{count}} tuotetta",
+    "detail": {
+      "title": "Tilaus #{{id}}",
+      "status": "Tila: {{status}}",
+      "productsSection": "Tuotteet",
+      "productAmount": "Määrä: {{amount}}",
+      "emptyProducts": "Tilauksessa ei ole tuoterivejä.",
+      "errors": {
+        "notSelected": "Tilausta ei ole valittu.",
+        "loadFailed": "Tilauksen lataus epäonnistui."
+      }
+    }
   },
   "addProduct": {
     "fields": {

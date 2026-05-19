@@ -1,8 +1,5 @@
-# orders-tab-order-list Specification
+## MODIFIED Requirements
 
-## Purpose
-TBD - created by archiving change orders-tab-with-order-list. Update Purpose after archive.
-## Requirements
 ### Requirement: User can open orders from a dedicated tab
 The system SHALL provide an Orders (`Tilaukset`) tab in primary app navigation so users can access order browsing directly. In the redesigned tab layout, this Orders tab SHALL remain directly visible alongside `Varasto` and `Raportti`.
 
@@ -46,4 +43,3 @@ The system SHALL allow users to open an order details/actions view from an order
 #### Scenario: Order detail shows empty product-line state
 - **WHEN** user opens order detail page for an order with no product lines
 - **THEN** system shows explicit empty-state text for product list section
-
