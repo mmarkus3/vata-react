@@ -101,6 +101,19 @@
     "discount": {
       "percentage": "Discount: {{value}}%",
       "fixed": "Price: {{value}}€"
+    },
+    "detail": {
+      "title": "Campaign detail",
+      "targetingTitle": "Targeting",
+      "allProducts": "Applies to all products",
+      "category": "Category: {{value}}",
+      "emptyProducts": "No selected products in this campaign.",
+      "productsCount": "Products: {{count}}",
+      "notFound": "Campaign not found.",
+      "errors": {
+        "notSelected": "Campaign not selected.",
+        "loadFailed": "Campaign load failed."
+      }
     }
   },
   "addProduct": {

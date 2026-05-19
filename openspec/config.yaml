@@ -7,6 +7,7 @@ context: |
   Domain: storage management and fullfilment to client's stores platform. Also management tool for handling customer's orders.
   Style: Keep features modular and accessibility-friendly. Keep modals and buttons styles consistant
   Localization: use i18next to translate hard-coded texts
+  Backend: NestJS under functions/-folder.
   Testing: Frontend: Jest. Backend: Jest and @nestjs/testing.
 
 # Project context (optional)

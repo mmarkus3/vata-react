@@ -1,7 +1,7 @@
 import type { Campaign } from '@/types/campaign';
 import { isTimestamp } from '@/utils/date';
 import { DocumentData, QueryDocumentSnapshot, SnapshotOptions } from 'firebase/firestore';
-import { getSnapshotItems, saveItem, whereEqual } from './firestore';
+import { getItem, getSnapshotItems, saveItem, whereEqual } from './firestore';
 
 const converter = {
   toFirestore: (item: Campaign) => item,
@@ -42,5 +42,14 @@ export async function createCampaign(campaign: Campaign): Promise<string> {
   } catch (error) {
     console.error('Failed to create campaign:', error);
     throw new Error(error instanceof Error ? error.message : 'Campaign save failed');
+  }
+}
+
+export async function getCampaignById(campaignId: string): Promise<Campaign | null> {
+  try {
+    return await getItem<Campaign>('campaigns', campaignId, converter);
+  } catch (error) {
+    console.error('Failed to fetch campaign:', error);
+    throw new Error(error instanceof Error ? error.message : 'Campaign fetch failed');
   }
 }

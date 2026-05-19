@@ -101,6 +101,19 @@
     "discount": {
       "percentage": "Alennus: {{value}}%",
       "fixed": "Hinta: {{value}}€"
+    },
+    "detail": {
+      "title": "Kampanjan tiedot",
+      "targetingTitle": "Kohdistus",
+      "allProducts": "Kohdistuu kaikkiin tuotteisiin",
+      "category": "Kategoria: {{value}}",
+      "emptyProducts": "Kampanjassa ei ole valittuja tuotteita.",
+      "productsCount": "Tuotteita: {{count}}",
+      "notFound": "Kampanjaa ei löytynyt.",
+      "errors": {
+        "notSelected": "Kampanjaa ei ole valittu.",
+        "loadFailed": "Kampanjan lataus epäonnistui."
+      }
     }
   },
   "addProduct": {

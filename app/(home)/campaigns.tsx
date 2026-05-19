@@ -18,13 +18,16 @@ import { useCampaigns } from '@/hooks/useCampaigns';
 import { useCategories } from '@/hooks/useCategories';
 import { useProducts } from '@/hooks/useProducts';
 import { createCampaign } from '@/services/campaign';
+import { getCampaignDetailsRoute } from '@/app/campaign/campaignRoute';
 import { formatDate } from 'date-fns';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, FlatList, Text, TouchableOpacity, View } from 'react-native';
+import { useRouter } from 'expo-router';
 
 export default function CampaignsScreen() {
   const { t } = useTranslation();
+  const router = useRouter();
   const { user } = useAuth();
   const { campaigns, isLoading, error } = useCampaigns();
   const { products } = useProducts();
@@ -136,7 +139,11 @@ export default function CampaignsScreen() {
             const discountValue = getCampaignDiscountValue(item);
 
             return (
-              <View className="mb-3 rounded-2xl border border-gray-200 bg-white px-4 py-4 shadow-sm">
+              <TouchableOpacity
+                className="mb-3 rounded-2xl border border-gray-200 bg-white px-4 py-4 shadow-sm"
+                activeOpacity={0.85}
+                onPress={() => item.id && router.push(getCampaignDetailsRoute(item.id))}
+              >
                 <View className="flex-row items-center justify-between">
                   <Text className="text-base font-semibold text-gray-900">{getCampaignName(item)}</Text>
                   <Text className="text-sm font-medium text-primary-600">
@@ -153,7 +160,7 @@ export default function CampaignsScreen() {
                 <Text className="mt-1 text-sm text-gray-600">
                   {t(`campaigns.discount.${item.discountType}`, { value: discountValue ?? '-' })}
                 </Text>
-              </View>
+              </TouchableOpacity>
             );
           }}
           showsVerticalScrollIndicator={false}
