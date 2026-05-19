@@ -2,6 +2,7 @@ import {
   buildCampaignCreatePayload,
   buildCampaignMode,
   defaultCampaignCreateFormValues,
+  mapCampaignToFormValues,
   validateCampaignCreateForm,
 } from '@/app/campaign/campaignCreateForm';
 
@@ -14,6 +15,27 @@ describe('campaignCreateForm', () => {
   it('builds mode from optional code', () => {
     expect(buildCampaignMode('SAVE10')).toBe('code');
     expect(buildCampaignMode('  ')).toBe('auto');
+  });
+
+  it('maps campaign to form values for edit prefill', () => {
+    const mapped = mapCampaignToFormValues({
+      name: 'Spring',
+      code: 'SAVE10',
+      start: new Date('2026-05-19T10:00:00.000Z'),
+      end: new Date('2026-05-20T10:00:00.000Z'),
+      targetingMode: 'selected',
+      selectedProductIds: ['p1'],
+      categoryId: '',
+      discountType: 'percentage',
+      discountValue: 10,
+      products: [{ id: 'p1', name: 'Milk', discountPercentage: 10 }],
+      company: 'cmp-1',
+    } as any);
+
+    expect(mapped.name).toBe('Spring');
+    expect(mapped.code).toBe('SAVE10');
+    expect(mapped.selectedProductIds).toEqual(['p1']);
+    expect(mapped.discountValue).toBe('10');
   });
 
   it('validates required fields and rules', () => {

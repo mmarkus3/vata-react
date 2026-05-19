@@ -54,6 +54,31 @@ const parseDiscountValue = (value: string): number | null => {
 
 export const buildCampaignMode = (code: string): CampaignMode => (code.trim().length > 0 ? 'code' : 'auto');
 
+export function mapCampaignToFormValues(campaign: Campaign): CampaignCreateFormValues {
+  const selectedIds = campaign.selectedProductIds?.length
+    ? campaign.selectedProductIds
+    : (campaign.products ?? []).map((product) => product.id).filter(Boolean);
+
+  const discountValue =
+    typeof campaign.discountValue === 'number'
+      ? campaign.discountValue
+      : campaign.discountType === 'percentage'
+        ? campaign.products?.[0]?.discountPercentage
+        : campaign.products?.[0]?.discountFixed;
+
+  return {
+    name: campaign.name ?? '',
+    code: campaign.code ?? '',
+    start: campaign.start instanceof Date ? campaign.start.toISOString() : new Date(campaign.start as unknown as string).toISOString(),
+    end: campaign.end instanceof Date ? campaign.end.toISOString() : new Date(campaign.end as unknown as string).toISOString(),
+    targetingMode: campaign.targetingMode ?? 'selected',
+    selectedProductIds: selectedIds,
+    categoryId: campaign.categoryId ?? '',
+    discountType: campaign.discountType,
+    discountValue: discountValue != null ? String(discountValue) : '',
+  };
+}
+
 export function validateCampaignCreateForm(values: CampaignCreateFormValues): string | null {
   if (!values.name.trim()) return 'campaigns.create.errors.nameRequired';
 

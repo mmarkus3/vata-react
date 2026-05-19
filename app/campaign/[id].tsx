@@ -1,20 +1,46 @@
+import {
+  buildCampaignCreatePayload,
+  mapCampaignToFormValues,
+  validateCampaignCreateForm,
+  type CampaignCreateFormValues,
+} from '@/app/campaign/campaignCreateForm';
 import { getCampaignDetailSummary, getCampaignDetailState } from '@/app/campaign/campaignDetailState';
-import { themeColors } from '@/constants/colors';
+import CampaignEditModal from '@/components/campaigns/CampaignEditModal';
 import Back from '@/components/ui/back';
-import { getCampaignById } from '@/services/campaign';
+import { themeColors } from '@/constants/colors';
+import { useAuth } from '@/hooks/useAuth';
+import { useCategories } from '@/hooks/useCategories';
+import { useProducts } from '@/hooks/useProducts';
+import { getCampaignById, updateCampaign } from '@/services/campaign';
+import type { Campaign } from '@/types/campaign';
 import { formatDate } from 'date-fns';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
-import type { Campaign } from '@/types/campaign';
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 export default function CampaignDetailPage() {
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const { products } = useProducts();
+  const { categories } = useCategories();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
+  const [editValues, setEditValues] = useState<CampaignCreateFormValues | null>(null);
+
+  const loadCampaign = async (campaignId: string) => {
+    const result = await getCampaignById(campaignId);
+    setCampaign(result);
+    if (result) {
+      setEditValues(mapCampaignToFormValues(result));
+    }
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -27,9 +53,8 @@ export default function CampaignDetailPage() {
       }
 
       try {
-        const result = await getCampaignById(id);
+        await loadCampaign(id);
         if (!isMounted) return;
-        setCampaign(result);
       } catch (err) {
         if (!isMounted) return;
         setError(err instanceof Error ? err.message : t('campaigns.detail.errors.loadFailed'));
@@ -47,6 +72,56 @@ export default function CampaignDetailPage() {
   }, [id, t]);
 
   const state = getCampaignDetailState({ isLoading, error, campaign });
+
+  const updateEditForm = <K extends keyof CampaignCreateFormValues>(key: K, value: CampaignCreateFormValues[K]) => {
+    setEditError(null);
+    setEditValues((prev) => (prev ? { ...prev, [key]: value } : prev));
+  };
+
+  const toggleEditProductSelection = (productId: string) => {
+    if (!editValues) return;
+    const currentIds = editValues.selectedProductIds;
+    updateEditForm(
+      'selectedProductIds',
+      currentIds.includes(productId)
+        ? currentIds.filter((id) => id !== productId)
+        : [...currentIds, productId],
+    );
+  };
+
+  const onSaveEdit = async () => {
+    if (!campaign || !id || !editValues) {
+      return;
+    }
+
+    const validationErrorKey = validateCampaignCreateForm(editValues);
+    if (validationErrorKey) {
+      setEditError(t(validationErrorKey));
+      return;
+    }
+
+    if (!user?.profile?.company) {
+      setEditError(t('campaigns.create.errors.companyMissing'));
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      setEditError(null);
+      const payload = buildCampaignCreatePayload({
+        values: editValues,
+        company: user.profile.company,
+        products,
+      });
+      await updateCampaign(id, payload);
+      await loadCampaign(id);
+      setIsEditOpen(false);
+    } catch (err) {
+      setEditError(err instanceof Error ? err.message : t('campaigns.edit.errors.saveFailed'));
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   if (state === 'loading') {
     return (
@@ -86,6 +161,16 @@ export default function CampaignDetailPage() {
     <ScrollView className="flex-1 bg-slate-50 px-6 py-6">
       <Back />
       <Stack.Screen options={{ title: campaign?.name ?? t('campaigns.detail.title') }} />
+
+      <View className="mb-3 flex-row justify-end">
+        <TouchableOpacity
+          onPress={() => setIsEditOpen(true)}
+          className="rounded-2xl bg-primary-600 px-4 py-3"
+          activeOpacity={0.85}
+        >
+          <Text className="text-sm font-semibold text-white">{t('campaigns.edit.open')}</Text>
+        </TouchableOpacity>
+      </View>
 
       <View className="rounded-2xl bg-white p-4">
         <Text className="text-lg font-semibold text-gray-900">{summary.name}</Text>
@@ -131,6 +216,27 @@ export default function CampaignDetailPage() {
 
         <Text className="mt-3 text-sm text-gray-700">{t('campaigns.detail.productsCount', { count: summary.productsCount })}</Text>
       </View>
+
+      {editValues ? (
+        <CampaignEditModal
+          visible={isEditOpen}
+          values={editValues}
+          categories={categories}
+          products={products}
+          error={editError}
+          isSaving={isSaving}
+          onClose={() => {
+            setIsEditOpen(false);
+            setEditError(null);
+            if (campaign) {
+              setEditValues(mapCampaignToFormValues(campaign));
+            }
+          }}
+          onSave={onSaveEdit}
+          onChange={updateEditForm}
+          onToggleProduct={toggleEditProductSelection}
+        />
+      ) : null}
     </ScrollView>
   );
 }

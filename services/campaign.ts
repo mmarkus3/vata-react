@@ -1,7 +1,7 @@
 import type { Campaign } from '@/types/campaign';
 import { isTimestamp } from '@/utils/date';
 import { DocumentData, QueryDocumentSnapshot, SnapshotOptions } from 'firebase/firestore';
-import { getItem, getSnapshotItems, saveItem, whereEqual } from './firestore';
+import { getItem, getSnapshotItems, saveItem, updateItem, whereEqual } from './firestore';
 
 const converter = {
   toFirestore: (item: Campaign) => item,
@@ -51,5 +51,14 @@ export async function getCampaignById(campaignId: string): Promise<Campaign | nu
   } catch (error) {
     console.error('Failed to fetch campaign:', error);
     throw new Error(error instanceof Error ? error.message : 'Campaign fetch failed');
+  }
+}
+
+export async function updateCampaign(campaignId: string, data: Partial<Campaign>): Promise<void> {
+  try {
+    await updateItem('campaigns', campaignId, data);
+  } catch (error) {
+    console.error('Failed to update campaign:', error);
+    throw new Error(error instanceof Error ? error.message : 'Campaign update failed');
   }
 }

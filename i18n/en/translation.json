@@ -114,6 +114,14 @@
         "notSelected": "Campaign not selected.",
         "loadFailed": "Campaign load failed."
       }
+    },
+    "edit": {
+      "open": "Edit campaign",
+      "title": "Edit campaign",
+      "save": "Save changes",
+      "errors": {
+        "saveFailed": "Campaign update failed."
+      }
     }
   },
   "addProduct": {

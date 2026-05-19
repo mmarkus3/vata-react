@@ -114,6 +114,14 @@
         "notSelected": "Kampanjaa ei ole valittu.",
         "loadFailed": "Kampanjan lataus epäonnistui."
       }
+    },
+    "edit": {
+      "open": "Muokkaa kampanjaa",
+      "title": "Muokkaa kampanjaa",
+      "save": "Tallenna muutokset",
+      "errors": {
+        "saveFailed": "Kampanjan päivitys epäonnistui."
+      }
     }
   },
   "addProduct": {
