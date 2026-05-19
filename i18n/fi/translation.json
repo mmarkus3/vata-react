@@ -8,8 +8,12 @@
     "orders": "Tilaukset",
     "clients": "Asiakkaat",
     "report": "Raportti",
+    "menu": "Valikko",
     "profile": "Profiili",
     "categories": "Kategoriat"
+  },
+  "menu": {
+    "title": "Lisää"
   },
   "orders": {
     "errorTitle": "Tilausten haku epäonnistui",

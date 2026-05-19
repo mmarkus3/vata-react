@@ -8,8 +8,12 @@
     "orders": "Orders",
     "clients": "Clients",
     "report": "Report",
+    "menu": "Menu",
     "profile": "Profile",
     "categories": "Categories"
+  },
+  "menu": {
+    "title": "More"
   },
   "orders": {
     "errorTitle": "Orders fetch failed",
