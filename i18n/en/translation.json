@@ -11,7 +11,8 @@
     "report": "Report",
     "menu": "Menu",
     "profile": "Profile",
-    "categories": "Categories"
+    "categories": "Categories",
+    "campaigns": "Campaigns"
   },
   "menu": {
     "title": "More",

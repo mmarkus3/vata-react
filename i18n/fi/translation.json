@@ -11,7 +11,8 @@
     "report": "Raportti",
     "menu": "Valikko",
     "profile": "Profiili",
-    "categories": "Kategoriat"
+    "categories": "Kategoriat",
+    "campaigns": "Kampanjat"
   },
   "menu": {
     "title": "Lisää",

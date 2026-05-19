@@ -68,6 +68,14 @@ export const getHomeTabsConfig = (t: TranslateFn) => [
     },
   },
   {
+    name: 'campaigns',
+    options: {
+      href: null,
+      title: t('nav.campaigns'),
+      headerTitle: t('nav.campaigns'),
+    },
+  },
+  {
     name: 'settings',
     options: {
       href: null,
