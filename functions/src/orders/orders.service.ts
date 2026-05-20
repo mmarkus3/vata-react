@@ -24,17 +24,17 @@ export class OrdersService {
     vismaPay.setApiKey(item.vismapay.apiKey ?? '');
   }
 
-  async getPaymentMethods(companyId: string) {
+  async getPaymentMethods(companyId: string, currency: string) {
     await this.setupVismaPay(companyId);
     try {
-      const result = await vismaPay.getMerchantPaymentMethods('EUR');
+      const result = await vismaPay.getMerchantPaymentMethods(currency);
       return result.payment_methods;
     } catch (err) {
       throw new InternalServerErrorException(err);
     }
   }
 
-  async getPoints(companyId: string, postalCode: string, country = 'FI') {
+  async getPoints(companyId: string, postalCode: string, country: string) {
     const companyDoc = await firestore().doc(`companies/${companyId}`).get();
     if (!companyDoc.exists) {
       throw new NotFoundException('Company not found');
@@ -46,7 +46,7 @@ export class OrdersService {
     return data;
   }
 
-  async getPoint(id: string, country = 'FI') {
+  async getPoint(id: string, country: string) {
     const response = await fetch(`https://api.bring.com/pickuppoint/api/pickuppoint/${country}/id/${id}`, {
       headers: bringHeaders,
     });

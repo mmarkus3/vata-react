@@ -1,5 +1,6 @@
 import { getOrderListState } from '@/app/order/orderListState';
 import { getOrderDetailsRoute } from '@/app/order/orderRoute';
+import { getVisibleOrderCountry } from '@/app/order/orderCountryState';
 import { themeColors } from '@/constants/colors';
 import { useOrders } from '@/hooks/useOrders';
 import { formatDate } from 'date-fns';
@@ -52,7 +53,9 @@ export default function OrdersScreen() {
         className="px-4 py-3"
         data={orders}
         keyExtractor={(item) => item.id ?? `${item.status}-${item.company}`}
-        renderItem={({ item }) => (
+        renderItem={({ item }) => {
+          const visibleCountry = getVisibleOrderCountry(item.country);
+          return (
           <TouchableOpacity
             onPress={() => {
               if (item.id) {
@@ -72,8 +75,14 @@ export default function OrdersScreen() {
               </Text>
               <Text className="text-sm font-medium text-gray-600">{formatDate(item.created, 'd.M.yyyy HH:mm')}</Text>
             </View>
+            {visibleCountry ? (
+              <Text className="mt-1 text-sm text-gray-600">
+                {t('orders.country', { country: visibleCountry, defaultValue: `Country: ${visibleCountry}` })}
+              </Text>
+            ) : null}
           </TouchableOpacity>
-        )}
+          );
+        }}
         showsVerticalScrollIndicator={false}
       />
     </View>

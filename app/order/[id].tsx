@@ -1,11 +1,11 @@
+import { getVisibleOrderCountry } from '@/app/order/orderCountryState';
 import {
   getCustomerAddressLine,
   getCustomerFullName,
   hasOrderCustomer,
 } from '@/app/order/orderDetailCustomerState';
 import {
-  getDeliveryMethodDisplay,
-  getSelectedPointState,
+  getSelectedPointState
 } from '@/app/order/orderDetailDeliveryState';
 import { hasOrderProductLines } from '@/app/order/orderDetailProductsState';
 import Back from '@/components/ui/back';
@@ -99,7 +99,6 @@ export default function OrderDetailPage() {
 
   const customerName = getCustomerFullName(order?.customer);
   const customerAddress = getCustomerAddressLine(order?.customer);
-  const deliveryMethod = getDeliveryMethodDisplay(order);
 
   const selectedPointState = getSelectedPointState({
     isLoading: isLoadingPoint,
@@ -107,6 +106,7 @@ export default function OrderDetailPage() {
     point: selectedPoint,
     hasPointId: Boolean(pointId),
   });
+  const visibleCountry = getVisibleOrderCountry(order?.country);
 
   if (isLoading) {
     return (
@@ -134,6 +134,11 @@ export default function OrderDetailPage() {
       <View className="rounded-2xl bg-white p-4">
         <Text className="text-base font-semibold text-gray-900">{t('orders.detail.title', { id: order?.id ?? '-' })}</Text>
         <Text className="mt-2 text-sm text-gray-600">{order?.status && getOrderStatus(order.status)}</Text>
+        {visibleCountry ? (
+          <Text className="mt-1 text-sm text-gray-600">
+            {t('orders.country', { country: visibleCountry, defaultValue: `Country: ${visibleCountry}` })}
+          </Text>
+        ) : null}
 
         <Text className="mt-4 text-sm font-semibold text-gray-800">{t('orders.detail.deliveryMethodSection')}</Text>
         <Text className="mt-3 text-sm font-semibold text-gray-800">{t('orders.detail.selectedPointSection')}</Text>

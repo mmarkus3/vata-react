@@ -11,6 +11,7 @@ export interface Order {
   discount?: string;
   returnUrl?: string;
   amount?: number;
+  country: string;
 }
 
 export interface OrderProduct {

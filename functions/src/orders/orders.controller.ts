@@ -40,13 +40,13 @@ export class OrdersController {
   }
 
   @Get('company/:company/points')
-  getDeliveryPoints(@Param('company') companyId: string, @Query('postalCode') postalCode: string) {
-    return this.ordersService.getPoints(companyId, postalCode);
+  getDeliveryPoints(@Param('company') companyId: string, @Query('postalCode') postalCode: string, @Query('country') country = 'FI') {
+    return this.ordersService.getPoints(companyId, postalCode, country);
   }
 
   @Get('company/:company/point/:id')
-  getDeliveryPoint(@Param('company') _companyId: string, @Param('id') id: string) {
-    return this.ordersService.getPoint(id);
+  getDeliveryPoint(@Param('company') _companyId: string, @Param('id') id: string, @Query('country') country = 'FI') {
+    return this.ordersService.getPoint(id, country);
   }
 
   @Get('company/:company/prices')
@@ -55,7 +55,8 @@ export class OrdersController {
   }
 
   @Get('company/:company/paymentMethods')
-  getPaymnentMethods(@Param('company') companyId: string) {
-    return this.ordersService.getPaymentMethods(companyId);
+  getPaymnentMethods(@Param('company') companyId: string, @Query('country') country = 'FI') {
+    const currency = country === 'SE' ? 'SEK' : 'EUR';
+    return this.ordersService.getPaymentMethods(companyId, currency);
   }
 }

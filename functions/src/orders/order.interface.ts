@@ -12,6 +12,7 @@ export interface Order {
   paymentMethod?: string;
   discount?: string;
   returnUrl?: string;
+  country: string;
 }
 
 export interface OrderProduct {
