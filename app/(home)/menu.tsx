@@ -1,4 +1,4 @@
-import { overflowMenuItems } from '@/app/(home)/overflowMenuConfig';
+import { overflowMenuItems } from '@/home-config/overflowMenuConfig';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Text, TouchableOpacity, View } from 'react-native';

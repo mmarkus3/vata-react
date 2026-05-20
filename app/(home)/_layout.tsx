@@ -1,5 +1,5 @@
-import { getHomeTabsConfig, homeTabsScreenOptions } from '@/app/(home)/tabsConfig';
-import { overflowMenuItems } from '@/app/(home)/overflowMenuConfig';
+import { getHomeTabsConfig, homeTabsScreenOptions } from '@/home-config/tabsConfig';
+import { overflowMenuItems } from '@/home-config/overflowMenuConfig';
 import { Tabs, usePathname, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
