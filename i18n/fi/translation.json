@@ -2,7 +2,8 @@
   "common": {
     "cancel": "Peruuta",
     "delete": "Poista",
-    "back": "Palaa"
+    "back": "Palaa",
+    "apply": "Käytä"
   },
   "nav": {
     "storage": "Varasto",

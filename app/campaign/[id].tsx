@@ -1,4 +1,5 @@
 import {
+  applyBulkDiscountFixedValue,
   buildCampaignCreatePayload,
   mapCampaignToFormValues,
   syncDiscountFixedValues,
@@ -124,6 +125,17 @@ export default function CampaignDetailPage() {
     }
   };
 
+  const applyBulkFixedPrice = () => {
+    if (!editValues) return;
+    const nextValues = applyBulkDiscountFixedValue(editValues, products);
+    if (!nextValues) {
+      setEditError(t('campaigns.create.errors.discountInvalid'));
+      return;
+    }
+    setEditError(null);
+    setEditValues(syncDiscountFixedValues(nextValues, products));
+  };
+
   if (state === 'loading') {
     return (
       <View className="flex-1 items-center justify-center bg-slate-50">
@@ -234,6 +246,7 @@ export default function CampaignDetailPage() {
             }
           }}
           onSave={onSaveEdit}
+          onApplyBulkFixedPrice={applyBulkFixedPrice}
           onChange={updateEditForm}
           onToggleProduct={toggleEditProductSelection}
         />

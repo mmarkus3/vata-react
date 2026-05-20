@@ -2,7 +2,8 @@
   "common": {
     "cancel": "Cancel",
     "delete": "Delete",
-    "back": "Back"
+    "back": "Back",
+    "apply": "Apply"
   },
   "nav": {
     "storage": "Storage",

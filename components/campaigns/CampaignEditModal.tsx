@@ -15,6 +15,7 @@ interface CampaignEditModalProps {
   isSaving: boolean;
   onClose: () => void;
   onSave: () => void;
+  onApplyBulkFixedPrice: () => void;
   onChange: <K extends keyof CampaignCreateFormValues>(key: K, value: CampaignCreateFormValues[K]) => void;
   onToggleProduct: (productId: string) => void;
 }
@@ -28,6 +29,7 @@ export default function CampaignEditModal({
   isSaving,
   onClose,
   onSave,
+  onApplyBulkFixedPrice,
   onChange,
   onToggleProduct,
 }: CampaignEditModalProps) {
@@ -169,6 +171,28 @@ export default function CampaignEditModal({
               />
             ) : (
               <View className="space-y-2">
+                <View className="rounded-2xl border border-gray-200 bg-gray-50 px-3 py-2">
+                  <Text className="mb-1 text-sm font-medium text-gray-800">
+                    {t('campaigns.create.fields.discountValue')}
+                  </Text>
+                  <View className="flex-row items-center gap-2">
+                    <TextInput
+                      value={values.discountFixedBulkValue}
+                      onChangeText={(value) => onChange('discountFixedBulkValue', value)}
+                      placeholder={t('campaigns.create.fields.discountValue')}
+                      keyboardType="decimal-pad"
+                      className="flex-1 rounded-xl border border-gray-300 bg-white px-3 py-2 text-base text-gray-900"
+                    />
+                    <TouchableOpacity
+                      onPress={onApplyBulkFixedPrice}
+                      className="rounded-xl border border-primary-300 bg-primary-50 px-3 py-2"
+                    >
+                      <Text className="text-sm font-medium text-primary-700">
+                        {t('common.apply', { defaultValue: 'Apply' })}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
                 {targetProducts.map((product) => (
                   <View key={product.id} className="rounded-2xl border border-gray-200 bg-gray-50 px-3 py-2">
                     <Text className="mb-1 text-sm font-medium text-gray-800">{product.name}</Text>

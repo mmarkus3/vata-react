@@ -15,6 +15,7 @@ export interface CampaignCreateFormValues {
   discountType: Campaign['discountType'];
   discountValue: string;
   discountFixedValues: Record<string, string>;
+  discountFixedBulkValue: string;
 }
 
 export interface CampaignCreatePayload extends Omit<Campaign, 'id' | 'created'> {
@@ -36,6 +37,7 @@ export const defaultCampaignCreateFormValues: CampaignCreateFormValues = {
   discountType: 'percentage',
   discountValue: '',
   discountFixedValues: {},
+  discountFixedBulkValue: '',
 };
 
 const parseDateInput = (value: string): Date | null => {
@@ -86,6 +88,7 @@ export function mapCampaignToFormValues(campaign: Campaign): CampaignCreateFormV
     discountType: campaign.discountType,
     discountValue: discountValue != null ? String(discountValue) : '',
     discountFixedValues,
+    discountFixedBulkValue: '',
   };
 }
 
@@ -110,6 +113,24 @@ export function syncDiscountFixedValues(
     if (targetIds.has(productId)) {
       nextFixedValues[productId] = value;
     }
+  }
+
+  return { ...values, discountFixedValues: nextFixedValues };
+}
+
+export function applyBulkDiscountFixedValue(
+  values: CampaignCreateFormValues,
+  products: Product[],
+): CampaignCreateFormValues | null {
+  const parsedBulkValue = parseDiscountValue(values.discountFixedBulkValue);
+  if (parsedBulkValue == null) return null;
+
+  const targetProducts = getCampaignTargetProducts(values, products);
+  const bulkValue = String(parsedBulkValue);
+  const nextFixedValues = { ...values.discountFixedValues };
+
+  for (const product of targetProducts) {
+    nextFixedValues[product.id] = bulkValue;
   }
 
   return { ...values, discountFixedValues: nextFixedValues };

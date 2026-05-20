@@ -1,4 +1,5 @@
 import {
+  applyBulkDiscountFixedValue,
   buildCampaignCreatePayload,
   defaultCampaignCreateFormValues,
   syncDiscountFixedValues,
@@ -92,6 +93,16 @@ export default function CampaignsScreen() {
     }
   };
 
+  const applyBulkFixedPrice = () => {
+    const nextValues = applyBulkDiscountFixedValue(formValues, products);
+    if (!nextValues) {
+      setFormError(t('campaigns.create.errors.discountInvalid'));
+      return;
+    }
+    setFormError(null);
+    setFormValues(syncDiscountFixedValues(nextValues, products));
+  };
+
   if (state === 'loading') {
     return (
       <View className="flex-1 items-center justify-center bg-slate-50">
@@ -177,6 +188,7 @@ export default function CampaignsScreen() {
         isSaving={isSaving}
         onClose={closeCreateModal}
         onSave={onSaveCampaign}
+        onApplyBulkFixedPrice={applyBulkFixedPrice}
         onChange={updateForm}
         onToggleProduct={toggleProductSelection}
       />

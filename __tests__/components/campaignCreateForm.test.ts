@@ -1,8 +1,10 @@
 import {
+  applyBulkDiscountFixedValue,
   buildCampaignCreatePayload,
   buildCampaignMode,
   defaultCampaignCreateFormValues,
   mapCampaignToFormValues,
+  syncDiscountFixedValues,
   validateCampaignCreateForm,
 } from '@/app/campaign/campaignCreateForm';
 
@@ -147,5 +149,56 @@ describe('campaignCreateForm', () => {
       { id: 'p1', name: 'Milk', discountPercentage: undefined, discountFixed: 2.5 },
       { id: 'p2', name: 'Bread', discountPercentage: undefined, discountFixed: 3.75 },
     ]);
+  });
+
+  it('applies one fixed value to all targeted products', () => {
+    const result = applyBulkDiscountFixedValue(
+      {
+        ...defaultCampaignCreateFormValues,
+        targetingMode: 'selected',
+        selectedProductIds: ['p1', 'p2'],
+        discountType: 'fixed',
+        discountFixedBulkValue: '4.2',
+      },
+      products as any,
+    );
+
+    expect(result?.discountFixedValues).toEqual({ p1: '4.2', p2: '4.2' });
+  });
+
+  it('returns null when bulk fixed value is invalid', () => {
+    const result = applyBulkDiscountFixedValue(
+      {
+        ...defaultCampaignCreateFormValues,
+        targetingMode: 'selected',
+        selectedProductIds: ['p1'],
+        discountType: 'fixed',
+        discountFixedBulkValue: '',
+      },
+      products as any,
+    );
+
+    expect(result).toBeNull();
+  });
+
+  it('preserves per-product overrides until bulk apply runs again', () => {
+    const firstApply = applyBulkDiscountFixedValue(
+      {
+        ...defaultCampaignCreateFormValues,
+        targetingMode: 'selected',
+        selectedProductIds: ['p1', 'p2'],
+        discountType: 'fixed',
+        discountFixedBulkValue: '5',
+      },
+      products as any,
+    );
+
+    const withManualOverride = {
+      ...(firstApply as any),
+      discountFixedValues: { ...(firstApply as any).discountFixedValues, p2: '6' },
+    };
+
+    const synced = syncDiscountFixedValues(withManualOverride, products as any);
+    expect(synced.discountFixedValues).toEqual({ p1: '5', p2: '6' });
   });
 });
