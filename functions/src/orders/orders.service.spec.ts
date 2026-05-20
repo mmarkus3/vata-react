@@ -2,6 +2,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { firestore } from 'firebase-admin';
+import { getRate } from '../currency/currency';
 import { OrdersService } from './orders.service';
 
 const mockCreateCharge = jest.fn().mockResolvedValue({ token: 'charge-token' });
@@ -21,6 +22,9 @@ jest.mock('visma-pay', () => ({
 jest.mock('firebase-admin', () => ({
   firestore: jest.fn(),
 }));
+jest.mock('../currency/currency', () => ({
+  getRate: jest.fn(),
+}));
 
 describe('OrdersService', () => {
   let service: OrdersService;
@@ -38,6 +42,7 @@ describe('OrdersService', () => {
 
   beforeEach(async () => {
     jest.clearAllMocks();
+    (getRate as jest.Mock).mockResolvedValue({ rate: 10 });
     (firestore as unknown as jest.Mock).mockReturnValue({
       doc: mockDoc,
       collection: mockCollection,
@@ -52,6 +57,28 @@ describe('OrdersService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  it('returns EUR prices by default from getPrices', async () => {
+    mockDocGet.mockResolvedValueOnce({ data: () => ({ over: 100, delivery: 10 }) });
+    const result = await service.getPrices('co1');
+    expect(result).toEqual({ over: 100, delivery: 10 });
+    expect(getRate).not.toHaveBeenCalled();
+  });
+
+  it('converts getPrices values to SEK when country is SE', async () => {
+    (getRate as jest.Mock).mockResolvedValueOnce({ rate: 11 });
+    mockDocGet.mockResolvedValueOnce({ data: () => ({ over: 100, delivery: 10 }) });
+    const result = await service.getPrices('co1', 'SE');
+    expect(getRate).toHaveBeenCalledTimes(1);
+    expect(result).toEqual({ over: 1100, delivery: 110 });
+  });
+
+  it('falls back to EUR prices when SE conversion rate fails', async () => {
+    (getRate as jest.Mock).mockRejectedValueOnce(new Error('rate unavailable'));
+    mockDocGet.mockResolvedValueOnce({ data: () => ({ over: 100, delivery: 10 }) });
+    const result = await service.getPrices('co1', 'SE');
+    expect(result).toEqual({ over: 100, delivery: 10 });
   });
 
   it('rejects placeOrder when referenced product does not exist', async () => {

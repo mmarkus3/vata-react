@@ -3,6 +3,7 @@ import { firestore } from 'firebase-admin';
 import { Timestamp } from 'firebase-admin/firestore';
 import vismaPay from 'visma-pay';
 import { Campaign } from '../campaigns/campaign.interface';
+import { getRate } from '../currency/currency';
 import { Product } from '../products/product.interface';
 import { Order } from './order.interface';
 
@@ -53,10 +54,29 @@ export class OrdersService {
     return data.pickupPoint.length > 0 ? data.pickupPoint[0] : null;
   }
 
-  async getPrices(companyId: string) {
+  async getPrices(companyId: string, country = 'FI') {
     const doc = await firestore().doc(`options/${companyId}`).get();
     const item = doc.data();
-    return { over: item.over as number, delivery: item.delivery as number };
+    const over = item.over as number;
+    const delivery = item.delivery as number;
+
+    if (country !== 'SE') {
+      return { over, delivery };
+    }
+
+    try {
+      const rateResponse = await getRate();
+      const rate = typeof rateResponse?.rate === 'number' ? rateResponse.rate : Number.NaN;
+      if (!Number.isFinite(rate) || rate <= 0) {
+        return { over, delivery };
+      }
+      return {
+        over: over * rate,
+        delivery: delivery * rate,
+      };
+    } catch {
+      return { over, delivery };
+    }
   }
 
   private isCampaignActive(campaign: Campaign, now: Date): boolean {

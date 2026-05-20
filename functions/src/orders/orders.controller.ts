@@ -50,8 +50,8 @@ export class OrdersController {
   }
 
   @Get('company/:company/prices')
-  getPrices(@Param('company') companyId: string) {
-    return this.ordersService.getPrices(companyId);
+  getPrices(@Param('company') companyId: string, @Query('country') country = 'FI') {
+    return this.ordersService.getPrices(companyId, country);
   }
 
   @Get('company/:company/paymentMethods')
