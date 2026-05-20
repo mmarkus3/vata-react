@@ -1,4 +1,4 @@
-import type { CampaignCreateFormValues } from '@/app/campaign/campaignCreateForm';
+import { getCampaignTargetProducts, type CampaignCreateFormValues } from '@/app/campaign/campaignCreateForm';
 import { htmlDateToIso, isoToHtmlDate } from '@/app/campaign/campaignCreateModalState';
 import SelectProduct from '@/components/clients/SelectProduct';
 import type { Category } from '@/types/category';
@@ -32,6 +32,7 @@ export default function CampaignEditModal({
   onToggleProduct,
 }: CampaignEditModalProps) {
   const { t } = useTranslation();
+  const targetProducts = getCampaignTargetProducts(values, products);
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
@@ -158,13 +159,32 @@ export default function CampaignEditModal({
               })}
             </View>
 
-            <TextInput
-              value={values.discountValue}
-              onChangeText={(value) => onChange('discountValue', value)}
-              placeholder={t('campaigns.create.fields.discountValue')}
-              keyboardType="decimal-pad"
-              className="rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
-            />
+            {values.discountType === 'percentage' ? (
+              <TextInput
+                value={values.discountValue}
+                onChangeText={(value) => onChange('discountValue', value)}
+                placeholder={t('campaigns.create.fields.discountValue')}
+                keyboardType="decimal-pad"
+                className="rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900"
+              />
+            ) : (
+              <View className="space-y-2">
+                {targetProducts.map((product) => (
+                  <View key={product.id} className="rounded-2xl border border-gray-200 bg-gray-50 px-3 py-2">
+                    <Text className="mb-1 text-sm font-medium text-gray-800">{product.name}</Text>
+                    <TextInput
+                      value={values.discountFixedValues[product.id] ?? ''}
+                      onChangeText={(value) =>
+                        onChange('discountFixedValues', { ...values.discountFixedValues, [product.id]: value })
+                      }
+                      placeholder={t('campaigns.create.fields.discountValue')}
+                      keyboardType="decimal-pad"
+                      className="rounded-xl border border-gray-300 bg-white px-3 py-2 text-base text-gray-900"
+                    />
+                  </View>
+                ))}
+              </View>
+            )}
 
             {error ? <Text className="text-sm text-secondary-600">{error}</Text> : null}
 

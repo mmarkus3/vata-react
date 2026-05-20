@@ -81,6 +81,7 @@ export class ProductsService {
       description_sv: product.description_sv,
       description_en: product.description_en,
       retailPrice: product.retailPrice,
+      discountPrice: null,
       unitPrice: product.unitPrice,
       images: product.images,
       category: product.category,

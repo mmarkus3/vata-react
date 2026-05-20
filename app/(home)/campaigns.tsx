@@ -1,6 +1,7 @@
 import {
   buildCampaignCreatePayload,
   defaultCampaignCreateFormValues,
+  syncDiscountFixedValues,
   validateCampaignCreateForm,
   type CampaignCreateFormValues,
 } from '@/app/campaign/campaignCreateForm';
@@ -41,7 +42,7 @@ export default function CampaignsScreen() {
 
   const updateForm = <K extends keyof CampaignCreateFormValues>(key: K, value: CampaignCreateFormValues[K]) => {
     setFormError(null);
-    setFormValues((prev) => ({ ...prev, [key]: value }));
+    setFormValues((prev) => syncDiscountFixedValues({ ...prev, [key]: value }, products));
   };
 
   const toggleProductSelection = (productId: string) => {
@@ -61,7 +62,7 @@ export default function CampaignsScreen() {
   };
 
   const onSaveCampaign = async () => {
-    const validationErrorKey = validateCampaignCreateForm(formValues);
+    const validationErrorKey = validateCampaignCreateForm(formValues, products);
     if (validationErrorKey) {
       setFormError(t(validationErrorKey));
       return;

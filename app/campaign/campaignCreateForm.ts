@@ -14,6 +14,7 @@ export interface CampaignCreateFormValues {
   categoryId: string;
   discountType: Campaign['discountType'];
   discountValue: string;
+  discountFixedValues: Record<string, string>;
 }
 
 export interface CampaignCreatePayload extends Omit<Campaign, 'id' | 'created'> {
@@ -34,6 +35,7 @@ export const defaultCampaignCreateFormValues: CampaignCreateFormValues = {
   categoryId: '',
   discountType: 'percentage',
   discountValue: '',
+  discountFixedValues: {},
 };
 
 const parseDateInput = (value: string): Date | null => {
@@ -66,6 +68,13 @@ export function mapCampaignToFormValues(campaign: Campaign): CampaignCreateFormV
         ? campaign.products?.[0]?.discountPercentage
         : campaign.products?.[0]?.discountFixed;
 
+  const discountFixedValues = (campaign.products ?? []).reduce<Record<string, string>>((acc, product) => {
+    if (product.id && typeof product.discountFixed === 'number') {
+      acc[product.id] = String(product.discountFixed);
+    }
+    return acc;
+  }, {});
+
   return {
     name: campaign.name ?? '',
     code: campaign.code ?? '',
@@ -76,10 +85,37 @@ export function mapCampaignToFormValues(campaign: Campaign): CampaignCreateFormV
     categoryId: campaign.categoryId ?? '',
     discountType: campaign.discountType,
     discountValue: discountValue != null ? String(discountValue) : '',
+    discountFixedValues,
   };
 }
 
-export function validateCampaignCreateForm(values: CampaignCreateFormValues): string | null {
+export function getCampaignTargetProducts(values: CampaignCreateFormValues, products: Product[]): (Product & { id: string })[] {
+  const selectedProducts = values.targetingMode === 'selected'
+    ? products.filter((product) => product.id && values.selectedProductIds.includes(product.id))
+    : values.targetingMode === 'all_products'
+      ? products
+      : products.filter((product) => product.category === values.categoryId);
+
+  return selectedProducts.filter((product): product is Product & { id: string } => Boolean(product.id));
+}
+
+export function syncDiscountFixedValues(
+  values: CampaignCreateFormValues,
+  products: Product[],
+): CampaignCreateFormValues {
+  const targetIds = new Set(getCampaignTargetProducts(values, products).map((product) => product.id));
+  const nextFixedValues: Record<string, string> = {};
+
+  for (const [productId, value] of Object.entries(values.discountFixedValues)) {
+    if (targetIds.has(productId)) {
+      nextFixedValues[productId] = value;
+    }
+  }
+
+  return { ...values, discountFixedValues: nextFixedValues };
+}
+
+export function validateCampaignCreateForm(values: CampaignCreateFormValues, products: Product[] = []): string | null {
   if (!values.name.trim()) return 'campaigns.create.errors.nameRequired';
 
   const start = parseDateInput(values.start);
@@ -97,9 +133,17 @@ export function validateCampaignCreateForm(values: CampaignCreateFormValues): st
   }
 
   const discountValue = parseDiscountValue(values.discountValue);
-  if (discountValue == null) return 'campaigns.create.errors.discountInvalid';
-  if (values.discountType === 'percentage' && discountValue > 100) {
-    return 'campaigns.create.errors.discountPercentageRange';
+  if (values.discountType === 'percentage') {
+    if (discountValue == null) return 'campaigns.create.errors.discountInvalid';
+    if (discountValue > 100) return 'campaigns.create.errors.discountPercentageRange';
+  }
+  if (values.discountType === 'fixed' && products.length > 0) {
+    const targetProducts = getCampaignTargetProducts(values, products);
+    const hasInvalidFixed = targetProducts.some((product) => {
+      const value = values.discountFixedValues[product.id];
+      return parseDiscountValue(value ?? '') == null;
+    });
+    if (hasInvalidFixed) return 'campaigns.create.errors.discountInvalid';
   }
 
   return null;
@@ -112,27 +156,33 @@ export function buildCampaignCreatePayload(input: {
 }): CampaignCreatePayload {
   const start = parseDateInput(input.values.start);
   const end = parseDateInput(input.values.end);
-  const discountValue = parseDiscountValue(input.values.discountValue);
+  const percentageDiscountValue = parseDiscountValue(input.values.discountValue);
 
-  if (!start || !end || discountValue == null) {
+  if (!start || !end) {
     throw new Error('Invalid campaign form values');
   }
 
   const targetingMode = input.values.targetingMode;
 
-  const selectedProducts = targetingMode === 'selected'
-    ? input.products.filter((product) => product.id && input.values.selectedProductIds.includes(product.id))
-    : targetingMode === 'all_products'
-      ? input.products
-      : input.products.filter((product) => product.category === input.values.categoryId);
+  const selectedProducts = getCampaignTargetProducts(input.values, input.products);
+  const fixedDiscountValues = selectedProducts.map((product) =>
+    parseDiscountValue(input.values.discountFixedValues[product.id] ?? ''),
+  );
+  const fallbackFixedDiscount = fixedDiscountValues.find((value): value is number => value != null) ?? null;
+  const discountValue = input.values.discountType === 'percentage' ? percentageDiscountValue : fallbackFixedDiscount;
 
-  const products = selectedProducts
-    .filter((product): product is Product & { id: string } => Boolean(product.id))
-    .map((product) => ({
+  if (discountValue == null) {
+    throw new Error('Invalid campaign form values');
+  }
+
+  const products = selectedProducts.map((product) => ({
       id: product.id,
       name: product.name,
       discountPercentage: input.values.discountType === 'percentage' ? discountValue : undefined,
-      discountFixed: input.values.discountType === 'fixed' ? discountValue : undefined,
+      discountFixed:
+        input.values.discountType === 'fixed'
+          ? parseDiscountValue(input.values.discountFixedValues[product.id] ?? '') ?? undefined
+          : undefined,
     }));
 
   return {
