@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-confusing-void-expression */
 import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { firestore } from 'firebase-admin';
@@ -70,7 +71,8 @@ describe('OrdersService', () => {
         data: () => undefined,
       });
 
-    await expect(service.placeOrder('co1', { id: 'o1' } as any)).rejects.toThrow(BadRequestException);
+    const order1 = { id: 'o1' } as Record<string, unknown>;
+    await expect(service.placeOrder('co1', order1)).rejects.toThrow(BadRequestException);
     expect(mockDocSet).not.toHaveBeenCalled();
   });
 
@@ -91,7 +93,8 @@ describe('OrdersService', () => {
         data: () => ({ id: 'p1', amount: 3, retailPrice: 10 }),
       });
 
-    await expect(service.placeOrder('co1', { id: 'o1' } as any)).rejects.toThrow(BadRequestException);
+    const order2 = { id: 'o1' } as Record<string, unknown>;
+    await expect(service.placeOrder('co1', order2)).rejects.toThrow(BadRequestException);
     expect(mockDocSet).not.toHaveBeenCalled();
   });
 
