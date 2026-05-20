@@ -33,20 +33,20 @@ export class OrdersService {
     }
   }
 
-  async getPoints(companyId: string, postalCode: string) {
+  async getPoints(companyId: string, postalCode: string, country = 'FI') {
     const companyDoc = await firestore().doc(`companies/${companyId}`).get();
     if (!companyDoc.exists) {
       throw new NotFoundException('Company not found');
     }
-    const response = await fetch(`https://api.bring.com/pickuppoint/api/pickuppoint/FI/postalCode/${postalCode}`, {
+    const response = await fetch(`https://api.bring.com/pickuppoint/api/pickuppoint/${country}/postalCode/${postalCode}`, {
       headers: bringHeaders,
     });
     const data = await response.json();
     return data;
   }
 
-  async getPoint(id: string) {
-    const response = await fetch(`https://api.bring.com/pickuppoint/api/pickuppoint/FI/id/${id}`, {
+  async getPoint(id: string, country = 'FI') {
+    const response = await fetch(`https://api.bring.com/pickuppoint/api/pickuppoint/${country}/id/${id}`, {
       headers: bringHeaders,
     });
     const data = await response.json() as { pickupPoint: any[] };
@@ -57,22 +57,6 @@ export class OrdersService {
     const doc = await firestore().doc(`options/${companyId}`).get();
     const item = doc.data();
     return { over: item.over as number, delivery: item.delivery as number };
-  }
-
-  private toDate(value: unknown): Date | null {
-    if (!value) return null;
-    if (value instanceof Date) {
-      return Number.isNaN(value.getTime()) ? null : value;
-    }
-    if (typeof value === 'string') {
-      const parsed = new Date(value);
-      return Number.isNaN(parsed.getTime()) ? null : parsed;
-    }
-    if (typeof value === 'object' && value !== null && 'toDate' in value && typeof (value as { toDate?: unknown }).toDate === 'function') {
-      const parsed = (value as { toDate: () => Date }).toDate();
-      return parsed instanceof Date && !Number.isNaN(parsed.getTime()) ? parsed : null;
-    }
-    return null;
   }
 
   private isCampaignActive(campaign: Campaign, now: Date): boolean {

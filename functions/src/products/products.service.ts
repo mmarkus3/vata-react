@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { firestore } from 'firebase-admin';
 import { Campaign } from '../campaigns/campaign.interface';
+import { getRate } from '../currency/currency';
 import { Product } from './product.interface';
 
 @Injectable()
@@ -120,7 +121,23 @@ export class ProductsService {
     return Math.min(...candidates);
   }
 
-  private buildProduct(id: string, tax: number, product: Product, campaigns: Campaign[]) {
+  private convertPrice(value: number | null | undefined, rate: number | null): number | null {
+    if (typeof value !== 'number' || !Number.isFinite(value)) {
+      return value ?? null;
+    }
+    if (typeof rate !== 'number' || !Number.isFinite(rate) || rate <= 0) {
+      return value;
+    }
+    return value * rate;
+  }
+
+  private buildProduct(
+    id: string,
+    tax: number,
+    product: Product,
+    campaigns: Campaign[],
+    conversionRate: number | null,
+  ) {
     const retailPriceHistory = this.sanitizeRetailPriceHistory(product.retailPriceHistory);
     const lowestRetailPriceLast30Days = this.getLowestRetailPriceLast30Days(product.retailPrice, retailPriceHistory);
     const discountPrice = this.resolveDiscountPrice({ ...product, id }, campaigns);
@@ -132,9 +149,9 @@ export class ProductsService {
       description_fi: product.description_fi,
       description_sv: product.description_sv,
       description_en: product.description_en,
-      retailPrice: product.retailPrice,
-      discountPrice,
-      unitPrice: product.unitPrice,
+      retailPrice: this.convertPrice(product.retailPrice, conversionRate),
+      discountPrice: this.convertPrice(discountPrice, conversionRate),
+      unitPrice: this.convertPrice(product.unitPrice, conversionRate),
       images: product.images,
       category: product.category,
       energyJoule: product.energyJoule,
@@ -150,27 +167,41 @@ export class ProductsService {
       ingredients_fi: product.ingredients_fi,
       ingredients_sv: product.ingredients_sv,
       ingredients_en: product.ingredients_en,
-      lowestRetailPriceLast30Days,
+      lowestRetailPriceLast30Days: this.convertPrice(lowestRetailPriceLast30Days, conversionRate),
       tax,
     };
   }
 
-  async getProductsByCompany(companyId: string) {
+  private async getConversionRate(country: string): Promise<number | null> {
+    if (country !== 'SE') return null;
+    try {
+      const currency = await getRate();
+      return typeof currency?.rate === 'number' && Number.isFinite(currency.rate) && currency.rate > 0
+        ? currency.rate
+        : null;
+    } catch {
+      return null;
+    }
+  }
+
+  async getProductsByCompany(companyId: string, country: string) {
     const options = await firestore().doc(`options/${companyId}`).get();
+    const conversionRate = await this.getConversionRate(country);
     const campaignDocs = await firestore().collection('campaigns').where('company', '==', companyId).get();
     const campaigns = campaignDocs.docs.map((document) => ({ ...document.data(), id: document.id } as Campaign));
     const docs = await firestore().collection('products').where('company', '==', companyId).get();
     const products = docs.docs.map((document) => {
       const product = document.data() as Product;
       if (product.showInWebshop === true) {
-        return this.buildProduct(document.id, options.data().vat, product, campaigns);
+        return this.buildProduct(document.id, options.data().vat, product, campaigns, conversionRate);
       }
     });
     return products.filter((p) => p != null);
   }
 
-  async getProductByIdAndCompany(companyId: string, id: string) {
+  async getProductByIdAndCompany(companyId: string, id: string, country: string) {
     const options = await firestore().doc(`options/${companyId}`).get();
+    const conversionRate = await this.getConversionRate(country);
     const campaignDocs = await firestore().collection('campaigns').where('company', '==', companyId).get();
     const campaigns = campaignDocs.docs.map((document) => ({ ...document.data(), id: document.id } as Campaign));
     const doc = await firestore().doc(`products/${id}`).get();
@@ -181,6 +212,6 @@ export class ProductsService {
     if (product.showInWebshop !== true) {
       throw new NotFoundException('Product not found');
     }
-    return this.buildProduct(id, options.data().vat, product, campaigns);
+    return this.buildProduct(id, options.data().vat, product, campaigns, conversionRate);
   }
 }
