@@ -1,10 +1,12 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { firestore } from 'firebase-admin';
+import { Campaign } from '../campaigns/campaign.interface';
 import { Product } from './product.interface';
 
 @Injectable()
 export class ProductsService {
   private static readonly THIRTY_DAYS_IN_MS = 30 * 24 * 60 * 60 * 1000;
+  private static readonly MAX_PERCENTAGE = 100;
 
   private toValidDate(value: string): Date | null {
     const date = new Date(value);
@@ -69,9 +71,59 @@ export class ProductsService {
     return Math.min(...candidates);
   }
 
-  private buildProduct(id: string, tax: number, product: Product) {
+  private resolveCampaignLinePrice(campaign: Campaign, productId: string, retailPrice: number | null | undefined): number | null {
+    const line = Array.isArray(campaign?.products)
+      ? campaign.products.find((entry) => entry?.id === productId)
+      : null;
+
+    if (!line) return null;
+
+    if (campaign?.discountType === 'fixed') {
+      const fixed = typeof line.discountFixed === 'number' ? line.discountFixed : Number(line.discountFixed);
+      if (!Number.isFinite(fixed) || fixed <= 0) return null;
+      return fixed;
+    }
+
+    if (campaign?.discountType === 'percentage') {
+      if (typeof retailPrice !== 'number' || !Number.isFinite(retailPrice) || retailPrice <= 0) return null;
+      const percentageRaw =
+        typeof line.discountPercentage === 'number' ? line.discountPercentage : Number(line.discountPercentage);
+      if (!Number.isFinite(percentageRaw) || percentageRaw <= 0 || percentageRaw > ProductsService.MAX_PERCENTAGE) {
+        return null;
+      }
+      const result = retailPrice * (1 - (percentageRaw / 100));
+      return Number.isFinite(result) && result > 0 ? result : null;
+    }
+
+    return null;
+  }
+
+  private resolveDiscountPrice(product: Product, campaigns: Campaign[], now: Date = new Date()): number | null {
+    const candidates: number[] = [];
+
+    for (const campaign of campaigns) {
+      const code = typeof campaign?.code === 'string' ? campaign.code.trim() : '';
+      if (code.length > 0) continue;
+
+      const startDate = campaign?.start.toDate();
+      const endDate = campaign?.end.toDate();
+      if (!startDate || !endDate) continue;
+      if (now.getTime() < startDate.getTime() || now.getTime() > endDate.getTime()) continue;
+
+      const candidate = this.resolveCampaignLinePrice(campaign, product.id, product.retailPrice);
+      if (candidate != null) {
+        candidates.push(candidate);
+      }
+    }
+
+    if (candidates.length === 0) return null;
+    return Math.min(...candidates);
+  }
+
+  private buildProduct(id: string, tax: number, product: Product, campaigns: Campaign[]) {
     const retailPriceHistory = this.sanitizeRetailPriceHistory(product.retailPriceHistory);
     const lowestRetailPriceLast30Days = this.getLowestRetailPriceLast30Days(product.retailPrice, retailPriceHistory);
+    const discountPrice = this.resolveDiscountPrice({ ...product, id }, campaigns);
 
     return {
       id,
@@ -81,7 +133,7 @@ export class ProductsService {
       description_sv: product.description_sv,
       description_en: product.description_en,
       retailPrice: product.retailPrice,
-      discountPrice: null,
+      discountPrice,
       unitPrice: product.unitPrice,
       images: product.images,
       category: product.category,
@@ -104,19 +156,23 @@ export class ProductsService {
   }
 
   async getProductsByCompany(companyId: string) {
-    const taxDoc = await firestore().doc(`options/${companyId}`).get();
+    const options = await firestore().doc(`options/${companyId}`).get();
+    const campaignDocs = await firestore().collection('campaigns').where('company', '==', companyId).get();
+    const campaigns = campaignDocs.docs.map((document) => ({ ...document.data(), id: document.id } as Campaign));
     const docs = await firestore().collection('products').where('company', '==', companyId).get();
     const products = docs.docs.map((document) => {
       const product = document.data() as Product;
       if (product.showInWebshop === true) {
-        return this.buildProduct(document.id, taxDoc.data().vat, product);
+        return this.buildProduct(document.id, options.data().vat, product, campaigns);
       }
     });
     return products.filter((p) => p != null);
   }
 
   async getProductByIdAndCompany(companyId: string, id: string) {
-    const taxDoc = await firestore().doc(`options/${companyId}`).get();
+    const options = await firestore().doc(`options/${companyId}`).get();
+    const campaignDocs = await firestore().collection('campaigns').where('company', '==', companyId).get();
+    const campaigns = campaignDocs.docs.map((document) => ({ ...document.data(), id: document.id } as Campaign));
     const doc = await firestore().doc(`products/${id}`).get();
     const product = doc.data() as Product;
     if (product.company !== companyId) {
@@ -125,6 +181,6 @@ export class ProductsService {
     if (product.showInWebshop !== true) {
       throw new NotFoundException('Product not found');
     }
-    return this.buildProduct(id, taxDoc.data().vat, product);
+    return this.buildProduct(id, options.data().vat, product, campaigns);
   }
 }

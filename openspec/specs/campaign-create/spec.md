@@ -56,7 +56,7 @@ The system SHALL allow user to choose discount type as percentage from retail pr
 
 #### Scenario: Percentage discount campaign
 - **WHEN** user selects percentage type and enters valid percentage value
-- **THEN** campaign stores percentage discount configuration
+- **THEN** campaign stores percentage discount configuration that backend interprets against product `retailPrice` for effective `discountPrice` calculation
 
 #### Scenario: Fixed-price discount campaign with per-product values
 - **WHEN** user selects fixed-price type with selected-products targeting
@@ -77,4 +77,3 @@ The system SHALL allow user to choose discount type as percentage from retail pr
 #### Scenario: Invalid discount value
 - **WHEN** discount value is missing, zero, or invalid for selected discount type
 - **THEN** system blocks save and shows validation error
-

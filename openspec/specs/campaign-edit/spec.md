@@ -26,7 +26,7 @@ The system SHALL persist campaign updates when edit form passes validation.
 
 #### Scenario: Successful campaign update
 - **WHEN** user edits campaign with valid values and saves
-- **THEN** system updates campaign by ID and closes modal
+- **THEN** system updates campaign by ID and closes modal, and updated campaign values are reflected in API effective `discountPrice` calculations for active auto campaigns
 
 #### Scenario: Apply same fixed price to all targeted products during edit
 - **WHEN** user enters one fixed price in the shared bulk input and applies it in fixed-price mode
@@ -46,4 +46,3 @@ The system SHALL show updated campaign data after successful edit save.
 #### Scenario: Detail refresh after save
 - **WHEN** campaign update succeeds
 - **THEN** detail page displays latest saved campaign values
-

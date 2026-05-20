@@ -30,7 +30,7 @@ The system SHALL allow a user to update retail price and unit price for an exist
 - **THEN** the system blocks save and shows localized validation errors for invalid pricing fields
 
 ### Requirement: Retail and unit prices are returned in subsequent product reads
-The system SHALL return persisted retail and unit prices in subsequent product read responses. The backend API implementation in `functions/src/products/products.service.ts` SHALL return `lowestRetailPriceLast30Days` for both product list and product detail responses, using the same 30-day lowest-price calculation behavior as the React-side pricing utility.
+The system SHALL return persisted retail and unit prices in subsequent product read responses. The backend API implementation in `functions/src/products/products.service.ts` SHALL return `lowestRetailPriceLast30Days` for both product list and product detail responses, using the same 30-day lowest-price calculation behavior as the React-side pricing utility. The backend SHALL also return campaign-aware `discountPrice` for active auto-applied campaigns (without code), selecting the lowest valid resulting price per product.
 
 #### Scenario: Re-open product after pricing update
 - **WHEN** a product is fetched after retail/unit price values are saved
@@ -45,3 +45,22 @@ The system SHALL return persisted retail and unit prices in subsequent product r
 - **THEN** response still includes `lowestRetailPriceLast30Days`
 - **AND** its value is `null`
 
+#### Scenario: No applicable auto campaign
+- **WHEN** product has no active campaign without code that includes the product
+- **THEN** API response does not include a campaign-derived `discountPrice`
+
+#### Scenario: Single fixed-price auto campaign applies
+- **WHEN** one active no-code fixed-price campaign includes the product
+- **THEN** API returns `discountPrice` equal to that campaign line fixed price
+
+#### Scenario: Single percentage auto campaign applies
+- **WHEN** one active no-code percentage campaign includes the product
+- **THEN** API returns `discountPrice` calculated from product `retailPrice` and campaign percentage
+
+#### Scenario: Multiple auto campaigns apply
+- **WHEN** multiple active no-code campaigns include the same product
+- **THEN** API returns the lowest resulting `discountPrice` across all valid campaign candidates
+
+#### Scenario: Campaign is outside active time window
+- **WHEN** campaign start/end does not include current time
+- **THEN** campaign is ignored for `discountPrice` calculation
