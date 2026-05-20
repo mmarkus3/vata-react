@@ -1,7 +1,8 @@
-import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { firestore } from 'firebase-admin';
 import { Timestamp } from 'firebase-admin/firestore';
 import vismaPay from 'visma-pay';
+import { Campaign } from '../campaigns/campaign.interface';
 import { Product } from '../products/product.interface';
 import { Order } from './order.interface';
 
@@ -13,6 +14,7 @@ const bringHeaders = {
 
 @Injectable()
 export class OrdersService {
+  private static readonly MAX_PERCENTAGE = 100;
 
   private async setupVismaPay(companyId: string) {
     const doc = await firestore().doc(`options/${companyId}`).get();
@@ -57,6 +59,52 @@ export class OrdersService {
     return { over: item.over as number, delivery: item.delivery as number };
   }
 
+  private toDate(value: unknown): Date | null {
+    if (!value) return null;
+    if (value instanceof Date) {
+      return Number.isNaN(value.getTime()) ? null : value;
+    }
+    if (typeof value === 'string') {
+      const parsed = new Date(value);
+      return Number.isNaN(parsed.getTime()) ? null : parsed;
+    }
+    if (typeof value === 'object' && value !== null && 'toDate' in value && typeof (value as { toDate?: unknown }).toDate === 'function') {
+      const parsed = (value as { toDate: () => Date }).toDate();
+      return parsed instanceof Date && !Number.isNaN(parsed.getTime()) ? parsed : null;
+    }
+    return null;
+  }
+
+  private isCampaignActive(campaign: Campaign, now: Date): boolean {
+    const start = campaign?.start.toDate();
+    const end = campaign?.end.toDate();
+    if (!start || !end) return false;
+    return now.getTime() >= start.getTime() && now.getTime() <= end.getTime();
+  }
+
+  private getLineFinalPrice(product: Product, campaign: Campaign): number {
+    if (!campaign || !Array.isArray(campaign.products)) {
+      return product.retailPrice;
+    }
+    const line = campaign.products.find((item) => item?.id === product.id);
+    if (!line) {
+      return product.retailPrice;
+    }
+    if (campaign.discountType === 'fixed') {
+      const fixed = typeof line.discountFixed === 'number' ? line.discountFixed : Number(line.discountFixed);
+      return Number.isFinite(fixed) && fixed > 0 ? fixed : product.retailPrice;
+    }
+    if (campaign.discountType === 'percentage') {
+      const percentage = typeof line.discountPercentage === 'number' ? line.discountPercentage : Number(line.discountPercentage);
+      if (!Number.isFinite(percentage) || percentage <= 0 || percentage > OrdersService.MAX_PERCENTAGE) {
+        return product.retailPrice;
+      }
+      const discounted = product.retailPrice * (1 - (percentage / 100));
+      return Number.isFinite(discounted) && discounted > 0 ? discounted : product.retailPrice;
+    }
+    return product.retailPrice;
+  }
+
   async placeOrder(companyId: string, order: Order) {
     if (!order.id) {
       throw new BadRequestException('Order id is required');
@@ -66,7 +114,7 @@ export class OrdersService {
     if (!orderDoc.exists) {
       throw new NotFoundException('Order not found');
     }
-    const dbOrder = orderDoc.data() as Order;
+    const dbOrder = { ...orderDoc.data(), id: orderDoc.id } as Order;
     if (dbOrder.company !== companyId) {
       throw new BadRequestException('Company mismatch');
     }
@@ -76,6 +124,19 @@ export class OrdersService {
     const overFree = optionsDoc.data().over as number;
     const deliveryFee = optionsDoc.data().delivery as number;
     const orderProducts = Array.isArray(dbOrder.products) ? dbOrder.products : [];
+    const discountCode = typeof dbOrder.discount === 'string' ? dbOrder.discount.trim() : '';
+    let campaign: Campaign | null = null;
+
+    if (discountCode.length > 0) {
+      const campaignDocs = await firestore().collection('campaigns').where('company', '==', companyId).where('code', '==', discountCode).get();
+      const now = new Date();
+      campaign = campaignDocs.docs
+        .map((doc) => ({ ...doc.data(), id: doc.id }) as Campaign)
+        .find((item) => {
+          const code = typeof item?.code === 'string' ? item.code.trim() : '';
+          return code === discountCode && this.isCampaignActive(item, now);
+        }) ?? null;
+    }
 
     const productsPromise = orderProducts.map(async (line) => {
       if (!line?.id) {
@@ -98,11 +159,12 @@ export class OrdersService {
       if (stockAmount < line.amount) {
         throw new BadRequestException(`Insufficient stock for product ${line.id}`);
       }
-      return { ...product, orderAmount: line.amount, pretaxPrice: product.retailPrice - (product.retailPrice * vat) };
+      const finalPrice = this.getLineFinalPrice(product, campaign);
+      return { ...product, orderAmount: line.amount, pretaxPrice: finalPrice - (finalPrice * vat), finalPrice };
     });
 
     const products = await Promise.all(productsPromise);
-    const amount = products.reduce((prev, curr) => prev + curr.retailPrice, 0);
+    const amount = products.reduce((prev, curr) => prev + curr.finalPrice, 0);
 
     const chargeObj = {
       amount,
@@ -123,7 +185,7 @@ export class OrdersService {
         amount: p.orderAmount,
         pretax_price: p.pretaxPrice,
         tax: vat * 100,
-        price: p.retailPrice,
+        price: p.finalPrice,
         type: 1
       })),
     }
@@ -140,7 +202,15 @@ export class OrdersService {
       status: 'placed' as const,
       updated: Timestamp.now(),
       amount,
+      products: products.map((p) => ({
+        id: p.id,
+        name: p.name,
+        amount: p.orderAmount,
+        finalPrice: p.finalPrice,
+      })),
     };
+    Logger.log(updated);
+    Logger.log(chargeObj);
     /*await firestore().doc(`orders/${order.id}`).set(updated);
     return updated;*/
   }

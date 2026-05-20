@@ -14,9 +14,16 @@ export interface Campaign {
   targetingMode?: CampaignTargetingMode;
   categoryId?: string;
   selectedProductIds?: string[];
-  products: { id: string; name: string; discountFixed?: number; discountPercentage?: number }[];
+  products: CampaignProduct[];
   discountType: CampaignDiscountType;
   discountValue?: number;
   start: Timestamp;
   end: Timestamp;
+}
+
+export interface CampaignProduct {
+  id: string;
+  name: string;
+  discountFixed?: number;
+  discountPercentage?: number
 }
