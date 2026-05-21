@@ -6,10 +6,10 @@ import {
   validateCampaignCreateForm,
   type CampaignCreateFormValues,
 } from '@/app/campaign/campaignCreateForm';
-import { getCampaignDetailSummary, getCampaignDetailState } from '@/app/campaign/campaignDetailState';
+import { getCampaignDetailState, getCampaignDetailSummary } from '@/app/campaign/campaignDetailState';
 import CampaignEditModal from '@/components/campaigns/CampaignEditModal';
 import Back from '@/components/ui/back';
-import { themeColors } from '@/constants/colors';
+import Loading from '@/components/ui/loading';
 import { useAuth } from '@/hooks/useAuth';
 import { useCategories } from '@/hooks/useCategories';
 import { useProducts } from '@/hooks/useProducts';
@@ -19,7 +19,7 @@ import { formatDate } from 'date-fns';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 export default function CampaignDetailPage() {
   const { t } = useTranslation();
@@ -138,9 +138,7 @@ export default function CampaignDetailPage() {
 
   if (state === 'loading') {
     return (
-      <View className="flex-1 items-center justify-center bg-slate-50">
-        <ActivityIndicator size="large" color={themeColors.primary[600]} />
-      </View>
+      <Loading />
     );
   }
 

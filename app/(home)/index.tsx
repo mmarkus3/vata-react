@@ -1,9 +1,9 @@
 import AddProductModal from '@/components/home/AddProductModal';
 import ProductList from '@/components/home/ProductList';
-import { themeColors } from '@/constants/colors';
+import Loading from '@/components/ui/loading';
 import { useProducts } from '@/hooks/useProducts';
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function StorageScreen() {
   const [showAddModal, setShowAddModal] = useState(false);
@@ -20,9 +20,7 @@ export default function StorageScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center bg-slate-50">
-        <ActivityIndicator size="large" color={themeColors.primary[600]} />
-      </View>
+      <Loading />
     );
   }
 

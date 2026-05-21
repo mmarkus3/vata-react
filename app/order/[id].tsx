@@ -9,13 +9,13 @@ import {
 } from '@/app/order/orderDetailDeliveryState';
 import { hasOrderProductLines } from '@/app/order/orderDetailProductsState';
 import Back from '@/components/ui/back';
-import { themeColors } from '@/constants/colors';
+import Loading from '@/components/ui/loading';
 import { getOrderById, getSelectedPointInfo, resolveOrderPointId, type SelectedPointInfo } from '@/services/order';
 import type { Order } from '@/types/order';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 
 export default function OrderDetailPage() {
   const { t } = useTranslation();
@@ -110,9 +110,7 @@ export default function OrderDetailPage() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center bg-slate-50">
-        <ActivityIndicator size="large" color={themeColors.primary[600]} />
-      </View>
+      <Loading />
     );
   }
 

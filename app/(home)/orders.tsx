@@ -1,12 +1,12 @@
+import { getVisibleOrderCountry } from '@/app/order/orderCountryState';
 import { getOrderListState } from '@/app/order/orderListState';
 import { getOrderDetailsRoute } from '@/app/order/orderRoute';
-import { getVisibleOrderCountry } from '@/app/order/orderCountryState';
-import { themeColors } from '@/constants/colors';
+import Loading from '@/components/ui/loading';
 import { useOrders } from '@/hooks/useOrders';
 import { formatDate } from 'date-fns';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, FlatList, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, Text, TouchableOpacity, View } from 'react-native';
 
 export default function OrdersScreen() {
   const { t } = useTranslation();
@@ -21,9 +21,7 @@ export default function OrdersScreen() {
 
   if (state === 'loading') {
     return (
-      <View className="flex-1 items-center justify-center bg-slate-50">
-        <ActivityIndicator size="large" color={themeColors.primary[600]} />
-      </View>
+      <Loading />
     );
   }
 
@@ -56,31 +54,31 @@ export default function OrdersScreen() {
         renderItem={({ item }) => {
           const visibleCountry = getVisibleOrderCountry(item.country);
           return (
-          <TouchableOpacity
-            onPress={() => {
-              if (item.id) {
-                router.push(getOrderDetailsRoute(item.id));
-              }
-            }}
-            className="bg-white rounded-2xl border border-gray-200 px-4 py-4 mb-3 shadow-sm"
-            activeOpacity={0.8}
-          >
-            <View className="flex-row items-center justify-between">
-              <Text className="text-base font-semibold text-gray-900">#{item.id ?? '-'}</Text>
-              <Text className="text-sm font-medium text-primary-600">{getOrderStatus(item.status)}</Text>
-            </View>
-            <View className="flex-row items-center justify-between">
-              <Text className="mt-2 text-sm text-gray-600">
-                {t('orders.productCount', { count: item.products?.length ?? 0 })}
-              </Text>
-              <Text className="text-sm font-medium text-gray-600">{formatDate(item.created, 'd.M.yyyy HH:mm')}</Text>
-            </View>
-            {visibleCountry ? (
-              <Text className="mt-1 text-sm text-gray-600">
-                {t('orders.country', { country: visibleCountry, defaultValue: `Country: ${visibleCountry}` })}
-              </Text>
-            ) : null}
-          </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                if (item.id) {
+                  router.push(getOrderDetailsRoute(item.id));
+                }
+              }}
+              className="bg-white rounded-2xl border border-gray-200 px-4 py-4 mb-3 shadow-sm"
+              activeOpacity={0.8}
+            >
+              <View className="flex-row items-center justify-between">
+                <Text className="text-base font-semibold text-gray-900">#{item.id ?? '-'}</Text>
+                <Text className="text-sm font-medium text-primary-600">{getOrderStatus(item.status)}</Text>
+              </View>
+              <View className="flex-row items-center justify-between">
+                <Text className="mt-2 text-sm text-gray-600">
+                  {t('orders.productCount', { count: item.products?.length ?? 0 })}
+                </Text>
+                <Text className="text-sm font-medium text-gray-600">{formatDate(item.created, 'd.M.yyyy HH:mm')}</Text>
+              </View>
+              {visibleCountry ? (
+                <Text className="mt-1 text-sm text-gray-600">
+                  {t('orders.country', { country: visibleCountry, defaultValue: `Country: ${visibleCountry}` })}
+                </Text>
+              ) : null}
+            </TouchableOpacity>
           );
         }}
         showsVerticalScrollIndicator={false}

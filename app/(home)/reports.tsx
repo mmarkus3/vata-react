@@ -1,13 +1,13 @@
 import SegmentControl from '@/components/common/SegmentControl';
 import { SelectMonth } from '@/components/date/selectMonth';
-import { themeColors } from '@/constants/colors';
+import Loading from '@/components/ui/loading';
 import { useAuth } from '@/hooks/useAuth';
 import { getCompanyFullfilments } from '@/services/fullfliment';
 import { Fullfilment } from '@/types/fullfilment';
 import { FullfilmentByProduct, groupFullfilmentsByProduct, sortByDate } from '@/utils/fullfilmentGrouping';
 import { endOfMonth, parse, startOfMonth } from 'date-fns';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 
 export default function ReportsScreen() {
   const { user } = useAuth();
@@ -58,9 +58,7 @@ export default function ReportsScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center bg-slate-50">
-        <ActivityIndicator size="large" color={themeColors.primary[600]} />
-      </View>
+      <Loading />
     );
   }
 

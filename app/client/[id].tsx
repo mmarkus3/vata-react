@@ -3,6 +3,7 @@ import EditClientModal from '@/components/clients/EditClientModal';
 import EditFullfilmentModal from '@/components/clients/EditFullfilmentModal';
 import SegmentControl from '@/components/common/SegmentControl';
 import Back from '@/components/ui/back';
+import Loading from '@/components/ui/loading';
 import { themeColors } from '@/constants/colors';
 import { deleteClient, getClientById } from '@/services/client';
 import { getClientFullfilments } from '@/services/fullfliment';
@@ -131,10 +132,7 @@ export default function ClientDetailPage() {
 
   if (isLoadingClient) {
     return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator size="large" color={themeColors.primary[600]} />
-        <Text className="mt-4 text-gray-600">Ladataan asiakasta...</Text>
-      </View>
+      <Loading />
     );
   }
 

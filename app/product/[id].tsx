@@ -13,7 +13,7 @@ import {
 } from '@/app/product/productDetailForm';
 import Accordion from '@/components/ui/accordion';
 import Back from '@/components/ui/back';
-import { themeColors } from '@/constants/colors';
+import Loading from '@/components/ui/loading';
 import { useCategories } from '@/hooks/useCategories';
 import { deleteProduct, getProductById, updateProduct } from '@/services/product';
 import type { Product } from '@/types/product';
@@ -429,9 +429,7 @@ export default function ProductDetailPage() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center bg-slate-50">
-        <ActivityIndicator size="large" color={themeColors.primary[600]} />
-      </View>
+      <Loading />
     );
   }
 

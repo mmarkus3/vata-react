@@ -1,6 +1,7 @@
 import type { Category } from '@/types/category';
 import type { FC } from 'react';
-import { ActivityIndicator, FlatList, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, Text, TouchableOpacity, View } from 'react-native';
+import Loading from '../ui/loading';
 import CategoryListItem from './CategoryListItem';
 
 interface CategoryListProps {
@@ -20,10 +21,7 @@ const CategoryList: FC<CategoryListProps> = ({
 }) => {
   if (isLoading) {
     return (
-      <View className="flex-1 justify-center items-center">
-        <ActivityIndicator size="small" color="#1d4ed8" />
-        <Text className="ml-2 text-sm text-gray-600">Ladataan kategorioita...</Text>
-      </View>
+      <Loading />
     );
   }
 

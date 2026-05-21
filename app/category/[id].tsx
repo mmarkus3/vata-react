@@ -2,6 +2,7 @@ import CategoryProductAssignmentModal from '@/app/category/CategoryProductAssign
 import { getCategoryDetailProductsState } from '@/app/category/categoryDetailState';
 import EditCategoryModal from '@/components/categories/EditCategoryModal';
 import Back from '@/components/ui/back';
+import Loading from '@/components/ui/loading';
 import { themeColors } from '@/constants/colors';
 import { useAuth } from '@/hooks/useAuth';
 import { useCategories } from '@/hooks/useCategories';
@@ -122,9 +123,7 @@ export default function CategoryDetailPage() {
 
   if (isLoadingCategory) {
     return (
-      <View className="flex-1 items-center justify-center bg-slate-50">
-        <ActivityIndicator size="large" color={themeColors.primary[600]} />
-      </View>
+      <Loading />
     );
   }
 
