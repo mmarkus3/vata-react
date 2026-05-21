@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { firestore } from 'firebase-admin';
 import { Timestamp } from 'firebase-admin/firestore';
 import vismaPay from 'visma-pay';
@@ -109,17 +109,18 @@ export class OrdersService {
     return product.retailPrice;
   }
 
-  async placeOrder(companyId: string, order: Order) {
-    if (!order.id) {
+  async placeOrder(companyId: string, orderId: string, country: string) {
+
+    if (!orderId) {
       throw new BadRequestException('Order id is required');
     }
 
-    const orderDoc = await firestore().doc(`orders/${order.id}`).get();
+    const orderDoc = await firestore().doc(`orders/${orderId}`).get();
     if (!orderDoc.exists) {
       throw new NotFoundException('Order not found');
     }
-    const dbOrder = { ...orderDoc.data(), id: orderDoc.id } as Order;
-    if (dbOrder.company !== companyId) {
+    const order = { ...orderDoc.data(), id: orderDoc.id } as Order;
+    if (order.company !== companyId) {
       throw new BadRequestException('Company mismatch');
     }
 
@@ -127,8 +128,8 @@ export class OrdersService {
     const vat = optionsDoc.data().vat as number;
     const overFree = optionsDoc.data().over as number;
     const deliveryFee = optionsDoc.data().delivery as number;
-    const orderProducts = Array.isArray(dbOrder.products) ? dbOrder.products : [];
-    const discountCode = typeof dbOrder.discount === 'string' ? dbOrder.discount.trim() : '';
+    const orderProducts = Array.isArray(order.products) ? order.products : [];
+    const discountCode = typeof order.discount === 'string' ? order.discount.trim() : '';
     let campaign: Campaign | null = null;
 
     if (discountCode.length > 0) {
@@ -163,30 +164,31 @@ export class OrdersService {
       if (stockAmount < line.amount) {
         throw new BadRequestException(`Insufficient stock for product ${line.id}`);
       }
-      const finalPrice = this.getLineFinalPrice(product, campaign);
-      return { ...product, orderAmount: line.amount, pretaxPrice: finalPrice - (finalPrice * vat), finalPrice };
+      const finalPrice = this.getLineFinalPrice(product, campaign) * 100;
+      const pretaxPrice = Math.floor(finalPrice - (finalPrice * vat));
+      return { ...product, count: line.amount, pretaxPrice, finalPrice, id: line.id };
     });
 
     const products = await Promise.all(productsPromise);
-    const amount = products.reduce((prev, curr) => prev + curr.finalPrice, 0);
+    const amount = products.reduce((prev, curr) => prev + curr.finalPrice * curr.count, 0);
 
     const chargeObj = {
       amount,
       order_number: order.id,
-      currency: 'EUR',
+      currency: country === 'SE' ? 'SEK' : 'EUR',
       email: order.customer.email,
       payment_method: {
         type: 'e-payment',
         return_url: order.returnUrl,
         notify_url: 'https://api-a5kgud3tvq-lz.a.run.app/e-payment-notify',
-        lang: 'fi',
+        lang: country === 'SE' ? 'sv' : 'fi',
         selected: [order.paymentMethod]
       },
       customer: { ...order.customer },
       products: products.map((p) => ({
         id: p.id,
         title: p.name,
-        amount: p.orderAmount,
+        count: p.count,
         pretax_price: p.pretaxPrice,
         tax: vat * 100,
         price: p.finalPrice,
@@ -195,28 +197,34 @@ export class OrdersService {
     }
 
     // Add shipment cost
-    if (amount < overFree) {
-      const pretaxPrice = deliveryFee - (deliveryFee * vat);
-      chargeObj.products = [...chargeObj.products, { id: order.deliveryMethod, title: order.deliveryMethod, amount: 1, pretax_price: pretaxPrice, tax: vat * 100, price: deliveryFee, type: 2 }]
+    if (amount < (overFree * 100)) {
+      const deliveryFeePrice = deliveryFee * 100;
+      const pretaxPrice = Math.floor(deliveryFeePrice - (deliveryFeePrice * vat));
+      chargeObj.products = [...chargeObj.products, { id: order.deliveryMethod, title: 'Kuljetusmaksu', count: 1, pretax_price: pretaxPrice, tax: vat * 100, price: deliveryFeePrice, type: 2 }];
+      chargeObj.amount = chargeObj.amount + deliveryFeePrice;
     }
 
-    const chargeResult = await vismaPay.createCharge(chargeObj);
-    const updated = {
-      ...dbOrder,
-      status: 'placed' as const,
-      updated: Timestamp.now(),
-      amount,
-      products: products.map((p) => ({
-        id: p.id,
-        name: p.name,
-        amount: p.orderAmount,
-        finalPrice: p.finalPrice,
-      })),
-    };
-    Logger.log(updated);
-    Logger.log(chargeObj);
-    await firestore().doc(`orders/${order.id}`).set(updated);
-    return updated;
+    try {
+      await this.setupVismaPay(companyId);
+      const chargeResult = await vismaPay.createCharge(chargeObj) as { result: number; token: string; type: string };
+      const updated = {
+        ...order,
+        status: 'placed' as const,
+        updated: Timestamp.now(),
+        amount,
+        products: products.map((p) => ({
+          id: p.id,
+          name: p.name,
+          amount: p.count,
+          finalPrice: p.finalPrice,
+        })),
+        token: chargeResult.token,
+      };
+      await firestore().doc(`orders/${order.id}`).set(updated);
+      return { url: `${vismaPay.apiUrl}/token/${chargeResult.token}` };
+    } catch (err) {
+      throw new InternalServerErrorException(err);
+    }
   }
 
   async createOrder(order: Order) {

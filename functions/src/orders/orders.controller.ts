@@ -12,9 +12,9 @@ export class OrdersController {
     return this.ordersService.createOrder(order);
   }
 
-  @Post('company/:company/:orderId/place')
-  placeOrder(@Param('company') companyId: string, @Param('orderId') orderId, @Body() order: Order) {
-    return this.ordersService.placeOrder(companyId, order);
+  @Post('company/:company/place')
+  placeOrder(@Param('company') companyId: string, @Query('country') country = 'FI', @Body() item: { orderId: string }) {
+    return this.ordersService.placeOrder(companyId, item.orderId, country);
   }
 
   @Put('company/:company/:orderId')
