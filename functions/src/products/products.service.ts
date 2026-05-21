@@ -172,10 +172,10 @@ export class ProductsService {
     };
   }
 
-  private async getConversionRate(country: string): Promise<number | null> {
+  private async getConversionRate(companyId: string, country: string): Promise<number | null> {
     if (country !== 'SE') return null;
     try {
-      const currency = await getRate();
+      const currency = await getRate(companyId);
       return typeof currency?.rate === 'number' && Number.isFinite(currency.rate) && currency.rate > 0
         ? currency.rate
         : null;
@@ -186,14 +186,15 @@ export class ProductsService {
 
   async getProductsByCompany(companyId: string, country: string) {
     const options = await firestore().doc(`options/${companyId}`).get();
-    const conversionRate = await this.getConversionRate(country);
+    const optionsData = options.data();
+    const conversionRate = await this.getConversionRate(companyId, country);
     const campaignDocs = await firestore().collection('campaigns').where('company', '==', companyId).get();
     const campaigns = campaignDocs.docs.map((document) => ({ ...document.data(), id: document.id } as Campaign));
     const docs = await firestore().collection('products').where('company', '==', companyId).get();
     const products = docs.docs.map((document) => {
       const product = document.data() as Product;
       if (product.showInWebshop === true) {
-        return this.buildProduct(document.id, options.data().vat, product, campaigns, conversionRate);
+        return this.buildProduct(document.id, optionsData.vat, product, campaigns, conversionRate);
       }
     });
     return products.filter((p) => p != null);
@@ -201,7 +202,8 @@ export class ProductsService {
 
   async getProductByIdAndCompany(companyId: string, id: string, country: string) {
     const options = await firestore().doc(`options/${companyId}`).get();
-    const conversionRate = await this.getConversionRate(country);
+    const optionsData = options.data();
+    const conversionRate = await this.getConversionRate(companyId, country);
     const campaignDocs = await firestore().collection('campaigns').where('company', '==', companyId).get();
     const campaigns = campaignDocs.docs.map((document) => ({ ...document.data(), id: document.id } as Campaign));
     const doc = await firestore().doc(`products/${id}`).get();
@@ -212,6 +214,6 @@ export class ProductsService {
     if (product.showInWebshop !== true) {
       throw new NotFoundException('Product not found');
     }
-    return this.buildProduct(id, options.data().vat, product, campaigns, conversionRate);
+    return this.buildProduct(id, optionsData.vat, product, campaigns, conversionRate);
   }
 }

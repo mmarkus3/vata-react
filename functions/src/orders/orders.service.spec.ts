@@ -34,11 +34,11 @@ describe('OrdersService', () => {
 
   const mockCampaignGet = jest.fn();
   const mockProductsGet = jest.fn();
-  const mockCollection = jest.fn((name: string) => ({
-    where: jest.fn(() => ({
-      get: name === 'campaigns' ? mockCampaignGet : mockProductsGet,
-    })),
-  }));
+  const makeQuery = (getFn: jest.Mock) => ({
+    where: jest.fn(() => makeQuery(getFn)),
+    get: getFn,
+  });
+  const mockCollection = jest.fn((name: string) => makeQuery(name === 'campaigns' ? mockCampaignGet : mockProductsGet));
 
   beforeEach(async () => {
     jest.clearAllMocks();

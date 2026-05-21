@@ -65,7 +65,7 @@ export class OrdersService {
     }
 
     try {
-      const rateResponse = await getRate();
+      const rateResponse = await getRate(companyId);
       const rate = typeof rateResponse?.rate === 'number' ? rateResponse.rate : Number.NaN;
       if (!Number.isFinite(rate) || rate <= 0) {
         return { over, delivery };
@@ -215,8 +215,8 @@ export class OrdersService {
     };
     Logger.log(updated);
     Logger.log(chargeObj);
-    /*await firestore().doc(`orders/${order.id}`).set(updated);
-    return updated;*/
+    await firestore().doc(`orders/${order.id}`).set(updated);
+    return updated;
   }
 
   async createOrder(order: Order) {
