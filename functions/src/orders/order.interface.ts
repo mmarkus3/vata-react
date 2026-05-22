@@ -4,7 +4,7 @@ export interface Order {
   id?: string;
   company: string;
   created: Timestamp;
-  status: 'draft' | 'pending' | 'placed' | 'sent';
+  status: 'draft' | 'pending' | 'placed' | 'paid' | 'sent';
   products: OrderProduct[];
   updated?: Timestamp;
   customer?: OrderCustomer;

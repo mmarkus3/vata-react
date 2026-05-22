@@ -2,7 +2,7 @@ export interface Order {
   id?: string;
   company: string;
   created: Date;
-  status: 'draft' | 'pending' | 'placed' | 'sent';
+  status: 'draft' | 'pending' | 'placed' | 'paid' | 'sent';
   products: OrderProduct[];
   updated?: Date;
   customer?: OrderCustomer;

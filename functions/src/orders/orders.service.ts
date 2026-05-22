@@ -1,10 +1,10 @@
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { firestore } from 'firebase-admin';
 import { Timestamp } from 'firebase-admin/firestore';
-import vismaPay from 'visma-pay';
 import { Campaign } from '../campaigns/campaign.interface';
 import { getRate } from '../currency/currency';
 import { Product } from '../products/product.interface';
+import { setupVismaPay } from '../visma/options';
 import { Order } from './order.interface';
 
 const bringHeaders = {
@@ -17,15 +17,8 @@ const bringHeaders = {
 export class OrdersService {
   private static readonly MAX_PERCENTAGE = 100;
 
-  private async setupVismaPay(companyId: string) {
-    const doc = await firestore().doc(`options/${companyId}`).get();
-    const item = doc.data();
-    vismaPay.setPrivateKey(item.vismapay.privateKey ?? '');
-    vismaPay.setApiKey(item.vismapay.apiKey ?? '');
-  }
-
   async getPaymentMethods(companyId: string, currency: string) {
-    await this.setupVismaPay(companyId);
+    const vismaPay = await setupVismaPay(companyId);
     try {
       const result = await vismaPay.getMerchantPaymentMethods(currency);
       return result.payment_methods;
@@ -180,7 +173,7 @@ export class OrdersService {
       payment_method: {
         type: 'e-payment',
         return_url: order.returnUrl,
-        notify_url: 'https://api-a5kgud3tvq-lz.a.run.app/e-payment-notify',
+        notify_url: `https://api-a5kgud3tvq-lz.a.run.app/e-payment-notify?companyId=${companyId}`,
         lang: country === 'SE' ? 'sv' : 'fi',
         selected: [order.paymentMethod]
       },
@@ -205,7 +198,7 @@ export class OrdersService {
     }
 
     try {
-      await this.setupVismaPay(companyId);
+      const vismaPay = await setupVismaPay(companyId);
       const chargeResult = await vismaPay.createCharge(chargeObj) as { result: number; token: string; type: string };
       const updated = {
         ...order,
@@ -246,13 +239,16 @@ export class OrdersService {
   }
 
   async updateOnlyOrder(companyId: string, order: Partial<Order>) {
-    const orderDoc = await firestore().doc(`orders/${order.id!}`).get();
+    if (order.id == null) {
+      throw new BadRequestException('Order id missing');
+    }
+    const orderDoc = await firestore().doc(`orders/${order.id}`).get();
     const dbOrder = orderDoc.data() as Order;
     if (dbOrder.company !== companyId) {
       throw new BadRequestException('Company mismatch');
     }
     order.updated = Timestamp.now();
-    const doc = await firestore().doc(`orders/${order.id!}`).update(order);
+    const doc = await firestore().doc(`orders/${order.id}`).update(order);
     return { ...order, updated: doc.writeTime };
   }
 }
