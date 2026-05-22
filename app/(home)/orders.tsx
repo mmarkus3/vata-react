@@ -13,7 +13,7 @@ export default function OrdersScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { orders, isLoading, error } = useOrders();
-  const [segment, setSegment] = useState<OrderSegment>('placed');
+  const [segment, setSegment] = useState<OrderSegment>('paid');
   const [query, setQuery] = useState('');
 
   const state = getOrderListState({ isLoading, error, orders });
