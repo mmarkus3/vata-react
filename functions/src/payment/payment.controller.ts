@@ -21,9 +21,8 @@ export class PaymentController {
     this.paymentService.checkResult(companyId, { AUTHCODE, RETURN_CODE, ORDER_NUMBER, SETTLED, CONTACT_ID, INCIDENT_ID }).then((result) => {
       if (result) {
         this.ordersService.updateOnlyOrder(companyId, { id: ORDER_NUMBER, status: 'paid' });
-        // TODO: send email about new order
       }
-    })
+    });
 
     return;
   }

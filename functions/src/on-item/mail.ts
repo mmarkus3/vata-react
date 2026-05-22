@@ -3,6 +3,7 @@ import { onDocumentCreated } from 'firebase-functions/v2/firestore';
 import { getGeneralTemplate } from '../email/general.template';
 import { sendEmail } from '../email/send-email';
 import { Order } from '../orders/order.interface';
+import { Mail } from './mail.interface';
 
 export interface SubItem {
   guid: string;
@@ -17,6 +18,29 @@ export interface FullfilmentItem extends SubItem {
 export interface FullfilmentProduct {
   amount: number;
   product: FullfilmentItem;
+}
+
+export function getPaidOrderNotificationBody(orderId: string, order: Order): string {
+  const productRows = (order.products ?? []).map((product) => {
+    const productName = product.name || '-';
+    const productAmount = typeof product.amount === 'number' ? product.amount : 0;
+    return `
+      <tr>
+        <td>${productName}</td>
+        <td>${productAmount}</td>
+      </tr>`;
+  }).join('');
+
+  return `
+    <p>Uusi tilaus #${orderId} on vastaanotettu.</p>
+    <p><strong>Tuotteet</strong></p>
+    <table>
+      <tr>
+        <th>Tuote</th><th>Määrä</th>
+      </tr>
+      ${productRows}
+    </table>
+  `;
 }
 
 export function getSentOrderBody(orderId: string, order: Order): string {
@@ -52,7 +76,7 @@ export function getSentOrderBody(orderId: string, order: Order): string {
 }
 
 export const onMail = onDocumentCreated({ document: '/mail/{documentId}', region: 'europe-north1' }, async (event) => {
-  const document = event.data?.data();
+  const document = event.data?.data() as Mail;
 
   if (document) {
     if (document.fullfilment) {
@@ -80,6 +104,19 @@ export const onMail = onDocumentCreated({ document: '/mail/{documentId}', region
       </table>
       <p>Hinnat sis. alv</p>
     `;
+      const html = getGeneralTemplate(title, body);
+      return sendEmail(document.email, title, html, document.from, document.replyTo);
+    } else if (document.recieveNotification && document.order) {
+      const orderRef = firestore().doc(`orders/${document.order}`);
+      const orderDoc = await orderRef.get();
+      const order = orderDoc.data() as Order;
+      if (!order) {
+        console.error(`Order ${document.order} not found for mail`);
+        return;
+      }
+
+      const title = 'Uusi tilaus vastaanotettu';
+      const body = getPaidOrderNotificationBody(document.order, order);
       const html = getGeneralTemplate(title, body);
       return sendEmail(document.email, title, html, document.from, document.replyTo);
     } else if (document.order) {
