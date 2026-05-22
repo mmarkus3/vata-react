@@ -37,3 +37,11 @@ The mail processing function SHALL support `recieveNotification` order notificat
 - **WHEN** `recieveNotification` mail is processed but referenced order is missing
 - **THEN** system does not send email and logs an error
 
+### Requirement: Shared order update trigger handles paid stock side effect
+The backend order update trigger SHALL process paid-transition stock decrement side effects in addition to existing notification behavior.
+
+#### Scenario: Paid transition executes stock decrement and paid notification logic
+- **WHEN** an order transitions to `paid`
+- **THEN** backend evaluates and applies product stock decrements
+- **AND** backend continues paid-notification mail flow per existing requirements
+

@@ -1,7 +1,7 @@
 import { firestore } from 'firebase-admin';
 import { onDocumentUpdated } from 'firebase-functions/v2/firestore';
 import { Options } from '../options/options.interface';
-import { Order } from '../orders/order.interface';
+import { Order, OrderProduct } from '../orders/order.interface';
 
 export function shouldCreateSentMail(before: Order, after: Order): boolean {
   const beforeStatus = (before as { status?: string } | undefined)?.status;
@@ -17,7 +17,54 @@ export function shouldCreatePaidOrderNotification(before: Order | undefined, aft
 
 export function getNotificationReceiverEmail(options: Options | undefined): string | null {
   const email = options?.email?.trim();
-  return email ?? null;
+  return email ? email : null;
+}
+
+export interface ProductStockSnapshot {
+  id: string;
+  amount: number;
+}
+
+export interface ProductStockUpdate {
+  id: string;
+  nextAmount: number;
+}
+
+function aggregateOrderProductAmounts(orderProducts: OrderProduct[]): Map<string, number> {
+  const aggregated = new Map<string, number>();
+  for (const line of orderProducts) {
+    if (!line?.id) {
+      throw new Error('Order contains invalid product reference');
+    }
+    const requested = Number(line.amount);
+    if (!Number.isFinite(requested) || requested <= 0) {
+      throw new Error(`Invalid order amount for product ${line.id}`);
+    }
+    aggregated.set(line.id, (aggregated.get(line.id) ?? 0) + requested);
+  }
+  return aggregated;
+}
+
+export function buildPaidOrderStockUpdates(orderProducts: OrderProduct[], products: ProductStockSnapshot[]): ProductStockUpdate[] {
+  const aggregated = aggregateOrderProductAmounts(orderProducts);
+  const currentById = new Map(products.map((item) => [item.id, item.amount] as const));
+
+  return Array.from(aggregated.entries()).map(([productId, requestedAmount]) => {
+    if (!currentById.has(productId)) {
+      throw new Error(`Product not found: ${productId}`);
+    }
+    const currentAmount = Number(currentById.get(productId));
+    if (!Number.isFinite(currentAmount)) {
+      throw new Error(`Invalid stock amount for product ${productId}`);
+    }
+    if (currentAmount < requestedAmount) {
+      throw new Error(`Insufficient stock for product ${productId}`);
+    }
+    return {
+      id: productId,
+      nextAmount: currentAmount - requestedAmount,
+    };
+  });
 }
 
 export const onOrderUpdated = onDocumentUpdated({ document: '/orders/{orderId}', region: 'europe-north1' }, async (event) => {
@@ -40,6 +87,31 @@ export const onOrderUpdated = onDocumentUpdated({ document: '/orders/{orderId}',
 
   if (!shouldCreatePaidOrderNotification(before, after)) {
     return;
+  }
+
+  const orderProducts = Array.isArray(after?.products) ? after.products : [];
+  if (orderProducts.length > 0) {
+    await firestore().runTransaction(async (transaction) => {
+      const uniqueProductIds = Array.from(new Set(orderProducts.map((line) => line.id).filter(Boolean)));
+      const productSnapshots = await Promise.all(uniqueProductIds.map(async (productId) => {
+        const ref = firestore().doc(`products/${productId}`);
+        const doc = await transaction.get(ref);
+        if (!doc.exists) {
+          throw new Error(`Product not found: ${productId}`);
+        }
+        const amountValue = Number((doc.data() as { amount?: unknown })?.amount);
+        return {
+          id: productId,
+          amount: amountValue,
+        };
+      }));
+
+      const updates = buildPaidOrderStockUpdates(orderProducts, productSnapshots);
+      for (const update of updates) {
+        const ref = firestore().doc(`products/${update.id}`);
+        transaction.update(ref, { amount: update.nextAmount });
+      }
+    });
   }
 
   const companyId = after?.company?.trim();
