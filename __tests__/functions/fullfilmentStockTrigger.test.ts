@@ -23,7 +23,7 @@ describe('fullfilment stock delta builder', () => {
     expect(Array.from(delta.entries())).toEqual([['p1', -3]]);
   });
 
-  it('returns update delta by difference', () => {
+  it('restores stock when one product is removed on update', () => {
     const delta = buildFullfilmentDelta(
       [
         { id: 'p1', amount: 2 },
@@ -33,6 +33,20 @@ describe('fullfilment stock delta builder', () => {
     );
     expect(Array.from(delta.entries())).toEqual([
       ['p1', 3],
+      ['p2', -1],
+    ]);
+  });
+
+  it('restores stock for all removed products', () => {
+    const delta = buildFullfilmentDelta(
+      [
+        { id: 'p1', amount: 2 },
+        { id: 'p2', amount: 1 },
+      ],
+      []
+    );
+    expect(Array.from(delta.entries())).toEqual([
+      ['p1', -2],
       ['p2', -1],
     ]);
   });

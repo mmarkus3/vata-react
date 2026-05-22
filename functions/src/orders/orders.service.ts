@@ -44,7 +44,7 @@ export class OrdersService {
     const response = await fetch(`https://api.bring.com/pickuppoint/api/pickuppoint/${country}/id/${id}`, {
       headers: bringHeaders,
     });
-    const data = await response.json() as { pickupPoint: any[] };
+    const data = await response.json() as { pickupPoint: unknown[] };
     return data.pickupPoint.length > 0 ? data.pickupPoint[0] : null;
   }
 

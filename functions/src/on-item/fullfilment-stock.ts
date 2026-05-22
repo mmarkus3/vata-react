@@ -1,6 +1,7 @@
 import { firestore } from 'firebase-admin';
 import { onDocumentWritten } from 'firebase-functions/v2/firestore';
 import { Fullfilment } from '../fullfilments/fullfilment.interface';
+import { Product } from '../products/product.interface';
 import { buildStockUpdatesByDelta, type StockLineAmount, type StockSnapshot } from '../stock/stock-adjust';
 
 
@@ -50,7 +51,7 @@ export const onFullfilmentWritten = onDocumentWritten({ document: '/fullfilments
       }
       snapshots.push({
         id: productId,
-        amount: Number((doc.data() as { amount?: unknown })?.amount),
+        amount: ((doc.data() as Product)?.amount),
       });
     }
 
