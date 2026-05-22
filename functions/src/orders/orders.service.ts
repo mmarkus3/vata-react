@@ -3,6 +3,7 @@ import { firestore } from 'firebase-admin';
 import { Timestamp } from 'firebase-admin/firestore';
 import { Campaign } from '../campaigns/campaign.interface';
 import { getRate } from '../currency/currency';
+import { Options } from '../options/options.interface';
 import { Product } from '../products/product.interface';
 import { setupVismaPay } from '../visma/options';
 import { Order } from './order.interface';
@@ -49,9 +50,9 @@ export class OrdersService {
 
   async getPrices(companyId: string, country = 'FI') {
     const doc = await firestore().doc(`options/${companyId}`).get();
-    const item = doc.data();
-    const over = item.over as number;
-    const delivery = item.delivery as number;
+    const item = doc.data() as Options;
+    const over = item.over;
+    const delivery = item.delivery;
 
     if (country !== 'SE') {
       return { over, delivery };
@@ -118,9 +119,10 @@ export class OrdersService {
     }
 
     const optionsDoc = await firestore().doc(`options/${companyId}`).get();
-    const vat = optionsDoc.data().vat as number;
-    const overFree = optionsDoc.data().over as number;
-    const deliveryFee = optionsDoc.data().delivery as number;
+    const options = optionsDoc.data() as Options;
+    const vat = options.vat;
+    const overFree = options.over;
+    const deliveryFee = options.delivery;
     const orderProducts = Array.isArray(order.products) ? order.products : [];
     const discountCode = typeof order.discount === 'string' ? order.discount.trim() : '';
     let campaign: Campaign | null = null;

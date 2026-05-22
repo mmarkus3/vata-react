@@ -1,4 +1,5 @@
 import { firestore } from 'firebase-admin';
+import { Options } from '../options/options.interface';
 import { Currency } from './currency.interface';
 
 const api = 'https://api.frankfurter.dev/v2/rate/eur/sek';
@@ -17,7 +18,7 @@ const getCachedRate = (options: any, today: string): number | null => {
 export async function getRate(companyId?: string) {
   if (companyId) {
     const doc = await firestore().doc(`options/${companyId}`).get();
-    const options = doc.data();
+    const options = doc.data() as Options;
     const today = getCurrentDateKey();
     const cachedRate = getCachedRate(options, today);
     if (cachedRate != null) {

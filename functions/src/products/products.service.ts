@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { firestore } from 'firebase-admin';
 import { Campaign } from '../campaigns/campaign.interface';
 import { getRate } from '../currency/currency';
+import { Options } from '../options/options.interface';
 import { Product } from './product.interface';
 
 @Injectable()
@@ -186,7 +187,7 @@ export class ProductsService {
 
   async getProductsByCompany(companyId: string, country: string) {
     const options = await firestore().doc(`options/${companyId}`).get();
-    const optionsData = options.data();
+    const optionsData = options.data() as Options;
     const conversionRate = await this.getConversionRate(companyId, country);
     const campaignDocs = await firestore().collection('campaigns').where('company', '==', companyId).get();
     const campaigns = campaignDocs.docs.map((document) => ({ ...document.data(), id: document.id } as Campaign));
@@ -202,7 +203,7 @@ export class ProductsService {
 
   async getProductByIdAndCompany(companyId: string, id: string, country: string) {
     const options = await firestore().doc(`options/${companyId}`).get();
-    const optionsData = options.data();
+    const optionsData = options.data() as Options;
     const conversionRate = await this.getConversionRate(companyId, country);
     const campaignDocs = await firestore().collection('campaigns').where('company', '==', companyId).get();
     const campaigns = campaignDocs.docs.map((document) => ({ ...document.data(), id: document.id } as Campaign));
