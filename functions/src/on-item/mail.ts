@@ -19,6 +19,42 @@ export interface FullfilmentProduct {
   product: FullfilmentItem;
 }
 
+export function getSentOrderBody(orderId: string, order: Order): string {
+  const customer = order.customer;
+  const customerName = [customer?.firstname, customer?.lastname].filter(Boolean).join(' ').trim() || '-';
+  const customerEmail = customer?.email?.trim() || '-';
+  const customerPhone = customer?.phone?.trim() || '-';
+  const customerAddress = [customer?.address_street, customer?.address_zip, customer?.address_city].filter(Boolean).join(', ') || '-';
+
+  const productRows = (order.products ?? []).map((product) => {
+    const productName = product.name || '-';
+    const productAmount = typeof product.amount === 'number' ? product.amount : 0;
+    return `
+      <tr>
+        <td>${productName}</td>
+        <td>${productAmount}</td>
+      </tr>`;
+  }).join('');
+
+  return `
+    <p>Tilauksesi #${orderId} on lähetetty.</p>
+    <p><strong>Asiakastiedot</strong></p>
+    <p>
+      ${customerName}<br/>
+      ${customerEmail}<br/>
+      ${customerPhone}<br/>
+      ${customerAddress}
+    </p>
+    <p><strong>Tuotteet</strong></p>
+    <table>
+      <tr>
+        <th>Tuote</th><th>Määrä</th>
+      </tr>
+      ${productRows}
+    </table>
+  `;
+}
+
 export const onMail = onDocumentCreated({ document: '/mail/{documentId}', region: 'europe-north1' }, async (event) => {
   const document = event.data?.data();
 
@@ -49,13 +85,23 @@ export const onMail = onDocumentCreated({ document: '/mail/{documentId}', region
       <p>Hinnat sis. alv</p>
     `;
       const html = getGeneralTemplate(title, body);
-      return sendEmail(document.email, title, html, document.from, document.replayTo);
+      return sendEmail(document.email, title, html, document.from, document.replyTo);
     } else if (document.order) {
       const orderRef = firestore().doc(`orders/${document.order}`);
       const orderDoc = await orderRef.get();
       const order = orderDoc.data() as Order;
+      if (!order) {
+        console.error(`Order ${document.order} not found for mail`);
+        return;
+      }
+
+      const title = 'Tilauksesi on lähetetty';
+      const body = getSentOrderBody(document.order, order);
+      const html = getGeneralTemplate(title, body);
+      return sendEmail(document.email, title, html, document.from, document.replyTo);
     } else {
-      return sendEmail(document.email, 'Testi', getGeneralTemplate('Testi', 'Puuttuu täyttö-id'), document.from, document.replayTo);
+      console.error('Fullfilment and order id is missing');
+      return;
     }
   } else {
     return;
