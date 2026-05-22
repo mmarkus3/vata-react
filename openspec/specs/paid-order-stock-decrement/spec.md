@@ -27,3 +27,10 @@ The backend SHALL apply stock decrements as an all-or-nothing operation across a
 - **THEN** backend aborts stock decrement operation
 - **AND** no product amounts are changed
 
+### Requirement: Paid-order and fullfilment flows share stock utility module
+The backend SHALL use shared stock-alteration utility functions for both paid-order and fullfilment stock sync flows.
+
+#### Scenario: Shared helper used by both triggers
+- **WHEN** paid-order decrement or fullfilment stock sync executes
+- **THEN** both flows use the same common stock calculation and validation utility layer
+

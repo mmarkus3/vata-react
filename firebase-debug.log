@@ -1,0 +1,35 @@
+[debug] [2026-05-22T08:09:52.054Z] ----------------------------------------------------------------------
+[debug] [2026-05-22T08:09:52.056Z] Command:       /Users/markusmontonen/.nvm/versions/node/v24.1.0/bin/node /Users/markusmontonen/.nvm/versions/node/v24.1.0/bin/firebase deploy --only functions
+[debug] [2026-05-22T08:09:52.056Z] CLI Version:   15.18.0
+[debug] [2026-05-22T08:09:52.057Z] Platform:      darwin
+[debug] [2026-05-22T08:09:52.057Z] Node Version:  v24.1.0
+[debug] [2026-05-22T08:09:52.057Z] Time:          Fri May 22 2026 11:09:52 GMT+0300 (Eastern European Summer Time)
+[debug] [2026-05-22T08:09:52.057Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-05-22T08:09:53.226Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-05-22T08:09:53.226Z] > authorizing via signed-in user (montonen.markus@gmail.com)
+[debug] [2026-05-22T08:09:53.226Z] [iam] checking project vata-app-b0114 for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]
+[debug] [2026-05-22T08:09:53.227Z] Checked if tokens are valid: false, expires at: 1779435814066
+[debug] [2026-05-22T08:09:53.227Z] Checked if tokens are valid: false, expires at: 1779435814066
+[debug] [2026-05-22T08:09:53.227Z] > refreshing access token with scopes: []
+[debug] [2026-05-22T08:09:53.228Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-05-22T08:09:53.229Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-05-22T08:09:53.329Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-05-22T08:09:53.329Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-05-22T08:09:53.344Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/vata-app-b0114:testIamPermissions [none]
+[debug] [2026-05-22T08:09:53.344Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/vata-app-b0114:testIamPermissions  x-goog-user-project=vata-app-b0114
+[debug] [2026-05-22T08:09:53.344Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/vata-app-b0114:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2026-05-22T08:09:54.171Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/vata-app-b0114:testIamPermissions 200
+[debug] [2026-05-22T08:09:54.172Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/vata-app-b0114:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2026-05-22T08:09:54.172Z] Checked if tokens are valid: true, expires at: 1779440992329
+[debug] [2026-05-22T08:09:54.172Z] Checked if tokens are valid: true, expires at: 1779440992329
+[debug] [2026-05-22T08:09:54.173Z] >>> [apiv2][query] POST https://iam.googleapis.com/v1/projects/vata-app-b0114/serviceAccounts/vata-app-b0114@appspot.gserviceaccount.com:testIamPermissions [none]
+[debug] [2026-05-22T08:09:54.173Z] >>> [apiv2][body] POST https://iam.googleapis.com/v1/projects/vata-app-b0114/serviceAccounts/vata-app-b0114@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[debug] [2026-05-22T08:09:54.971Z] <<< [apiv2][status] POST https://iam.googleapis.com/v1/projects/vata-app-b0114/serviceAccounts/vata-app-b0114@appspot.gserviceaccount.com:testIamPermissions 200
+[debug] [2026-05-22T08:09:54.972Z] <<< [apiv2][body] POST https://iam.googleapis.com/v1/projects/vata-app-b0114/serviceAccounts/vata-app-b0114@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[info] 
+[info] === Deploying to 'vata-app-b0114'...
+[info] 
+[info] i  deploying functions 
+[info] Running command: npm --prefix "$RESOURCE_DIR" run lint
+[info] Running command: npm --prefix "$RESOURCE_DIR" run build

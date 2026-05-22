@@ -43,3 +43,11 @@ The system MUST recalculate inventory changes based on difference between origin
 - **WHEN** user removes or adds a product line in fullfilment edit
 - **THEN** system restores or decrements inventory accordingly for removed/added lines
 
+### Requirement: Fullfilment inventory side effects are backend-triggered
+The system SHALL perform fullfilment inventory adjustments in backend fullfilment document-write triggers instead of client/service-side stock mutation logic.
+
+#### Scenario: Fullfilment saved from any client path updates stock consistently
+- **WHEN** fullfilment create/update/delete is persisted to Firestore
+- **THEN** backend trigger applies corresponding stock adjustments
+- **AND** behavior is independent of originating client path
+
