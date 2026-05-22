@@ -15,7 +15,20 @@ const getOrderTimeValue = (value: unknown): number => {
   return 0;
 };
 
-export function getSegmentedOrders(orders: Order[], segment: OrderSegment): Order[] {
+const normalize = (value: unknown): string => {
+  if (typeof value !== 'string') return '';
+  return value.trim().toLowerCase();
+};
+
+const getCustomerSearchText = (order: Order): string => {
+  const firstName = normalize(order.customer?.firstname);
+  const lastName = normalize(order.customer?.lastname);
+  const fullName = `${firstName} ${lastName}`.trim();
+  const email = normalize(order.customer?.email);
+  return `${firstName} ${lastName} ${fullName} ${email}`.trim();
+};
+
+const filterBySegmentAndSort = (orders: Order[], segment: OrderSegment): Order[] => {
   return orders
     .filter((order) => order.status === segment)
     .sort((left, right) => {
@@ -26,6 +39,24 @@ export function getSegmentedOrders(orders: Order[], segment: OrderSegment): Orde
       }
       return (left.id ?? '').localeCompare(right.id ?? '');
     });
+};
+
+export function getSegmentedOrders(orders: Order[], segment: OrderSegment): Order[] {
+  return filterBySegmentAndSort(orders, segment);
+}
+
+export function getFilteredSegmentedOrders(orders: Order[], segment: OrderSegment, query: string): Order[] {
+  const segmented = filterBySegmentAndSort(orders, segment);
+  const normalizedQuery = normalize(query);
+  if (!normalizedQuery) {
+    return segmented;
+  }
+
+  return segmented.filter((order) => {
+    const orderId = normalize(order.id ?? '');
+    const customerText = getCustomerSearchText(order);
+    return orderId.includes(normalizedQuery) || customerText.includes(normalizedQuery);
+  });
 }
 
 export function getOrderListState(input: {

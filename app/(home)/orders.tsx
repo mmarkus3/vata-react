@@ -1,5 +1,5 @@
 import { getVisibleOrderCountry } from '@/app/order/orderCountryState';
-import { getOrderListState, getSegmentedOrders, type OrderSegment } from '@/app/order/orderListState';
+import { getFilteredSegmentedOrders, getOrderListState, type OrderSegment } from '@/app/order/orderListState';
 import { getOrderDetailsRoute } from '@/app/order/orderRoute';
 import Loading from '@/components/ui/loading';
 import { useOrders } from '@/hooks/useOrders';
@@ -7,16 +7,17 @@ import { formatDate } from 'date-fns';
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FlatList, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function OrdersScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { orders, isLoading, error } = useOrders();
   const [segment, setSegment] = useState<OrderSegment>('placed');
+  const [query, setQuery] = useState('');
 
   const state = getOrderListState({ isLoading, error, orders });
-  const segmentedOrders = useMemo(() => getSegmentedOrders(orders, segment), [orders, segment]);
+  const segmentedOrders = useMemo(() => getFilteredSegmentedOrders(orders, segment, query), [orders, query, segment]);
 
   const getOrderStatus = (status: string) => {
     return t('orders.statuses.' + status);
@@ -66,6 +67,16 @@ export default function OrdersScreen() {
           );
         })}
       </View>
+      <View className="px-4 pt-3">
+        <TextInput
+          value={query}
+          onChangeText={setQuery}
+          placeholder={t('orders.filterPlaceholder')}
+          className="rounded-2xl border border-gray-300 bg-white px-3 py-3 text-sm text-gray-900"
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+      </View>
       <FlatList
         className="px-4 py-3"
         data={segmentedOrders}
@@ -102,7 +113,9 @@ export default function OrdersScreen() {
         }}
         ListEmptyComponent={(
           <View className="rounded-2xl border border-gray-200 bg-white px-4 py-6">
-            <Text className="text-center text-sm text-gray-500">{t('orders.emptyDescription')}</Text>
+            <Text className="text-center text-sm text-gray-500">
+              {query.trim() ? t('orders.emptyFilteredDescription') : t('orders.emptyDescription')}
+            </Text>
           </View>
         )}
         showsVerticalScrollIndicator={false}

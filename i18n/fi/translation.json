@@ -23,6 +23,8 @@
     "errorTitle": "Tilausten haku epäonnistui",
     "emptyTitle": "Ei vielä tilauksia",
     "emptyDescription": "Tilaukset näkyvät täällä, kun niitä on luotu.",
+    "emptyFilteredDescription": "Yhtään tilausta ei löytynyt haulla.",
+    "filterPlaceholder": "Hae tilausnumerolla tai asiakkaalla",
     "productCount": "{{count}} tuotetta",
     "detail": {
       "title": "Tilaus #{{id}}",

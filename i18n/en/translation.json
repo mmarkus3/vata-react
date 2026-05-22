@@ -23,6 +23,8 @@
     "errorTitle": "Orders fetch failed",
     "emptyTitle": "No orders yet",
     "emptyDescription": "Orders will appear here once they are created.",
+    "emptyFilteredDescription": "No orders match your filter.",
+    "filterPlaceholder": "Filter by order id or customer",
     "productCount": "{{count}} products",
     "detail": {
       "title": "Order #{{id}}",

@@ -1,4 +1,4 @@
-import { getOrderListState, getSegmentedOrders } from '@/app/order/orderListState';
+import { getFilteredSegmentedOrders, getOrderListState, getSegmentedOrders } from '@/app/order/orderListState';
 
 describe('orderListState', () => {
   it('returns loading while fetching orders', () => {
@@ -44,5 +44,55 @@ describe('orderListState', () => {
     ] as any;
 
     expect(getSegmentedOrders(placed, 'placed').map((item) => item.id)).toEqual(['o1', 'o2', 'o3']);
+  });
+
+  it('filters by order id, customer name, and email case-insensitively', () => {
+    const orders = [
+      {
+        id: 'ORD-1001',
+        company: 'c1',
+        created: new Date('2026-05-20T10:00:00.000Z'),
+        status: 'paid',
+        products: [],
+        customer: { firstname: 'Ada', lastname: 'Lovelace', email: 'ada@example.com' },
+      },
+      {
+        id: 'ORD-2002',
+        company: 'c1',
+        created: new Date('2026-05-20T11:00:00.000Z'),
+        status: 'paid',
+        products: [],
+        customer: { firstname: 'Grace', lastname: 'Hopper', email: 'grace@example.com' },
+      },
+    ] as any;
+
+    expect(getFilteredSegmentedOrders(orders, 'paid', '1001').map((item) => item.id)).toEqual(['ORD-1001']);
+    expect(getFilteredSegmentedOrders(orders, 'paid', 'lovelace').map((item) => item.id)).toEqual(['ORD-1001']);
+    expect(getFilteredSegmentedOrders(orders, 'paid', 'GRACE@EXAMPLE.COM').map((item) => item.id)).toEqual(['ORD-2002']);
+  });
+
+  it('combines segment and query filter and resets when query is empty', () => {
+    const orders = [
+      {
+        id: 'ORD-1001',
+        company: 'c1',
+        created: new Date('2026-05-20T10:00:00.000Z'),
+        status: 'paid',
+        products: [],
+        customer: { firstname: 'Ada', lastname: 'Lovelace', email: 'ada@example.com' },
+      },
+      {
+        id: 'ORD-1002',
+        company: 'c1',
+        created: new Date('2026-05-20T09:00:00.000Z'),
+        status: 'placed',
+        products: [],
+        customer: { firstname: 'Ada', lastname: 'Byron', email: 'ab@example.com' },
+      },
+    ] as any;
+
+    expect(getFilteredSegmentedOrders(orders, 'paid', 'ada').map((item) => item.id)).toEqual(['ORD-1001']);
+    expect(getFilteredSegmentedOrders(orders, 'paid', 'missing')).toEqual([]);
+    expect(getFilteredSegmentedOrders(orders, 'paid', '   ').map((item) => item.id)).toEqual(['ORD-1001']);
   });
 });
