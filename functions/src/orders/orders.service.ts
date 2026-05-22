@@ -253,4 +253,22 @@ export class OrdersService {
     const doc = await firestore().doc(`orders/${order.id}`).update(order);
     return { ...order, updated: doc.writeTime };
   }
+
+  async getOrder(companyId: string, orderId: string) {
+    if (orderId == null) {
+      throw new BadRequestException('Order id missing');
+    }
+    const orderDoc = await firestore().doc(`orders/${orderId}`).get();
+    const order = orderDoc.data() as Order;
+    if (order.company !== companyId) {
+      throw new BadRequestException('Company mismatch');
+    }
+    return {
+      id: order.id,
+      status: order.status,
+      products: order.products,
+      customer: order.customer,
+      created: order.created.toDate(),
+    };
+  }
 }
