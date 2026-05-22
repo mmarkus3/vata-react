@@ -10,12 +10,12 @@ import {
 import { hasOrderProductLines } from '@/app/order/orderDetailProductsState';
 import Back from '@/components/ui/back';
 import Loading from '@/components/ui/loading';
-import { getOrderById, getSelectedPointInfo, resolveOrderPointId, type SelectedPointInfo } from '@/services/order';
+import { getOrderById, getSelectedPointInfo, markOrderAsSent, resolveOrderPointId, type SelectedPointInfo } from '@/services/order';
 import type { Order } from '@/types/order';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Text, View } from 'react-native';
+import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 
 export default function OrderDetailPage() {
   const { t } = useTranslation();
@@ -27,6 +27,7 @@ export default function OrderDetailPage() {
   const [selectedPoint, setSelectedPoint] = useState<SelectedPointInfo | null>(null);
   const [isLoadingPoint, setIsLoadingPoint] = useState(false);
   const [pointError, setPointError] = useState<string | null>(null);
+  const [isMarkingSent, setIsMarkingSent] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -107,6 +108,21 @@ export default function OrderDetailPage() {
     hasPointId: Boolean(pointId),
   });
   const visibleCountry = getVisibleOrderCountry(order?.country);
+  const canMarkSent = Boolean(order?.id && order?.company && order?.status === 'paid');
+
+  const onMarkSent = async () => {
+    if (!order?.id || !order?.company || isMarkingSent) return;
+    try {
+      setIsMarkingSent(true);
+      await markOrderAsSent(order.company, order.id);
+      const refreshed = await getOrderById(order.id);
+      setOrder(refreshed);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('orders.detail.errors.loadFailed'));
+    } finally {
+      setIsMarkingSent(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -193,6 +209,21 @@ export default function OrderDetailPage() {
         ) : (
           <Text className="mt-2 text-sm text-gray-500">{t('orders.detail.emptyProducts')}</Text>
         )}
+        {canMarkSent ? (
+          <TouchableOpacity
+            onPress={onMarkSent}
+            disabled={isMarkingSent}
+            className="mt-4 self-start rounded-xl bg-primary-600 px-3 py-2"
+          >
+            {isMarkingSent ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text className="text-sm font-semibold text-white">
+                {t('orders.detail.markSent')}
+              </Text>
+            )}
+          </TouchableOpacity>
+        ) : null}
       </View>
     </View>
   );

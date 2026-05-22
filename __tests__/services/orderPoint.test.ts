@@ -7,11 +7,8 @@ jest.mock('@/services/firestore', () => ({
 import { getSelectedPointInfo, resolveOrderPointId } from '@/services/order';
 
 describe('order point helpers', () => {
-  it('resolves point id from supported fields', () => {
-    expect(resolveOrderPointId({ pointId: 'p1' } as any)).toBe('p1');
-    expect(resolveOrderPointId({ deliveryPointId: 'p2' } as any)).toBe('p2');
-    expect(resolveOrderPointId({ pickupPointId: 'p3' } as any)).toBe('p3');
-    expect(resolveOrderPointId({ point_id: 'p4' } as any)).toBe('p4');
+  it('resolves point id from deliveryMethod only', () => {
+    expect(resolveOrderPointId({ deliveryMethod: 'p1' } as any)).toBe('p1');
     expect(resolveOrderPointId({} as any)).toBeNull();
   });
 

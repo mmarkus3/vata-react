@@ -46,7 +46,8 @@
       "selectedPointSection": "Valittu piste",
       "pointLoading": "Ladataan valittua pistettä...",
       "pointLoadFailed": "Valitun pisteen tietoja ei voitu ladata.",
-      "pointNotSelected": "Tilauksella ei ole valittua pistettä."
+      "pointNotSelected": "Tilauksella ei ole valittua pistettä.",
+      "markSent": "Tilaus lähetetty"
     },
     "statuses": {
       "draft": "Luonnos",

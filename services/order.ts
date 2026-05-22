@@ -1,7 +1,7 @@
 import type { Order } from '@/types/order';
 import { isTimestamp } from '@/utils/date';
 import { DocumentData, QueryDocumentSnapshot, SnapshotOptions } from 'firebase/firestore';
-import { getItem, getSnapshotItems, whereEqual, whereIn } from './firestore';
+import { getItem, getSnapshotItems, updateItem, whereEqual, whereIn } from './firestore';
 
 export interface SelectedPointInfo {
   id: string;
@@ -45,7 +45,6 @@ export async function getOrderById(orderId: string): Promise<Order | null> {
 
 export function resolveOrderPointId(order: Order | null | undefined): string | null {
   if (!order) return null;
-
   return order.deliveryMethod?.trim() ?? null;
 }
 
@@ -93,4 +92,12 @@ export async function getSelectedPointInfo(company: string, pointId: string): Pr
 
   const data = await response.json();
   return normalizeSelectedPointInfo(pointId, data);
+}
+
+export async function markOrderAsSent(company: string, orderId: string): Promise<void> {
+  if (!company?.trim() || !orderId?.trim()) {
+    throw new Error('Missing company or order id');
+  }
+
+  await updateItem('orders', orderId.trim(), { status: 'sent' });
 }

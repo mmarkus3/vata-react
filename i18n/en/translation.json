@@ -46,7 +46,8 @@
       "selectedPointSection": "Selected point",
       "pointLoading": "Loading selected point...",
       "pointLoadFailed": "Selected point information is unavailable.",
-      "pointNotSelected": "No selected point for this order."
+      "pointNotSelected": "No selected point for this order.",
+      "markSent": "Mark as sent"
     },
     "statuses": {
       "draft": "Draft",

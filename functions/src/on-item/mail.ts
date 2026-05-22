@@ -2,6 +2,7 @@ import { firestore } from 'firebase-admin';
 import { onDocumentCreated } from 'firebase-functions/v2/firestore';
 import { getGeneralTemplate } from '../email/general.template';
 import { sendEmail } from '../email/send-email';
+import { Order } from '../orders/order.interface';
 
 export interface SubItem {
   guid: string;
@@ -49,6 +50,10 @@ export const onMail = onDocumentCreated({ document: '/mail/{documentId}', region
     `;
       const html = getGeneralTemplate(title, body);
       return sendEmail(document.email, title, html, document.from, document.replayTo);
+    } else if (document.order) {
+      const orderRef = firestore().doc(`orders/${document.order}`);
+      const orderDoc = await orderRef.get();
+      const order = orderDoc.data() as Order;
     } else {
       return sendEmail(document.email, 'Testi', getGeneralTemplate('Testi', 'Puuttuu täyttö-id'), document.from, document.replayTo);
     }
