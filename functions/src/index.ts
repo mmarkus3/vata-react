@@ -15,6 +15,7 @@ import { initializeApp } from 'firebase-admin/app';
 import { onRequest } from 'firebase-functions/https';
 import { AppModule } from './app.module';
 import { onMail as onMailFunc } from './on-item/mail';
+import { onOrderUpdated as onOrderUpdatedFunc } from './on-item/order-status';
 
 initializeApp();
 
@@ -48,3 +49,4 @@ export const api = onRequest({
 });
 
 export const onMail = onMailFunc;
+export const onOrderUpdated = onOrderUpdatedFunc;

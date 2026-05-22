@@ -59,3 +59,14 @@ The system SHALL allow users to open an order details/actions view from an order
 - **WHEN** user opens order detail page for an order with no product lines
 - **THEN** system shows explicit empty-state text for product list section
 
+### Requirement: Sent status update delegates customer notification to backend
+The system SHALL treat order sent-status updates from the app as status-only writes, and customer sent-notification enqueue side effects SHALL be handled by backend order update triggers.
+
+#### Scenario: App marks order as sent
+- **WHEN** user marks an order as `sent` from order detail flow
+- **THEN** client updates order status and does not directly create a `mail` document
+
+#### Scenario: Notification still created after app sent action
+- **WHEN** app marks order status to `sent` successfully
+- **THEN** backend order update trigger enqueues the sent-notification `mail` document
+

@@ -1,7 +1,5 @@
 import type { Order } from '@/types/order';
-import { createMail } from '@/services/mail';
 import { isTimestamp } from '@/utils/date';
-import type { Timestamp } from 'firebase/firestore';
 import { DocumentData, QueryDocumentSnapshot, SnapshotOptions } from 'firebase/firestore';
 import { getItem, getSnapshotItems, updateItem, whereEqual, whereIn } from './firestore';
 
@@ -115,15 +113,4 @@ export async function markOrderAsSent(company: string, orderId: string): Promise
   }
 
   await updateItem('orders', orderId.trim(), { status: 'sent' });
-
-  const customerEmail = order.customer?.email?.trim();
-  if (!customerEmail) {
-    return;
-  }
-
-  await createMail({
-    email: customerEmail,
-    order: orderId.trim(),
-    created: new Date() as unknown as Timestamp,
-  });
 }

@@ -22,8 +22,6 @@ export interface FullfilmentProduct {
 export function getSentOrderBody(orderId: string, order: Order): string {
   const customer = order.customer;
   const customerName = [customer?.firstname, customer?.lastname].filter(Boolean).join(' ').trim() || '-';
-  const customerEmail = customer?.email?.trim() || '-';
-  const customerPhone = customer?.phone?.trim() || '-';
   const customerAddress = [customer?.address_street, customer?.address_zip, customer?.address_city].filter(Boolean).join(', ') || '-';
 
   const productRows = (order.products ?? []).map((product) => {
@@ -41,8 +39,6 @@ export function getSentOrderBody(orderId: string, order: Order): string {
     <p><strong>Asiakastiedot</strong></p>
     <p>
       ${customerName}<br/>
-      ${customerEmail}<br/>
-      ${customerPhone}<br/>
       ${customerAddress}
     </p>
     <p><strong>Tuotteet</strong></p>
