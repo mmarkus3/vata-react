@@ -114,3 +114,7 @@ export function createDocumentRef(collectionKey: string) {
 export function whereEqual(fieldPath: string, value: unknown) {
   return where(fieldPath, '==', value);
 }
+
+export function whereIn(fieldPath: string, value: string[]) {
+  return where(fieldPath, 'in', value);
+}

@@ -11,27 +11,23 @@ The system SHALL provide an Orders (`Tilaukset`) tab in primary app navigation s
 - **THEN** system opens the orders list screen
 
 ### Requirement: Orders tab shows company order list
-The system SHALL fetch and display company orders in the Orders tab list view. Order data SHALL reflect backend-calculated product line pricing, including campaign-code discounted `finalPrice` when applicable. The backend pricing metadata endpoint (`getPrices`) SHALL return `delivery` and `over` (free-delivery threshold) in country-aware currency: EUR by default and SEK for country `SE` via currency `getRate`. Same-day rate cache in company options SHALL be used before external fetch.
+The system SHALL fetch and display company orders in the Orders tab list view. Order data SHALL reflect backend-calculated product line pricing, including campaign-code discounted `finalPrice` when applicable. The backend pricing metadata endpoint (`getPrices`) SHALL return `delivery` and `over` (free-delivery threshold) in country-aware currency: EUR by default and SEK for country `SE` via currency `getRate`. Same-day rate cache in company options SHALL be used before external fetch. The order list UI SHALL provide segments for statuses `placed`, `paid`, and `sent`, and show orders oldest first within the active segment.
 
 #### Scenario: Orders are shown in list
 - **WHEN** Orders tab loads successfully and orders exist
 - **THEN** system displays a list of orders with key row metadata for each order
 
-#### Scenario: Prices response in default currency
-- **WHEN** `getPrices` is requested without country `SE`
-- **THEN** backend returns `delivery` and `over` in EUR values
+#### Scenario: Segment filters orders by status
+- **WHEN** user selects `placed`, `paid`, or `sent` segment
+- **THEN** list shows only orders with matching status
 
-#### Scenario: Prices response converted for Sweden using same-day cache
-- **WHEN** `getPrices` is requested with country `SE` and options include same-date EUR->SEK cached rate
-- **THEN** backend converts `delivery` and `over` using cached rate without external rate fetch
+#### Scenario: Segment excludes non-segment statuses
+- **WHEN** orders contain statuses outside `placed`, `paid`, `sent`
+- **THEN** those orders are not shown in segmented list
 
-#### Scenario: Prices response converted for Sweden after stale/missing cache
-- **WHEN** `getPrices` is requested with country `SE` and options cache is missing or stale
-- **THEN** backend fetches rate via `getRate`, saves (`date`, `currency`, `rate`) to options, and converts `delivery` and `over`
-
-#### Scenario: SE conversion rate unavailable
-- **WHEN** `getPrices` for country `SE` cannot resolve a valid rate from cache/fetch path
-- **THEN** backend returns EUR `delivery` and `over` values without request failure
+#### Scenario: Orders sorted oldest first
+- **WHEN** orders are shown in selected segment
+- **THEN** list is sorted by created time ascending (oldest first)
 
 ### Requirement: Orders tab handles loading, empty, and error states
 The system SHALL render clear list states during order fetch lifecycle.

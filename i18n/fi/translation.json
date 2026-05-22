@@ -51,8 +51,9 @@
     "statuses": {
       "draft": "Luonnos",
       "pending": "Odottaa maksua",
-      "placed": "Odottaa keräilyä",
-      "sent": "Lähetetty"
+      "placed": "Luotu",
+      "sent": "Lähetetty",
+      "paid": "Maksettu, odottaa keräilyä"
     }
   },
   "campaigns": {

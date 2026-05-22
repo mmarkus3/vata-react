@@ -1,7 +1,7 @@
 import type { Order } from '@/types/order';
 import { isTimestamp } from '@/utils/date';
 import { DocumentData, QueryDocumentSnapshot, SnapshotOptions } from 'firebase/firestore';
-import { getItem, getSnapshotItems, whereEqual } from './firestore';
+import { getItem, getSnapshotItems, whereEqual, whereIn } from './firestore';
 
 export interface SelectedPointInfo {
   id: string;
@@ -27,7 +27,7 @@ const converter = {
 
 export function getOrdersByCompany(companyId: string, cb: (results: Order[]) => void) {
   try {
-    return getSnapshotItems<Order>('orders', cb, [whereEqual('company', companyId)], converter);
+    return getSnapshotItems<Order>('orders', cb, [whereEqual('company', companyId), whereIn('status', ['paid', 'placed', 'sent'])], converter);
   } catch (error) {
     console.error('Failed to fetch orders:', error);
     throw error;

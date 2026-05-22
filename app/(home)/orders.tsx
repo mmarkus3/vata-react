@@ -1,10 +1,11 @@
 import { getVisibleOrderCountry } from '@/app/order/orderCountryState';
-import { getOrderListState } from '@/app/order/orderListState';
+import { getOrderListState, getSegmentedOrders, type OrderSegment } from '@/app/order/orderListState';
 import { getOrderDetailsRoute } from '@/app/order/orderRoute';
 import Loading from '@/components/ui/loading';
 import { useOrders } from '@/hooks/useOrders';
 import { formatDate } from 'date-fns';
 import { useRouter } from 'expo-router';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FlatList, Text, TouchableOpacity, View } from 'react-native';
 
@@ -12,8 +13,10 @@ export default function OrdersScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { orders, isLoading, error } = useOrders();
+  const [segment, setSegment] = useState<OrderSegment>('placed');
 
   const state = getOrderListState({ isLoading, error, orders });
+  const segmentedOrders = useMemo(() => getSegmentedOrders(orders, segment), [orders, segment]);
 
   const getOrderStatus = (status: string) => {
     return t('orders.statuses.' + status);
@@ -47,9 +50,25 @@ export default function OrdersScreen() {
 
   return (
     <View className="flex-1 bg-slate-50">
+      <View className="flex-row gap-2 px-4 pt-3">
+        {(['paid', 'placed', 'sent'] as const).map((value) => {
+          const isActive = segment === value;
+          return (
+            <TouchableOpacity
+              key={value}
+              onPress={() => setSegment(value)}
+              className={`rounded-2xl border px-3 py-2 ${isActive ? 'border-primary-600 bg-primary-50' : 'border-gray-300 bg-white'}`}
+            >
+              <Text className={`text-sm ${isActive ? 'text-primary-700' : 'text-gray-700'}`}>
+                {t(`orders.statuses.${value}`)}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
       <FlatList
         className="px-4 py-3"
-        data={orders}
+        data={segmentedOrders}
         keyExtractor={(item) => item.id ?? `${item.status}-${item.company}`}
         renderItem={({ item }) => {
           const visibleCountry = getVisibleOrderCountry(item.country);
@@ -64,7 +83,7 @@ export default function OrdersScreen() {
               activeOpacity={0.8}
             >
               <View className="flex-row items-center justify-between">
-                <Text className="text-base font-semibold text-gray-900">#{item.id ?? '-'}</Text>
+                <Text className="text-base font-semibold text-gray-900">#{item.id ?? '-'} - {item.customer?.email ?? '-'}</Text>
                 <Text className="text-sm font-medium text-primary-600">{getOrderStatus(item.status)}</Text>
               </View>
               <View className="flex-row items-center justify-between">
@@ -81,6 +100,11 @@ export default function OrdersScreen() {
             </TouchableOpacity>
           );
         }}
+        ListEmptyComponent={(
+          <View className="rounded-2xl border border-gray-200 bg-white px-4 py-6">
+            <Text className="text-center text-sm text-gray-500">{t('orders.emptyDescription')}</Text>
+          </View>
+        )}
         showsVerticalScrollIndicator={false}
       />
     </View>

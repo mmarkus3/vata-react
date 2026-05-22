@@ -51,8 +51,9 @@
     "statuses": {
       "draft": "Draft",
       "pending": "Pending payment",
-      "placed": "Ready to be sent",
-      "sent": "Sent"
+      "placed": "Placed",
+      "sent": "Sent",
+      "paid": "Paid, waiting to be sent"
     }
   },
   "campaigns": {
