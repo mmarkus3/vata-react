@@ -39,11 +39,6 @@ export class OrdersController {
     return this.ordersService.updateOnlyOrder(companyId, order);
   }
 
-  @Get('company/:company/:id')
-  getOrder(@Param('company') companyId: string, @Param('id') id: string) {
-    return this.ordersService.getOrder(companyId, id);
-  }
-
   @Get('company/:company/points')
   getDeliveryPoints(@Param('company') companyId: string, @Query('postalCode') postalCode: string, @Query('country') country = 'FI') {
     return this.ordersService.getPoints(companyId, postalCode, country);
@@ -63,5 +58,10 @@ export class OrdersController {
   getPaymnentMethods(@Param('company') companyId: string, @Query('country') country = 'FI') {
     const currency = country === 'SE' ? 'SEK' : 'EUR';
     return this.ordersService.getPaymentMethods(companyId, currency);
+  }
+
+  @Get('company/:company/:id')
+  getOrder(@Param('company') companyId: string, @Param('id') id: string) {
+    return this.ordersService.getOrder(companyId, id);
   }
 }
