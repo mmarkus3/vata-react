@@ -6,7 +6,7 @@ import { getRate } from '../currency/currency';
 import { Options } from '../options/options.interface';
 import { Product } from '../products/product.interface';
 import { setupVismaPay } from '../visma/options';
-import { Order } from './order.interface';
+import { Order, OrderCustomer } from './order.interface';
 
 const bringHeaders = {
   Accept: 'application/json',
@@ -17,6 +17,26 @@ const bringHeaders = {
 @Injectable()
 export class OrdersService {
   private static readonly MAX_PERCENTAGE = 100;
+
+  private maskCustomerValue(value: string | undefined): string {
+    const text = typeof value === 'string' ? value.trim() : '';
+    if (!text) return '';
+    if (text.length <= 3) return '***';
+    return `${text.slice(0, 3)}***`;
+  }
+
+  private maskCustomer(customer: OrderCustomer | undefined): OrderCustomer | undefined {
+    if (!customer) return undefined;
+    return {
+      firstname: this.maskCustomerValue(customer.firstname),
+      lastname: this.maskCustomerValue(customer.lastname),
+      email: this.maskCustomerValue(customer.email),
+      phone: this.maskCustomerValue(customer.phone),
+      address_street: this.maskCustomerValue(customer.address_street),
+      address_city: this.maskCustomerValue(customer.address_city),
+      address_zip: this.maskCustomerValue(customer.address_zip),
+    };
+  }
 
   async getPaymentMethods(companyId: string, currency: string) {
     const vismaPay = await setupVismaPay(companyId);
@@ -191,11 +211,13 @@ export class OrdersService {
       })),
     }
 
+    let deliveryProduct = null;
     // Add shipment cost
     if (amount < (overFree * 100)) {
       const deliveryFeePrice = deliveryFee * 100;
       const pretaxPrice = Math.floor(deliveryFeePrice - (deliveryFeePrice * vat));
-      chargeObj.products = [...chargeObj.products, { id: order.deliveryMethod, title: 'Kuljetusmaksu', count: 1, pretax_price: pretaxPrice, tax: vat * 100, price: deliveryFeePrice, type: 2 }];
+      deliveryProduct = { id: order.deliveryMethod, title: 'Kuljetusmaksu', count: 1, pretax_price: pretaxPrice, tax: vat * 100, price: deliveryFeePrice, type: 2 };
+      chargeObj.products = [...chargeObj.products, deliveryProduct];
       chargeObj.amount = chargeObj.amount + deliveryFeePrice;
     }
 
@@ -215,6 +237,9 @@ export class OrdersService {
         })),
         token: chargeResult.token,
       };
+      if (deliveryProduct) {
+        updated.products.push({ id: deliveryProduct.id, name: deliveryProduct.title, amount: deliveryProduct.count, finalPrice: deliveryProduct.price });
+      }
       await firestore().doc(`orders/${order.id}`).set(updated);
       return { url: `${vismaPay.apiUrl}/token/${chargeResult.token}` };
     } catch (err) {
@@ -267,8 +292,9 @@ export class OrdersService {
       id: order.id,
       status: order.status,
       products: order.products,
-      customer: order.customer,
+      customer: this.maskCustomer(order.customer),
       created: order.created.toDate(),
+      amount: order.amount,
     };
   }
 }

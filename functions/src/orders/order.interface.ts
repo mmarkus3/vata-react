@@ -13,6 +13,7 @@ export interface Order {
   discount?: string;
   returnUrl?: string;
   country: string;
+  amount?: number;
 }
 
 export interface OrderProduct {

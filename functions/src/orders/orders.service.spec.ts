@@ -264,4 +264,82 @@ describe('OrdersService', () => {
     expect(result.products[0].finalPrice).toBe(10);
     expect(result.amount).toBe(10);
   });
+
+  it('masks all customer fields in getOrder response', async () => {
+    const sourceOrder = {
+      company: 'co1',
+      status: 'paid',
+      products: [{ id: 'p1', name: 'Milk', amount: 1 }],
+      created: { toDate: () => new Date('2026-05-20T10:00:00.000Z') },
+      customer: {
+        firstname: 'Markus',
+        lastname: 'Montonen',
+        email: 'markus@example.com',
+        phone: '0401234567',
+        address_street: 'Main Street 123',
+        address_city: 'Helsinki',
+        address_zip: '00100',
+      },
+    };
+    mockDocGet.mockResolvedValueOnce({ data: () => sourceOrder });
+
+    const result = await service.getOrder('co1', 'o1');
+
+    expect(result.customer).toEqual({
+      firstname: 'Mar***',
+      lastname: 'Mon***',
+      email: 'mar***',
+      phone: '040***',
+      address_street: 'Mai***',
+      address_city: 'Hel***',
+      address_zip: '001***',
+    });
+    expect(sourceOrder.customer.firstname).toBe('Markus');
+    expect(sourceOrder.customer.email).toBe('markus@example.com');
+  });
+
+  it('handles short, empty, and missing customer fields in getOrder masking', async () => {
+    mockDocGet.mockResolvedValueOnce({
+      data: () => ({
+        company: 'co1',
+        status: 'paid',
+        products: [],
+        created: { toDate: () => new Date('2026-05-20T10:00:00.000Z') },
+        customer: {
+          firstname: 'Ma',
+          lastname: '',
+          email: 'a@b',
+          phone: '  ',
+          address_street: 'K',
+          address_city: 'Oslo',
+          address_zip: '12',
+        },
+      }),
+    });
+
+    const masked = await service.getOrder('co1', 'o2');
+    expect(masked.customer).toEqual({
+      firstname: '***',
+      lastname: '',
+      email: '***',
+      phone: '',
+      address_street: '***',
+      address_city: 'Osl***',
+      address_zip: '***',
+    });
+  });
+
+  it('returns order without customer masking errors when customer is missing', async () => {
+    mockDocGet.mockResolvedValueOnce({
+      data: () => ({
+        company: 'co1',
+        status: 'paid',
+        products: [],
+        created: { toDate: () => new Date('2026-05-20T10:00:00.000Z') },
+      }),
+    });
+
+    const result = await service.getOrder('co1', 'o3');
+    expect(result.customer).toBeUndefined();
+  });
 });
