@@ -10,5 +10,5 @@ export function getCountryNameFromNumericCode(code?: string | null): string | un
   }
 
   const alpha2Code = countries.numericToAlpha2(numericCode);
-  return alpha2Code ? countries.getName(alpha2Code, 'en') : undefined;
+  return alpha2Code ? countries.getName(alpha2Code, 'fi') : undefined;
 }
