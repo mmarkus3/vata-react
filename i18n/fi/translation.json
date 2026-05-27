@@ -249,6 +249,11 @@
       "cancelEdit": "Keskeytä muokkaus",
       "editProduct": "Muokkaa tuotetta"
     },
+    "import": {
+      "action": "Tuo tiedot JSON-tiedostosta",
+      "description": "Täytä saatavilla olevat tuotetiedot JSON-tiedostosta. Tarkista muutokset ennen tallentamista.",
+      "success": "Saatavilla olevat tuotetiedot tuotiin. Tarkista tiedot ja tallenna muutokset."
+    },
     "barcode": {
       "newImageSelected": "Uusi kuva on valittu ja tallennetaan.",
       "savedImage": "Tallennettu viivakoodikuva.",
@@ -274,6 +279,7 @@
       "loadFailed": "Tuotteen lataus epäonnistui.",
       "mediaPermissionDenied": "Käyttöoikeutta mediakirjastoon ei myönnetty.",
       "imagePickFailed": "Kuvan valinta epäonnistui.",
+      "importFailed": "Tuotetietojen tuonti epäonnistui. Tarkista, että valittu tiedosto on kelvollinen tuotteen JSON-tiedosto.",
       "imageUrlRequired": "Anna kuvan URL-osoite.",
       "imageUrlInvalid": "Anna kelvollinen URL-osoite, joka alkaa http:// tai https://.",
       "nameRequired": "Anna tuotteen nimi.",

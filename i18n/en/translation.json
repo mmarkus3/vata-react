@@ -249,6 +249,11 @@
       "cancelEdit": "Cancel editing",
       "editProduct": "Edit product"
     },
+    "import": {
+      "action": "Import details from JSON file",
+      "description": "Fill available product details from a JSON file. Review changes before saving.",
+      "success": "Available product details imported. Review the values and save changes."
+    },
     "barcode": {
       "newImageSelected": "A new image is selected and will be saved.",
       "savedImage": "Saved barcode image.",
@@ -274,6 +279,7 @@
       "loadFailed": "Failed to load product.",
       "mediaPermissionDenied": "Media library permission was not granted.",
       "imagePickFailed": "Image selection failed.",
+      "importFailed": "Importing product details failed. Check that the selected file is valid product JSON.",
       "imageUrlRequired": "Enter an image URL.",
       "imageUrlInvalid": "Enter a valid URL starting with http:// or https://.",
       "nameRequired": "Enter product name.",

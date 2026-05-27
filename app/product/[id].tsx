@@ -11,6 +11,7 @@ import {
   ProductDetailFormValues,
   toProductDetailFormValues,
 } from '@/app/product/productDetailForm';
+import { mapProductImport, mergeImportedImageUrls, parseProductImportJson } from '@/app/product/productImportMapping';
 import Accordion from '@/components/ui/accordion';
 import Back from '@/components/ui/back';
 import Loading from '@/components/ui/loading';
@@ -19,6 +20,8 @@ import { deleteProduct, getProductById, updateProduct } from '@/services/product
 import type { Product } from '@/types/product';
 import { getCategoryLabelFromReference, resolveCategoryIdFromReference } from '@/utils/categoryReference';
 import { buildProductCategoryOptions } from '@/utils/productCategoryOptions';
+import * as DocumentPicker from 'expo-document-picker';
+import { File as ExpoFile } from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -78,6 +81,7 @@ export default function ProductDetailPage() {
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [descriptionHeights, setDescriptionHeights] = useState<Record<string, number>>({});
   const [error, setError] = useState<string | null>(null);
+  const [importMessage, setImportMessage] = useState<string | null>(null);
   const [openSections, setOpenSections] = useState<Record<ProductDetailSectionKey, boolean>>({
     basic: true,
     additionalInfo: false,
@@ -170,6 +174,7 @@ export default function ProductDetailPage() {
     setImageUrlInput('');
     setImageUrls([]);
     setBarcodeUploadProgress(null);
+    setImportMessage(null);
   };
 
   const handleToggleEdit = () => {
@@ -251,6 +256,39 @@ export default function ProductDetailPage() {
     } catch (err) {
       const message = err instanceof Error ? err.message : t('productDetail.errors.imagePickFailed');
       setError(message);
+    }
+  };
+
+  const handleImportProductJson = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: 'application/json',
+        copyToCacheDirectory: true,
+        multiple: false,
+      });
+
+      if (result.canceled || !result.assets[0]) {
+        return;
+      }
+
+      const asset = result.assets[0];
+      const text = asset.file ? await asset.file.text() : await new ExpoFile(asset.uri).text();
+      const mapping = mapProductImport(parseProductImportJson(text));
+
+      for (const [field, value] of Object.entries(mapping.formValues)) {
+        setValue(field as Path<ProductDetailFormValues>, value, { shouldDirty: true, shouldValidate: true });
+      }
+
+      if (mapping.imageUrls.length > 0) {
+        setProductImages((previous) => mergeImportedImageUrls([...previous, ...imageUrls], mapping.imageUrls));
+        setImageUrls([]);
+      }
+
+      setError(null);
+      setImportMessage(t('productDetail.import.success'));
+    } catch {
+      setImportMessage(null);
+      setError(t('productDetail.errors.importFailed'));
     }
   };
 
@@ -498,6 +536,20 @@ export default function ProductDetailPage() {
 
         <View className="rounded-3xl bg-white p-6 shadow-sm">
           <Text className="text-2xl font-bold text-gray-900">{t('productDetail.title')}</Text>
+
+          {editMode ? (
+            <View className="mt-5 rounded-2xl border border-primary-100 bg-primary-50 p-4">
+              <Text className="text-sm text-gray-700">{t('productDetail.import.description')}</Text>
+              <TouchableOpacity
+                onPress={handleImportProductJson}
+                className="mt-3 rounded-2xl bg-primary-600 px-4 py-3"
+                accessibilityRole="button"
+                accessibilityLabel={t('productDetail.import.action')}
+              >
+                <Text className="text-center text-sm font-semibold text-white">{t('productDetail.import.action')}</Text>
+              </TouchableOpacity>
+            </View>
+          ) : null}
 
           <View className="mt-5 space-y-4">
             <Accordion
@@ -853,6 +905,7 @@ export default function ProductDetailPage() {
             </Accordion>
           </View>
 
+          {importMessage ? <Text className="mt-4 text-sm font-medium text-primary-700">{importMessage}</Text> : null}
           {displayedError ? <Text className="mt-4 text-sm text-secondary-600">{displayedError}</Text> : null}
 
           <View className="mt-6 space-y-3">

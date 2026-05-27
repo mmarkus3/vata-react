@@ -1,8 +1,5 @@
-# react-hook-form-product-detail Specification
+## MODIFIED Requirements
 
-## Purpose
-TBD - created by archiving change use-react-hook-form-product-detail. Update Purpose after archive.
-## Requirements
 ### Requirement: Product detail edit form uses declarative field state
 The product detail edit flow SHALL manage editable scalar product fields, including optional category selection, optional origin field, optional multilingual ingredient fields, optional multilingual description fields, and `showInWebshop` webshop visibility, through a declarative form model that centralizes field values, validation rules, submit handling, imported available product value population, and accordion-grouped field presentation across `basic`, `additionalInfo`, `price`, and `nutritions` sections.
 
@@ -39,4 +36,3 @@ The product detail edit flow SHALL manage editable scalar product fields, includ
 #### Scenario: Validation errors remain discoverable in collapsed sections
 - **WHEN** a validation error occurs for a field inside a collapsed accordion section
 - **THEN** the section containing that field is expanded so the user can correct the value
-
