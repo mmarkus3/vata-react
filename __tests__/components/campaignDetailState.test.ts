@@ -1,4 +1,4 @@
-import { getCampaignDetailState, getCampaignDetailSummary } from '@/app/campaign/campaignDetailState';
+import { getCampaignDetailState, getCampaignDetailSummary, isCampaignDeleteDisabled } from '@/app/campaign/campaignDetailState';
 
 describe('campaignDetailState', () => {
   const campaign = {
@@ -22,5 +22,12 @@ describe('campaignDetailState', () => {
       discountValue: 10,
       productsCount: 1,
     });
+  });
+
+  it('disables campaign delete while deleting, saving or editing', () => {
+    expect(isCampaignDeleteDisabled({ isDeleting: false, isSaving: false, isEditOpen: false })).toBe(false);
+    expect(isCampaignDeleteDisabled({ isDeleting: true, isSaving: false, isEditOpen: false })).toBe(true);
+    expect(isCampaignDeleteDisabled({ isDeleting: false, isSaving: true, isEditOpen: false })).toBe(true);
+    expect(isCampaignDeleteDisabled({ isDeleting: false, isSaving: false, isEditOpen: true })).toBe(true);
   });
 });

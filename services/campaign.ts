@@ -1,7 +1,7 @@
 import type { Campaign } from '@/types/campaign';
 import { isTimestamp } from '@/utils/date';
-import { DocumentData, QueryDocumentSnapshot, SnapshotOptions } from 'firebase/firestore';
-import { getItem, getSnapshotItems, saveItem, updateItem, whereEqual } from './firestore';
+import type { DocumentData, QueryDocumentSnapshot, SnapshotOptions } from 'firebase/firestore';
+import { deleteItem, getItem, getSnapshotItems, saveItem, updateItem, whereEqual } from './firestore';
 
 const converter = {
   toFirestore: (item: Campaign) => item,
@@ -60,5 +60,14 @@ export async function updateCampaign(campaignId: string, data: Partial<Campaign>
   } catch (error) {
     console.error('Failed to update campaign:', error);
     throw new Error(error instanceof Error ? error.message : 'Campaign update failed');
+  }
+}
+
+export async function deleteCampaign(campaignId: string): Promise<void> {
+  try {
+    await deleteItem('campaigns', campaignId);
+  } catch (error) {
+    console.error('Failed to delete campaign:', error);
+    throw new Error(error instanceof Error ? error.message : 'Campaign delete failed');
   }
 }

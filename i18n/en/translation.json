@@ -133,6 +133,15 @@
       "errors": {
         "saveFailed": "Campaign update failed."
       }
+    },
+    "delete": {
+      "action": "Delete campaign",
+      "title": "Delete campaign",
+      "confirmMessage": "Are you sure you want to delete campaign {{name}}?",
+      "confirmAction": "Delete",
+      "errors": {
+        "deleteFailed": "Campaign delete failed."
+      }
     }
   },
   "addProduct": {

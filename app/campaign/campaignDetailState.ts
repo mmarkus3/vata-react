@@ -28,3 +28,9 @@ export const getCampaignDetailSummary = (campaign: Campaign) => {
     productsCount: campaign.products?.length ?? 0,
   };
 };
+
+export const isCampaignDeleteDisabled = (input: {
+  isDeleting: boolean;
+  isSaving: boolean;
+  isEditOpen: boolean;
+}): boolean => input.isDeleting || input.isSaving || input.isEditOpen;

@@ -133,6 +133,15 @@
       "errors": {
         "saveFailed": "Kampanjan päivitys epäonnistui."
       }
+    },
+    "delete": {
+      "action": "Poista kampanja",
+      "title": "Poista kampanja",
+      "confirmMessage": "Haluatko varmasti poistaa kampanjan {{name}}?",
+      "confirmAction": "Poista",
+      "errors": {
+        "deleteFailed": "Kampanjan poisto epäonnistui."
+      }
     }
   },
   "addProduct": {

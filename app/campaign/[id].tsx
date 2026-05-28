@@ -6,23 +6,24 @@ import {
   validateCampaignCreateForm,
   type CampaignCreateFormValues,
 } from '@/app/campaign/campaignCreateForm';
-import { getCampaignDetailState, getCampaignDetailSummary } from '@/app/campaign/campaignDetailState';
+import { getCampaignDetailState, getCampaignDetailSummary, isCampaignDeleteDisabled } from '@/app/campaign/campaignDetailState';
 import CampaignEditModal from '@/components/campaigns/CampaignEditModal';
 import Back from '@/components/ui/back';
 import Loading from '@/components/ui/loading';
 import { useAuth } from '@/hooks/useAuth';
 import { useCategories } from '@/hooks/useCategories';
 import { useProducts } from '@/hooks/useProducts';
-import { getCampaignById, updateCampaign } from '@/services/campaign';
+import { deleteCampaign, getCampaignById, updateCampaign } from '@/services/campaign';
 import type { Campaign } from '@/types/campaign';
 import { formatDate } from 'date-fns';
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 export default function CampaignDetailPage() {
   const { t } = useTranslation();
+  const router = useRouter();
   const { user } = useAuth();
   const { products } = useProducts();
   const { categories } = useCategories();
@@ -33,6 +34,7 @@ export default function CampaignDetailPage() {
 
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<CampaignCreateFormValues | null>(null);
 
@@ -136,6 +138,38 @@ export default function CampaignDetailPage() {
     setEditValues(syncDiscountFixedValues(nextValues, products));
   };
 
+  const onDeleteCampaign = async () => {
+    if (!id || isDeleting) {
+      return;
+    }
+
+    try {
+      setIsDeleting(true);
+      setError(null);
+      await deleteCampaign(id);
+      router.replace('/(home)/campaigns');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('campaigns.delete.errors.deleteFailed'));
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const confirmDeleteCampaign = () => {
+    if (!campaign || isCampaignDeleteDisabled({ isDeleting, isSaving, isEditOpen })) {
+      return;
+    }
+
+    Alert.alert(t('campaigns.delete.title'), t('campaigns.delete.confirmMessage', { name: campaign.name }), [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('campaigns.delete.confirmAction'),
+        style: 'destructive',
+        onPress: onDeleteCampaign,
+      },
+    ]);
+  };
+
   if (state === 'loading') {
     return (
       <Loading />
@@ -167,19 +201,35 @@ export default function CampaignDetailPage() {
   const summary = getCampaignDetailSummary(campaign!);
   const startDate = campaign!.start instanceof Date ? campaign!.start : new Date(campaign!.start as unknown as string);
   const endDate = campaign!.end instanceof Date ? campaign!.end : new Date(campaign!.end as unknown as string);
+  const deleteDisabled = isCampaignDeleteDisabled({ isDeleting, isSaving, isEditOpen });
 
   return (
     <ScrollView className="flex-1 bg-slate-50 px-6 py-6">
       <Back />
       <Stack.Screen options={{ title: campaign?.name ?? t('campaigns.detail.title') }} />
 
-      <View className="mb-3 flex-row justify-end">
+      <View className="mb-3 flex-row flex-wrap justify-end gap-3">
         <TouchableOpacity
           onPress={() => setIsEditOpen(true)}
           className="rounded-2xl bg-primary-600 px-4 py-3"
           activeOpacity={0.85}
+          disabled={isDeleting}
         >
           <Text className="text-sm font-semibold text-white">{t('campaigns.edit.open')}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={confirmDeleteCampaign}
+          className={`rounded-2xl px-4 py-3 ${deleteDisabled ? 'bg-secondary-300' : 'bg-secondary-600'}`}
+          activeOpacity={0.85}
+          disabled={deleteDisabled}
+          accessibilityRole="button"
+          accessibilityLabel={t('campaigns.delete.action')}
+        >
+          {isDeleting ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <Text className="text-sm font-semibold text-white">{t('campaigns.delete.action')}</Text>
+          )}
         </TouchableOpacity>
       </View>
 
