@@ -1,7 +1,7 @@
 import { v2 } from '@google-cloud/translate';
 import { firestore } from 'firebase-admin';
 import { onDocumentWritten } from 'firebase-functions/v2/firestore';
-import { Category } from '../categories/category.interface';
+import { Product } from '../products/product.interface';
 
 const translateClient = new v2.Translate();
 
@@ -11,9 +11,9 @@ const translateClient = new v2.Translate();
  * @param after Current document state
  * @returns true if translation should be performed
  */
-export function shouldTranslateCategory(
-  before: Category | undefined,
-  after: Category | undefined,
+export function shouldTranslateProduct(
+  before: Product | undefined,
+  after: Product | undefined,
 ): boolean {
   // Document was deleted
   if (!after) {
@@ -47,23 +47,23 @@ export function shouldTranslateCategory(
  * Check if computed translations match existing fields
  * @param nameSv Swedish translation to compare
  * @param nameEn English translation to compare
- * @param existing Current category document
+ * @param existing Current product document
  * @returns true if translations match existing values
  */
 export function translationsMatch(
   nameSv: string | undefined,
   nameEn: string | undefined,
-  existing: Category,
+  existing: Product,
 ): boolean {
   return nameSv === existing.name_sv && nameEn === existing.name_en;
 }
 
 /**
- * Translate a category name to Swedish and English
- * @param text Text to translate (typically the category name)
+ * Translate a product name to Swedish and English
+ * @param text Text to translate (typically the product name)
  * @returns Object with Swedish and English translations
  */
-export async function translateCategoryName(text: string): Promise<{
+export async function translateProductName(text: string): Promise<{
   sv: string | undefined;
   en: string | undefined;
 }> {
@@ -96,10 +96,10 @@ export async function translateCategoryName(text: string): Promise<{
 }
 
 /**
- * Build update object for category with translations
+ * Build update object for product with translations
  * Excludes undefined values to avoid writing null fields
  */
-export function buildCategoryUpdate(
+export function buildProductUpdate(
   nameSv: string | undefined,
   nameEn: string | undefined,
 ): Record<string, string> {
@@ -114,45 +114,45 @@ export function buildCategoryUpdate(
 }
 
 /**
- * Firestore trigger for automatic category name translation
- * Translates category name to Swedish and English on create or name update
+ * Firestore trigger for automatic product name translation
+ * Translates product name to Swedish and English on create or name update
  */
-export const onCategoryTranslation = onDocumentWritten(
-  { document: '/categories/{categoryId}', region: 'europe-north1' },
+export const onProductTranslation = onDocumentWritten(
+  { document: '/products/{productId}', region: 'europe-north1' },
   async (event) => {
-    const before = event.data?.before.data() as Category | undefined;
-    const after = event.data?.after.data() as Category | undefined;
-    const categoryId = event.params.categoryId;
+    const before = event.data?.before.data() as Product | undefined;
+    const after = event.data?.after.data() as Product | undefined;
+    const productId = event.params.productId;
 
     // Decide if translation is needed
-    if (!shouldTranslateCategory(before, after)) {
+    if (!shouldTranslateProduct(before, after)) {
       return;
     }
 
     try {
       // Translate the name
-      const { sv: nameSv, en: nameEn } = await translateCategoryName(after!.name);
+      const { sv: nameSv, en: nameEn } = await translateProductName(after!.name);
 
       // Check if translations match existing values to avoid unnecessary writes
       if (translationsMatch(nameSv, nameEn, after!)) {
-        console.log(`Category ${categoryId}: Translations already match, skipping write.`);
+        console.log(`Product ${productId}: Translations already match, skipping write.`);
         return;
       }
 
       // Build update object with only defined values
-      const update = buildCategoryUpdate(nameSv, nameEn);
+      const update = buildProductUpdate(nameSv, nameEn);
 
       if (Object.keys(update).length === 0) {
-        console.log(`Category ${categoryId}: No translations to write.`);
+        console.log(`Product ${productId}: No translations to write.`);
         return;
       }
 
       // Write translations back to Firestore
-      await firestore().doc(`categories/${categoryId}`).update(update);
-      console.log(`Category ${categoryId}: Translations written successfully.`, update);
+      await firestore().doc(`products/${productId}`).update(update);
+      console.log(`Product ${productId}: Translations written successfully.`, update);
     } catch (error) {
       // Log translation failures without blocking the trigger
-      console.error(`Category ${categoryId}: Translation failed`, error);
+      console.error(`Product ${productId}: Translation failed`, error);
     }
   },
 );

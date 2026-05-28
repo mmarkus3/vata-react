@@ -145,7 +145,9 @@ export class ProductsService {
 
     return {
       id,
-      name: product.name,
+      name_fi: product.name,
+      name_sv: product.name_sv,
+      name_en: product.name_en,
       amount: product.amount,
       description_fi: product.description_fi,
       description_sv: product.description_sv,

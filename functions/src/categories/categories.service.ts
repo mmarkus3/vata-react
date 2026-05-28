@@ -12,7 +12,9 @@ export class CategoriesService {
       category.id = document.id;
       return {
         id: category.id,
-        name: category.name,
+        name_fi: category.name,
+        name_sv: category.name_sv,
+        name_en: category.name_en,
         description: category.description,
       };
     });

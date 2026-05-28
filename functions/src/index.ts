@@ -18,6 +18,7 @@ import { onCategoryTranslation as onCategoryTranslationFunc } from './on-item/ca
 import { onFullfilmentWritten as onFullfilmentWrittenFunc } from './on-item/fullfilment-stock';
 import { onMail as onMailFunc } from './on-item/mail';
 import { onOrderUpdated as onOrderUpdatedFunc } from './on-item/order-status';
+import { onProductTranslation as onProductTranslationFunc } from './on-item/product-translation';
 
 initializeApp();
 
@@ -54,3 +55,4 @@ export const onMail = onMailFunc;
 export const onFullfilmentWritten = onFullfilmentWrittenFunc;
 export const onOrderUpdated = onOrderUpdatedFunc;
 export const onCategoryTranslation = onCategoryTranslationFunc;
+export const onProductTranslation = onProductTranslationFunc;
