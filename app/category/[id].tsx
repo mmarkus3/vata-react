@@ -2,6 +2,7 @@ import CategoryProductAssignmentModal from '@/app/category/CategoryProductAssign
 import { getCategoryDetailProductsState } from '@/app/category/categoryDetailState';
 import EditCategoryModal from '@/components/categories/EditCategoryModal';
 import Back from '@/components/ui/back';
+import { showConfirmation } from '@/components/ui/confirm';
 import Loading from '@/components/ui/loading';
 import { themeColors } from '@/constants/colors';
 import { useAuth } from '@/hooks/useAuth';
@@ -12,7 +13,7 @@ import type { Category } from '@/types/category';
 import type { Product } from '@/types/product';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 export default function CategoryDetailPage() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -89,28 +90,25 @@ export default function CategoryDetailPage() {
       return;
     }
 
-    Alert.alert('Poista kategoria', 'Haluatko varmasti poistaa kategorian?', [
-      {
-        text: 'Peruuta',
-        style: 'cancel',
+    showConfirmation({
+      title: 'Poista kategoria',
+      message: 'Haluatko varmasti poistaa kategorian?',
+      cancelText: 'Peruuta',
+      confirmText: 'Poista',
+      destructive: true,
+      onConfirm: async () => {
+        setIsDeleting(true);
+        try {
+          await deleteCategory(category.id!);
+          router.replace('/(home)/categories');
+        } catch (err) {
+          const message = err instanceof Error ? err.message : 'Kategorian poisto epäonnistui';
+          setError(message);
+        } finally {
+          setIsDeleting(false);
+        }
       },
-      {
-        text: 'Poista',
-        style: 'destructive',
-        onPress: async () => {
-          setIsDeleting(true);
-          try {
-            await deleteCategory(category.id!);
-            router.replace('/(home)/categories');
-          } catch (err) {
-            const message = err instanceof Error ? err.message : 'Kategorian poisto epäonnistui';
-            setError(message);
-          } finally {
-            setIsDeleting(false);
-          }
-        },
-      },
-    ]);
+    });
   };
 
   const categoryNames = useMemo(() => categories.map((entry) => entry.name), [categories]);

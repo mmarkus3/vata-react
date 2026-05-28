@@ -15,7 +15,7 @@ import type { Order } from '@/types/order';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 export default function OrderDetailPage() {
   const { t } = useTranslation();
@@ -145,7 +145,7 @@ export default function OrderDetailPage() {
     <View className="flex-1 bg-slate-50 px-6 py-6">
       <Back />
       <Stack.Screen options={{ title: order?.id ? `Order #${order.id}` : 'Tilaus' }} />
-      <View className="rounded-2xl bg-white p-4">
+      <ScrollView className="rounded-2xl bg-white p-4">
         <Text className="text-base font-semibold text-gray-900">{t('orders.detail.title', { id: order?.id ?? '-' })}</Text>
         <Text className="mt-2 text-sm text-gray-600">{order?.status && getOrderStatus(order.status)}</Text>
         {visibleCountry ? (
@@ -224,7 +224,7 @@ export default function OrderDetailPage() {
             )}
           </TouchableOpacity>
         ) : null}
-      </View>
+      </ScrollView>
     </View>
   );
 }

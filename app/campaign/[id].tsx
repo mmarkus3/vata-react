@@ -9,6 +9,7 @@ import {
 import { getCampaignDetailState, getCampaignDetailSummary, isCampaignDeleteDisabled } from '@/app/campaign/campaignDetailState';
 import CampaignEditModal from '@/components/campaigns/CampaignEditModal';
 import Back from '@/components/ui/back';
+import { showConfirmation } from '@/components/ui/confirm';
 import Loading from '@/components/ui/loading';
 import { useAuth } from '@/hooks/useAuth';
 import { useCategories } from '@/hooks/useCategories';
@@ -19,7 +20,7 @@ import { formatDate } from 'date-fns';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 export default function CampaignDetailPage() {
   const { t } = useTranslation();
@@ -160,14 +161,14 @@ export default function CampaignDetailPage() {
       return;
     }
 
-    Alert.alert(t('campaigns.delete.title'), t('campaigns.delete.confirmMessage', { name: campaign.name }), [
-      { text: t('common.cancel'), style: 'cancel' },
-      {
-        text: t('campaigns.delete.confirmAction'),
-        style: 'destructive',
-        onPress: onDeleteCampaign,
-      },
-    ]);
+    showConfirmation({
+      title: t('campaigns.delete.title'),
+      message: t('campaigns.delete.confirmMessage', { name: campaign.name }),
+      cancelText: t('common.cancel'),
+      confirmText: t('campaigns.delete.confirmAction'),
+      destructive: true,
+      onConfirm: onDeleteCampaign,
+    });
   };
 
   if (state === 'loading') {

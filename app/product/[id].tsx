@@ -14,6 +14,7 @@ import {
 import { mapProductImport, mergeImportedImageUrls, parseProductImportJson } from '@/app/product/productImportMapping';
 import Accordion from '@/components/ui/accordion';
 import Back from '@/components/ui/back';
+import { showConfirmation } from '@/components/ui/confirm';
 import Loading from '@/components/ui/loading';
 import { useCategories } from '@/hooks/useCategories';
 import { deleteProduct, getProductById, updateProduct } from '@/services/product';
@@ -27,7 +28,7 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Controller, FieldErrors, Path, RegisterOptions, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Alert, Image, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 const fieldErrorOrder: Path<ProductDetailFormValues>[] = [
   'showInWebshop',
@@ -442,27 +443,27 @@ export default function ProductDetailPage() {
   const handleDelete = () => {
     if (!productId) return;
 
-    Alert.alert(t('productDetail.delete.title'), t('productDetail.delete.confirmMessage'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      {
-        text: t('common.delete'),
-        style: 'destructive',
-        onPress: async () => {
-          setIsDeleting(true);
-          setError(null);
+    showConfirmation({
+      title: t('productDetail.delete.title'),
+      message: t('productDetail.delete.confirmMessage'),
+      cancelText: t('common.cancel'),
+      confirmText: t('common.delete'),
+      destructive: true,
+      onConfirm: async () => {
+        setIsDeleting(true);
+        setError(null);
 
-          try {
-            await deleteProduct(productId);
-            router.replace('/(home)');
-          } catch (err) {
-            const message = err instanceof Error ? err.message : t('productDetail.errors.deleteFailed');
-            setError(message);
-          } finally {
-            setIsDeleting(false);
-          }
-        },
+        try {
+          await deleteProduct(productId);
+          router.replace('/(home)');
+        } catch (err) {
+          const message = err instanceof Error ? err.message : t('productDetail.errors.deleteFailed');
+          setError(message);
+        } finally {
+          setIsDeleting(false);
+        }
       },
-    ]);
+    });
   };
 
   if (isLoading) {
