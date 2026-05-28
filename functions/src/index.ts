@@ -14,6 +14,7 @@ import express from 'express';
 import { initializeApp } from 'firebase-admin/app';
 import { onRequest } from 'firebase-functions/https';
 import { AppModule } from './app.module';
+import { onCategoryTranslation as onCategoryTranslationFunc } from './on-item/category-translation';
 import { onFullfilmentWritten as onFullfilmentWrittenFunc } from './on-item/fullfilment-stock';
 import { onMail as onMailFunc } from './on-item/mail';
 import { onOrderUpdated as onOrderUpdatedFunc } from './on-item/order-status';
@@ -52,3 +53,4 @@ export const api = onRequest({
 export const onMail = onMailFunc;
 export const onFullfilmentWritten = onFullfilmentWrittenFunc;
 export const onOrderUpdated = onOrderUpdatedFunc;
+export const onCategoryTranslation = onCategoryTranslationFunc;

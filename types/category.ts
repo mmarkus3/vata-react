@@ -3,4 +3,6 @@ export interface Category {
   name: string;
   description: string;
   company: string;
+  name_sv?: string;
+  name_en?: string;
 }
