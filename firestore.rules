@@ -72,6 +72,7 @@ service cloud.firestore {
 
     match /options/{document} {
       allow read: if isUser();
+      allow update: if isMyCompany();
     }
 
     match /orders/{document} {

@@ -13,11 +13,38 @@
     "menu": "Valikko",
     "profile": "Profiili",
     "categories": "Kategoriat",
-    "campaigns": "Kampanjat"
+    "campaigns": "Kampanjat",
+    "options": "Asetukset"
   },
   "menu": {
     "title": "Lisää",
     "close": "Sulje valikko"
+  },
+  "companyOptions": {
+    "title": "Yrityksen asetukset",
+    "description": "Muokkaa kassalla ja tilausilmoituksissa käytettäviä yritysasetuksia.",
+    "vismapayTitle": "VismaPay",
+    "save": "Tallenna asetukset",
+    "saving": "Tallennetaan...",
+    "saved": "Asetukset tallennettu.",
+    "fields": {
+      "delivery": "Toimitusmaksu",
+      "over": "Ilmaisen toimituksen raja",
+      "vat": "ALV-prosentti",
+      "email": "Tilausilmoitusten sähköposti",
+      "vismapayApiKey": "VismaPay API-avain",
+      "vismapayPrivateKey": "VismaPay private key"
+    },
+    "validation": {
+      "delivery": "Anna kelvollinen toimitusmaksu.",
+      "over": "Anna kelvollinen ilmaisen toimituksen raja.",
+      "vat": "Anna kelvollinen ALV-prosentti."
+    },
+    "errors": {
+      "companyMissing": "Yritystä ei löytynyt käyttäjäprofiilista.",
+      "loadFailed": "Yrityksen asetusten lataus epäonnistui.",
+      "saveFailed": "Yrityksen asetusten tallennus epäonnistui."
+    }
   },
   "orders": {
     "errorTitle": "Tilausten haku epäonnistui",

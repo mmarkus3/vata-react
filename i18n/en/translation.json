@@ -13,11 +13,38 @@
     "menu": "Menu",
     "profile": "Profile",
     "categories": "Categories",
-    "campaigns": "Campaigns"
+    "campaigns": "Campaigns",
+    "options": "Options"
   },
   "menu": {
     "title": "More",
     "close": "Close menu"
+  },
+  "companyOptions": {
+    "title": "Company options",
+    "description": "Edit company settings used for checkout and order notifications.",
+    "vismapayTitle": "VismaPay",
+    "save": "Save options",
+    "saving": "Saving...",
+    "saved": "Options saved.",
+    "fields": {
+      "delivery": "Delivery price",
+      "over": "Free delivery threshold",
+      "vat": "VAT percentage",
+      "email": "Order notification email",
+      "vismapayApiKey": "VismaPay API key",
+      "vismapayPrivateKey": "VismaPay private key"
+    },
+    "validation": {
+      "delivery": "Enter a valid delivery price.",
+      "over": "Enter a valid free delivery threshold.",
+      "vat": "Enter a valid VAT percentage."
+    },
+    "errors": {
+      "companyMissing": "Company was not found from the user profile.",
+      "loadFailed": "Company options load failed.",
+      "saveFailed": "Company options save failed."
+    }
   },
   "orders": {
     "errorTitle": "Orders fetch failed",

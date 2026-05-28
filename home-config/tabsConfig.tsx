@@ -76,6 +76,14 @@ export const getHomeTabsConfig = (t: TranslateFn) => [
     },
   },
   {
+    name: 'options',
+    options: {
+      href: null,
+      title: t('nav.options'),
+      headerTitle: t('nav.options'),
+    },
+  },
+  {
     name: 'settings',
     options: {
       href: null,

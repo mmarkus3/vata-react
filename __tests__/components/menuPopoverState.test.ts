@@ -1,4 +1,4 @@
-import { closeMenuPopover, toggleMenuPopover } from '@/app/(home)/menuPopoverState';
+import { closeMenuPopover, toggleMenuPopover } from '@/home-config/menuPopoverState';
 
 describe('menuPopoverState', () => {
   it('toggles popover state', () => {

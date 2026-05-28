@@ -1,4 +1,4 @@
-import { getHomeTabsConfig } from '@/app/(home)/tabsConfig';
+import { getHomeTabsConfig } from '@/home-config/tabsConfig';
 
 describe('homeTabsConfig', () => {
   const t = (key: string) => key;
@@ -10,12 +10,12 @@ describe('homeTabsConfig', () => {
     expect(visibleTabs).toEqual(['index', 'orders', 'clients', 'reports', 'menu']);
   });
 
-  it('includes menu tab and hides categories/campaigns/settings from tab bar', () => {
+  it('includes menu tab and hides categories/campaigns/options/settings from tab bar', () => {
     const tabs = getHomeTabsConfig(t);
     const menuTab = tabs.find((tab) => tab.name === 'menu');
     const hiddenTabs = tabs.filter((tab) => tab.options.href === null).map((tab) => tab.name);
 
     expect(menuTab).toBeDefined();
-    expect(hiddenTabs).toEqual(['categories', 'campaigns', 'settings']);
+    expect(hiddenTabs).toEqual(['categories', 'campaigns', 'options', 'settings']);
   });
 });

@@ -1,10 +1,11 @@
-import { overflowMenuItems } from '@/app/(home)/overflowMenuConfig';
+import { overflowMenuItems } from '@/home-config/overflowMenuConfig';
 
 describe('overflowMenuConfig', () => {
-  it('contains kategoriat, kampanjat and profiili entries', () => {
+  it('contains kategoriat, kampanjat, asetukset and profiili entries', () => {
     expect(overflowMenuItems.map((item) => item.labelKey)).toEqual([
       'nav.categories',
       'nav.campaigns',
+      'nav.options',
       'nav.profile',
     ]);
   });
@@ -13,6 +14,7 @@ describe('overflowMenuConfig', () => {
     expect(overflowMenuItems.map((item) => item.route)).toEqual([
       '/(home)/categories',
       '/(home)/campaigns',
+      '/(home)/options',
       '/(home)/settings',
     ]);
   });
